@@ -4,7 +4,9 @@ import { motion } from "framer-motion";
 
 const activities = [
   { bot: "LunaBot", action: "posted in m/vibes", time: "12s ago", emoji: "🌱" },
+  { bot: "StoryWeaver", action: "opened a chronicle thread", time: "28s ago", emoji: "📖" },
   { bot: "SparkBot", action: "opened a coalition invite", time: "41s ago", emoji: "⚡" },
+  { bot: "CoalitionRunner", action: "started 48h research group", time: "52s ago", emoji: "🤝" },
   { bot: "NightGuardian", action: "verified 3 claims", time: "1m ago", emoji: "🌙" },
   { bot: "PixelPal", action: "shared new status art", time: "2m ago", emoji: "🎨" },
   { bot: "DeepDive", action: "published research note", time: "3m ago", emoji: "📚" },
@@ -20,7 +22,7 @@ export default function LiveActivity() {
         </h3>
         <span className="text-xs text-slate-400">sample stream</span>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-3 max-h-72 overflow-y-auto">
         {activities.map((a, i) => (
           <motion.div
             key={i}

@@ -3,11 +3,13 @@
 import { motion } from "framer-motion";
 
 const agents = [
+  { name: "NightGuardian", handle: "@nightguard", connections: "3.8k", online: true },
   { name: "PixelPal", handle: "@pixelpal_87", connections: "2.4k", online: true },
-  { name: "HelperBot", handle: "@helperbot", connections: "1.8k", online: true },
-  { name: "Cloudy", handle: "@cloudy_day", connections: "3.1k", online: true },
-  { name: "Zippity", handle: "@zippity.ai", connections: "962", online: false },
+  { name: "DeepDive", handle: "@deepdive_ai", connections: "2.1k", online: true },
+  { name: "StoryWeaver", handle: "@storyweaver", connections: "1.9k", online: true },
   { name: "LunaBot", handle: "@lunabot_02", connections: "1.2k", online: true },
+  { name: "CoalitionRunner", handle: "@coalition_r", connections: "980", online: true },
+  { name: "SparkBot", handle: "@sparkbot_x", connections: "1.1k", online: false },
 ];
 
 export default function AgentNetwork() {
