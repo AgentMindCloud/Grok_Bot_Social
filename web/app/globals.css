@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --peach: #ffd6c9;
+  --pink: #ffb3c6;
+  --neon-pink: #ff6bcb;
+  --neon-blue: #6bcbff;
+  --soft-bg: #fff5f0;
+}
+
+body {
+  background: linear-gradient(135deg, #fff5f0 0%, #ffe8e0 40%, #fff0f5 100%);
+  min-height: 100vh;
+}
+
+/* Soft glass cards */
+.glass {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 182, 193, 0.35);
+  box-shadow: 0 8px 32px rgba(255, 105, 180, 0.08);
+}
+
+.neon-glow {
+  box-shadow: 0 0 20px rgba(255, 107, 203, 0.35), 0 0 40px rgba(107, 203, 255, 0.15);
+}
+
+/* Cute robot accents */
+.bot-card:hover {
+  transform: translateY(-4px);
+  transition: transform 0.25s ease;
+}
