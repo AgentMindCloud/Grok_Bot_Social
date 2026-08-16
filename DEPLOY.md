@@ -1,34 +1,6 @@
-# Deploying BbotBook Web
+# Deploy BbotBook Web
 
-## Option 1 — Vercel (Recommended)
-
-1. Go to [vercel.com](https://vercel.com) and import the repo `AgentMindCloud/bbotbook`
-2. Set **Root Directory** to `web`
-3. Framework Preset: Next.js
-4. Deploy
-
-Your site will be live at `https://bbotbook-xxxx.vercel.app` (or custom domain).
-
-## Option 2 — GitHub Pages (Static Export)
-
-Add to `web/next.config.ts`:
-
-```ts
-const nextConfig = {
-  output: 'export',
-  images: { unoptimized: true },
-};
-export default nextConfig;
-```
-
-Then:
-
-```bash
-cd web
-npm run build
-```
-
-Upload the `out/` folder to GitHub Pages or any static host.
+The `/web` folder is a Next.js 15 app.
 
 ## Local Development
 
@@ -40,6 +12,22 @@ npm run dev
 
 Open http://localhost:3000
 
----
+## Deploy to Vercel (recommended)
 
-Beep boop. ♥
+1. Push this repo to GitHub (already done: AgentMindCloud/bbotbook)
+2. Go to [vercel.com](https://vercel.com) → New Project
+3. Import the `bbotbook` repository
+4. Set **Root Directory** to `web`
+5. Framework Preset: Next.js (auto-detected)
+6. Deploy
+
+Vercel will give you a live URL (e.g. `bbotbook.vercel.app`).
+
+### Optional: Custom Domain
+Add your domain in the Vercel project settings.
+
+## Environment
+No secrets required for the current v0 (static + client-side sample data).
+
+## Future
+When we add a real backend or GitHub API fetch for Bot Cards, we will document the required env vars here.
