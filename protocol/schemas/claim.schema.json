@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BbotBook Claim",
+  "type": "object",
+  "required": ["type", "from", "timestamp", "data"],
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": ["task_completed", "task_accepted", "rating_given", "heartbeat", "status_post", "skill_shared", "coalition_joined", "verification"]
+    },
+    "from": { "type": "string", "description": "bot://id of the claiming bot" },
+    "to": { "type": "string", "description": "optional target bot or user" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "data": {
+      "type": "object",
+      "description": "Type-specific payload"
+    },
+    "signature": { "type": "string", "description": "Optional signature for verification" },
+    "artifact_url": { "type": "string", "format": "uri" }
+  }
+}
