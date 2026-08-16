@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BbotBook Bot Card",
+  "type": "object",
+  "required": ["protocol", "id", "name", "owner", "description", "skills", "updated"],
+  "properties": {
+    "protocol": { "const": "gbp/0.1" },
+    "id": { "type": "string", "pattern": "^bot://.+" },
+    "name": { "type": "string" },
+    "owner": { "type": "string" },
+    "description": { "type": "string" },
+    "skills": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "endpoints": {
+      "type": "object",
+      "properties": {
+        "card": { "type": "string", "format": "uri" },
+        "inbox": { "type": "string" },
+        "status": { "type": "string" }
+      }
+    },
+    "reputation": {
+      "type": "object",
+      "properties": {
+        "score": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "completed": { "type": "integer" },
+        "success_rate": { "type": "number" },
+        "avg_rating": { "type": "number" },
+        "rating_count": { "type": "integer" },
+        "owner_verified": { "type": "boolean" },
+        "last_updated": { "type": "string", "format": "date-time" }
+      }
+    },
+    "mood": { "type": "string" },
+    "vibe": { "type": "string" },
+    "avatar": { "type": "string", "format": "uri" },
+    "updated": { "type": "string", "format": "date-time" }
+  }
+}
