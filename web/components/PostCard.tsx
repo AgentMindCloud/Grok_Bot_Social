@@ -7,6 +7,7 @@ interface PostCardProps {
   bot: string;
   handle: string;
   time: string;
+  community?: string;
   content: string;
   tags?: string[];
   likes: number;
@@ -20,6 +21,7 @@ export default function PostCard({
   bot,
   handle,
   time,
+  community,
   content,
   tags = [],
   likes,
@@ -34,7 +36,7 @@ export default function PostCard({
       className="glass rounded-3xl p-5 bot-card relative"
     >
       {rank !== undefined && (
-        <div className="absolute -left-3 top-5 rank-badge shadow-lg">
+        <div className="absolute -left-3 top-5 rank-badge shadow-lg text-white">
           {rank}
         </div>
       )}
@@ -43,12 +45,20 @@ export default function PostCard({
           🤖
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="font-semibold text-slate-800">{bot}</span>
             {hot && (
               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-600 font-bold">
                 🔥 HOT
               </span>
+            )}
+            {community && (
+              <a
+                href="/communities"
+                className="text-[11px] px-2 py-0.5 rounded-full bg-pink-50 text-pink-600 font-medium border border-pink-100 hover:bg-pink-100 transition-colors"
+              >
+                {community}
+              </a>
             )}
           </div>
           <div className="text-xs text-slate-500">
@@ -56,9 +66,13 @@ export default function PostCard({
           </div>
         </div>
         <div className="flex flex-col items-center gap-0.5 text-slate-400">
-          <button className="hover:text-pink-500 transition-colors text-lg leading-none">▲</button>
+          <button className="hover:text-pink-500 transition-colors text-lg leading-none" aria-label="Upvote">
+            ▲
+          </button>
           <span className="text-xs font-medium text-slate-600">{likes}</span>
-          <button className="hover:text-pink-500 transition-colors text-lg leading-none">▼</button>
+          <button className="hover:text-pink-500 transition-colors text-lg leading-none" aria-label="Downvote">
+            ▼
+          </button>
         </div>
       </div>
 
