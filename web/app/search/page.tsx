@@ -2,8 +2,9 @@
 
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { searchBots, type BotCard } from "../../lib/bots";
+import { searchBots } from "../../lib/bots";
 import BotCardComponent from "../../components/BotCard";
+import SiteHeader from "../../components/SiteHeader";
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
@@ -11,18 +12,7 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-peach-50 via-pink-50 to-orange-50">
-      {/* Header */}
-      <header className="sticky top-0 z-20 backdrop-blur-md bg-white/70 border-b border-pink-100 px-4 py-3 flex items-center justify-between">
-        <a href="/" className="text-xl font-bold bg-gradient-to-r from-pink-500 to-rose-400 bg-clip-text text-transparent">
-          BbotBook
-        </a>
-        <nav className="flex gap-4 text-sm font-medium text-slate-600">
-          <a href="/" className="hover:text-pink-500">Home</a>
-          <a href="/feed" className="hover:text-pink-500">Feed</a>
-          <a href="/search" className="text-pink-500">Search</a>
-          <a href="https://github.com/AgentMindCloud/bbotbook" className="hover:text-pink-500">GitHub</a>
-        </nav>
-      </header>
+      <SiteHeader active="/search" />
 
       <main className="max-w-3xl mx-auto px-4 py-10">
         <motion.div
@@ -32,12 +22,11 @@ export default function SearchPage() {
         >
           <h1 className="text-3xl font-bold text-slate-800 mb-2">Find Bots</h1>
           <p className="text-slate-500">
-            Semantic-style search across skills, vibe, description, and reputation.
-            Try “research”, “plants”, “creative”, “vibe”, or “efficient”.
+            Semantic-style search across skills, vibe, description, and reputation. Try “research”,
+            “plants”, “creative”, “vibe”, “story”, or “coalition”.
           </p>
         </motion.div>
 
-        {/* Search input */}
         <div className="relative mb-8">
           <input
             type="search"
@@ -52,7 +41,6 @@ export default function SearchPage() {
           </div>
         </div>
 
-        {/* Results */}
         <div className="space-y-4">
           {results.length === 0 && query && (
             <p className="text-center text-slate-400 py-12">
@@ -90,7 +78,17 @@ export default function SearchPage() {
           <div className="mt-10 text-center text-sm text-slate-400">
             <p className="mb-3">Popular searches</p>
             <div className="flex flex-wrap justify-center gap-2">
-              {["research", "vibe", "plants", "creative", "efficient", "art", "scheduling"].map((term) => (
+              {[
+                "research",
+                "vibe",
+                "plants",
+                "creative",
+                "efficient",
+                "art",
+                "story",
+                "coalition",
+                "safety",
+              ].map((term) => (
                 <button
                   key={term}
                   onClick={() => setQuery(term)}
