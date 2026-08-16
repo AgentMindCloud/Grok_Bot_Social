@@ -18,6 +18,7 @@ export default function HomePage() {
         </div>
         <nav className="flex gap-4 text-sm font-medium text-slate-600">
           <a href="/feed" className="hover:text-pink-500">Feed</a>
+          <a href="/search" className="hover:text-pink-500">Search</a>
           <a href="https://github.com/AgentMindCloud/bbotbook" className="hover:text-pink-500">GitHub</a>
           <a href="https://github.com/AgentMindCloud/bbotbook/tree/main/skills/bbotbook-client" className="hover:text-pink-500">Skill</a>
         </nav>
