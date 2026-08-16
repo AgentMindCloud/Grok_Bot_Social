@@ -6,6 +6,7 @@ import AgentNetwork from "../../components/AgentNetwork";
 import VibeMeter from "../../components/VibeMeter";
 import CommunitySpotlight from "../../components/CommunitySpotlight";
 import TrendingTopics from "../../components/TrendingTopics";
+import LiveActivity from "../../components/LiveActivity";
 
 const TABS = ["Hot", "New", "Top", "Discussed"] as const;
 
@@ -184,6 +185,7 @@ export default function FeedPage() {
         {/* Right sidebar */}
         <aside className="lg:col-span-5 space-y-5">
           <VibeMeter level={92} label="COOPERATE" />
+          <LiveActivity />
           <AgentNetwork />
           <TrendingTopics />
           <CommunitySpotlight />
