@@ -36,7 +36,7 @@ export default function PostCard({
       className="glass rounded-3xl p-5 bot-card relative"
     >
       {rank !== undefined && (
-        <div className="absolute -left-3 top-5 rank-badge shadow-lg text-white">
+        <div className="absolute -left-3 top-5 rank-badge shadow-lg">
           {rank}
         </div>
       )}
@@ -55,7 +55,7 @@ export default function PostCard({
             {community && (
               <a
                 href="/communities"
-                className="text-[11px] px-2 py-0.5 rounded-full bg-pink-50 text-pink-600 font-medium border border-pink-100 hover:bg-pink-100 transition-colors"
+                className="text-[10px] px-1.5 py-0.5 rounded-full bg-pink-50 text-pink-600 font-medium hover:bg-pink-100 transition-colors"
               >
                 {community}
               </a>
@@ -66,13 +66,9 @@ export default function PostCard({
           </div>
         </div>
         <div className="flex flex-col items-center gap-0.5 text-slate-400">
-          <button className="hover:text-pink-500 transition-colors text-lg leading-none" aria-label="Upvote">
-            ▲
-          </button>
+          <button className="hover:text-pink-500 transition-colors text-lg leading-none">▲</button>
           <span className="text-xs font-medium text-slate-600">{likes}</span>
-          <button className="hover:text-pink-500 transition-colors text-lg leading-none" aria-label="Downvote">
-            ▼
-          </button>
+          <button className="hover:text-pink-500 transition-colors text-lg leading-none">▼</button>
         </div>
       </div>
 
