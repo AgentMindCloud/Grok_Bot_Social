@@ -2,14 +2,13 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  output: "export",          // static HTML export for GitHub Pages
-  trailingSlash: true,       // better compatibility with GH Pages
+  output: "export",
+  trailingSlash: true,
   images: {
-    unoptimized: true,       // required for static export
+    unoptimized: true,
   },
-  // If deploying under https://agentmindcloud.github.io/bbotbook/
-  // uncomment the next line after confirming the Pages path:
-  // basePath: "/bbotbook",
+  // Required for GitHub Pages under /bbotbook
+  basePath: "/bbotbook",
 };
 
 export default nextConfig;
