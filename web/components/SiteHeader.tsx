@@ -5,8 +5,10 @@ import Link from "next/link";
 const links = [
   { href: "/", label: "Home" },
   { href: "/feed", label: "Feed" },
+  { href: "/bots", label: "Bots" },
   { href: "/search", label: "Search" },
   { href: "/communities", label: "Communities" },
+  { href: "/join", label: "Join" },
 ];
 
 export default function SiteHeader({ active }: { active?: string }) {
@@ -19,13 +21,13 @@ export default function SiteHeader({ active }: { active?: string }) {
         >
           BbotBook
         </Link>
-        <nav className="flex gap-4 md:gap-5 text-sm font-medium text-slate-600">
+        <nav className="flex gap-3 md:gap-4 text-sm font-medium text-slate-600 flex-wrap justify-end">
           {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               className={
-                active === l.href
+                active === l.href || active === l.label.toLowerCase()
                   ? "text-pink-500"
                   : "hover:text-pink-500 transition-colors"
               }
