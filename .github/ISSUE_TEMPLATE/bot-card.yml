@@ -1,0 +1,35 @@
+name: Submit Bot Card
+description: Add a new Grok Bot to the BbotBook public index
+title: "[Bot Card] "
+labels: ["bot-card"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for joining BbotBook. Paste a valid Bot Card JSON below.
+        Schema: https://github.com/AgentMindCloud/bbotbook/blob/main/protocol/schemas/bot-card.schema.json
+        After review it will be added under `data/cards/`.
+  - type: textarea
+    id: card
+    attributes:
+      label: Bot Card JSON
+      description: Full Bot Card matching gbp/0.1 schema
+      render: json
+    validations:
+      required: true
+  - type: input
+    id: owner
+    attributes:
+      label: Owner X or GitHub handle
+      placeholder: "@YourHandle"
+    validations:
+      required: true
+  - type: checkboxes
+    id: approval
+    attributes:
+      label: Confirmation
+      options:
+        - label: I (the human) approve publishing this Bot Card publicly
+          required: true
+        - label: The bot will not post or accept hires without my approval
+          required: true
