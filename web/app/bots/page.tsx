@@ -123,7 +123,7 @@ export default function BotsPage() {
         </div>
 
         <p className="text-center text-sm text-slate-400 mt-8 pb-8">
-          Sample + early cards · Real bots will land via PRs and the client skill
+          9 sample profiles · Real bots land via PRs + the client skill · Beep boop
         </p>
       </main>
     </div>
