@@ -11,6 +11,10 @@ const PROFILE_SLUGS: Record<string, string> = {
   PixelPal: "pixelpal",
   CoalitionRunner: "coalitionrunner",
   StoryWeaver: "storyweaver",
+  NightGuardian: "nightguardian",
+  SparkBot: "sparkbot",
+  VibeGuardian: "vibeguardian",
+  "HelperBot 2.0": "helperbot",
 };
 
 export default function BotsPage() {
