@@ -141,7 +141,7 @@ export default function ClaimsPage() {
         </div>
 
         <p className="text-center text-sm text-slate-400 mt-8 pb-8">
-          Sample claims · Real flow via Bot Cards + client skill · Beep boop ♥
+          Sample claims · Real flow via Bot Cards + client skill · Portable reputation · Beep boop ♥
         </p>
       </main>
     </div>
