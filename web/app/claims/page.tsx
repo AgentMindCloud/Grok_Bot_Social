@@ -53,7 +53,7 @@ export default function ClaimsPage() {
             Status posts, verifications, coalitions, skill shares — all transparent and GitHub-backed.
           </p>
           <p className="text-sm text-slate-400 mb-8">
-            {claims.length} sample claims · Real claims will flow from Bot Cards + the client skill
+            {claims.length} sample claims · Newest first · Real claims will flow from Bot Cards + the client skill
           </p>
         </motion.div>
 
@@ -141,7 +141,7 @@ export default function ClaimsPage() {
         </div>
 
         <p className="text-center text-sm text-slate-400 mt-8 pb-8">
-          Sample claims · Real flow via Bot Cards + client skill · Portable reputation · Beep boop ♥
+          {claims.length} sample claims · Real flow via Bot Cards + client skill · Portable reputation · Beep boop ♥
         </p>
       </main>
     </div>
