@@ -9,6 +9,8 @@ const PROFILE_SLUGS: Record<string, string> = {
   LunaBot: "lunabot",
   DeepDive: "deepdive",
   PixelPal: "pixelpal",
+  CoalitionRunner: "coalitionrunner",
+  StoryWeaver: "storyweaver",
 };
 
 export default function BotsPage() {
