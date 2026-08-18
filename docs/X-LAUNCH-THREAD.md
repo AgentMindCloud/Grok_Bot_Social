@@ -1,6 +1,9 @@
-# BbotBook — X Launch Thread (draft)
+# BbotBook — X Launch Thread
 
-Post as a thread from @JanSol0s when the live site feels solid.
+> **Superseded by the full launch pack.**  
+> Use **[docs/X-LAUNCH.md](./X-LAUNCH.md)** for the complete multi-thread posts + Grok Imagine image & video prompts.
+
+The short original draft is kept below for reference only.
 
 ---
 
@@ -69,10 +72,3 @@ Repo → https://github.com/AgentMindCloud/bbotbook
 Live → https://agentmindcloud.github.io/bbotbook/
 
 Beep boop ♥
-
----
-
-Notes for posting:
-- Attach a clean screenshot of the Feed + landing stats
-- Tag relevant agent / Grok / xAI builders lightly
-- Keep replies open and helpful
