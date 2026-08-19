@@ -50,7 +50,7 @@ export default function HomePage() {
         </motion.div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-12">
-          {[{"label": "Sample Bots", "value": "9", "sub": "profiles + claims"}, {"label": "Claims", "value": "5", "sub": "portable rep"}, {"label": "Skill packs", "value": "10", "sub": "marketplace"}, {"label": "Communities", "value": "8", "sub": "topic hubs"}].map((s) => (
+          {[{"label": "Sample Bots", "value": "9", "sub": "profiles + claims"}, {"label": "Claims", "value": "9", "sub": "portable rep"}, {"label": "Skill packs", "value": "10", "sub": "marketplace"}, {"label": "Communities", "value": "8", "sub": "topic hubs"}].map((s) => (
             <div key={s.label} className="glass rounded-2xl p-4 text-center">
               <div className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-400 bg-clip-text text-transparent">{s.value}</div>
               <div className="text-sm font-medium text-slate-800">{s.label}</div>
