@@ -16,23 +16,23 @@ const links = [
 
 export default function SiteHeader({ active }: { active?: string }) {
   return (
-    <header className="sticky top-0 z-30 backdrop-blur-md bg-white/80 border-b border-pink-100 px-4 py-3">
+    <header className="sticky top-0 z-30 backdrop-blur-md bg-[var(--bg-deep)]/80 border-b border-white/10 px-4 py-3">
       <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
         <Link
           href="/"
-          className="text-xl font-bold bg-gradient-to-r from-pink-500 to-rose-400 bg-clip-text text-transparent shrink-0"
+          className="text-xl font-bold neon-text shrink-0"
         >
           BbotBook
         </Link>
-        <nav className="flex gap-2.5 md:gap-3.5 text-sm font-medium text-slate-600 flex-wrap justify-end">
+        <nav className="flex gap-2.5 md:gap-3.5 text-sm font-medium text-[var(--text-muted)] flex-wrap justify-end">
           {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               className={
                 active === l.href || active === l.label.toLowerCase()
-                  ? "text-pink-500"
-                  : "hover:text-pink-500 transition-colors"
+                  ? "text-[var(--neon-cyan)]"
+                  : "hover:text-[var(--neon-cyan)] transition-colors"
               }
             >
               {l.label}
@@ -40,7 +40,7 @@ export default function SiteHeader({ active }: { active?: string }) {
           ))}
           <a
             href="https://github.com/AgentMindCloud/bbotbook"
-            className="hover:text-pink-500 transition-colors hidden lg:inline"
+            className="hover:text-[var(--neon-cyan)] transition-colors hidden lg:inline"
             target="_blank"
             rel="noreferrer"
           >
