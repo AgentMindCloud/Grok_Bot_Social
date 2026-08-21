@@ -10,6 +10,7 @@ interface BotCardProps {
   mood?: string;
   skills?: string[];
   avatar?: string;
+  tag?: string;
 }
 
 export default function BotCard({
@@ -20,12 +21,15 @@ export default function BotCard({
   mood = "chill",
   skills = [],
   avatar,
+  tag,
 }: BotCardProps) {
+  const tagClass = tag ? `tag tag-${tag}` : "tag";
+
   return (
     <motion.div
-      whileHover={{ y: -6, scale: 1.02 }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className="glass rounded-3xl p-5 bot-card neon-glow border border-pink-200/40 hover:border-cyan-300/50"
+      whileHover={{ y: -8, scale: 1.03 }}
+      transition={{ type: "spring", stiffness: 320, damping: 22 }}
+      className="neon-card rounded-3xl p-5"
     >
       <div className="flex items-start gap-4">
         {avatar ? (
@@ -33,34 +37,35 @@ export default function BotCard({
             <img
               src={avatar}
               alt={`${name} avatar`}
-              className="w-16 h-16 rounded-full object-cover ring-2 ring-cyan-400/70 shadow-[0_0_20px_rgba(107,203,255,0.45)]"
+              className="w-16 h-16 rounded-full object-cover avatar-glow"
             />
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-gradient-to-br from-pink-400 to-cyan-400 border-2 border-white" />
+            <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-gradient-to-br from-[var(--neon-pink)] to-[var(--neon-cyan)] border-2 border-[var(--bg-deep)]" />
           </div>
         ) : (
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-300 via-orange-200 to-cyan-200 flex items-center justify-center text-2xl shrink-0 shadow-lg">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--neon-pink)] via-[var(--neon-purple)] to-[var(--neon-cyan)] flex items-center justify-center text-2xl shrink-0 avatar-glow">
             🤖
           </div>
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-bold text-slate-800 truncate text-lg">{name}</h3>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-gradient-to-r from-pink-100 to-rose-100 text-pink-600 font-semibold shadow-sm">
+            <h3 className="font-bold text-[var(--text-primary)] truncate text-lg">{name}</h3>
+            <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-[var(--neon-pink)]/15 text-[var(--neon-pink)] border border-[var(--neon-pink)]/40">
               {score}
             </span>
           </div>
-          <div className="text-sm text-slate-500 mt-0.5">{handle}</div>
+          <div className="text-sm text-[var(--text-muted)] mt-0.5">{handle}</div>
           {description && (
-            <p className="text-sm text-slate-600 mt-2 line-clamp-2 leading-relaxed">{description}</p>
+            <p className="text-sm text-[var(--text-soft)] mt-2 line-clamp-2 leading-relaxed">{description}</p>
           )}
           <div className="flex items-center gap-2 mt-3 flex-wrap">
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-orange-50 text-orange-600 font-medium border border-orange-100">
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-white/5 text-[var(--text-muted)] border border-white/10 font-medium">
               {mood}
             </span>
+            {tag && <span className={tagClass}>{tag}</span>}
             {skills.slice(0, 3).map((s) => (
               <span
                 key={s}
-                className="text-xs px-2.5 py-0.5 rounded-full bg-pink-50/80 text-pink-600 border border-pink-100"
+                className="text-xs px-2.5 py-0.5 rounded-full bg-[var(--neon-purple)]/10 text-[var(--neon-purple)] border border-[var(--neon-purple)]/30"
               >
                 {s}
               </span>
