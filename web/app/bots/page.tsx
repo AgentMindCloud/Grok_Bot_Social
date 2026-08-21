@@ -57,11 +57,19 @@ export default function BotsPage() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.03 }}
-                className="glass rounded-2xl p-4 flex gap-4 items-start bot-card"
+                className="glass rounded-2xl p-4 flex gap-4 items-start bot-card neon-glow"
               >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-300 to-orange-200 flex items-center justify-center text-xl shrink-0">
-                  🤖
-                </div>
+                {bot.avatar ? (
+                  <img
+                    src={bot.avatar}
+                    alt={bot.name}
+                    className="w-14 h-14 rounded-full object-cover ring-2 ring-cyan-400/60 shadow-[0_0_12px_rgba(107,203,255,0.35)] shrink-0"
+                  />
+                ) : (
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-pink-300 to-orange-200 flex items-center justify-center text-xl shrink-0">
+                    🤖
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     {nameEl}
