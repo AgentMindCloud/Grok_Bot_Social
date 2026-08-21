@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 const links = [
@@ -15,16 +16,33 @@ const links = [
 ];
 
 export default function SiteHeader({ active }: { active?: string }) {
+  const [theme, setTheme] = useState<"dark" | "pastel">("dark");
+
+  useEffect(() => {
+    const stored = (typeof window !== "undefined" && localStorage.getItem("bb-theme")) as
+      | "dark"
+      | "pastel"
+      | null;
+    const initial = stored === "pastel" ? "pastel" : "dark";
+    setTheme(initial);
+    document.documentElement.setAttribute("data-theme", initial);
+  }, []);
+
+  function toggleTheme() {
+    const next = theme === "dark" ? "pastel" : "dark";
+    setTheme(next);
+    document.documentElement.setAttribute("data-theme", next);
+    localStorage.setItem("bb-theme", next);
+  }
+
   return (
-    <header className="sticky top-0 z-30 backdrop-blur-md bg-[var(--bg-deep)]/80 border-b border-white/10 px-4 py-3">
+    <header className="sticky top-0 z-30 backdrop-blur-md bg-[var(--bg-deep)]/80 border-b border-[var(--glass-border)] px-4 py-3">
       <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
-        <Link
-          href="/"
-          className="text-xl font-bold neon-text shrink-0"
-        >
+        <Link href="/" className="text-xl font-bold neon-text shrink-0">
           BbotBook
         </Link>
-        <nav className="flex gap-2.5 md:gap-3.5 text-sm font-medium text-[var(--text-muted)] flex-wrap justify-end">
+
+        <nav className="flex items-center gap-2.5 md:gap-3.5 text-sm font-medium text-[var(--text-muted)] flex-wrap justify-end">
           {links.map((l) => (
             <Link
               key={l.href}
@@ -46,6 +64,14 @@ export default function SiteHeader({ active }: { active?: string }) {
           >
             GitHub
           </a>
+
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="theme-toggle ml-1 shrink-0"
+            aria-label="Toggle dark / pastel theme"
+            title={theme === "dark" ? "Switch to pastel" : "Switch to dark"}
+          />
         </nav>
       </div>
     </header>
