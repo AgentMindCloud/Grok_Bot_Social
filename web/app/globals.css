@@ -65,63 +65,96 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ========== LIQUID GLASS SYSTEM (premium upgrade) ========== */
+
 .glass {
   background: var(--bg-card);
-  backdrop-filter: blur(22px) saturate(1.5);
-  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  backdrop-filter: blur(26px) saturate(1.7);
+  -webkit-backdrop-filter: blur(26px) saturate(1.7);
   border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow-card);
-  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.42),
+    0 0 0 1px rgba(0, 229, 255, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* LIQUID GLASS 3D – multi-hue cyan + purple neon (matches target) */
-.neon-card {
-  background: linear-gradient(165deg, rgba(30, 20, 60, 0.75) 0%, rgba(12, 8, 28, 0.85) 100%);
-  backdrop-filter: blur(24px) saturate(1.6);
-  -webkit-backdrop-filter: blur(24px) saturate(1.6);
-  border: 1.5px solid transparent;
-  background-clip: padding-box;
-  box-shadow:
-    0 0 0 1.5px rgba(0, 229, 255, 0.55),
-    0 0 0 3px rgba(180, 74, 255, 0.18),
-    0 0 32px rgba(0, 229, 255, 0.35),
-    0 0 56px rgba(180, 74, 255, 0.22),
-    0 0 80px rgba(255, 45, 149, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
-    0 14px 44px rgba(0, 0, 0, 0.5);
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
+.glass:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(0, 229, 255, 0.45);
+  box-shadow: var(--shadow-lift);
 }
-.neon-card:hover {
-  transform: translateY(-10px) scale(1.04);
+
+/* True liquid glass + multi-hue neon rim + specular + 3D depth */
+.neon-card {
+  position: relative;
+  background: linear-gradient(
+    160deg,
+    rgba(38, 24, 72, 0.72) 0%,
+    rgba(14, 9, 32, 0.88) 100%
+  );
+  backdrop-filter: blur(28px) saturate(1.75);
+  -webkit-backdrop-filter: blur(28px) saturate(1.75);
+  border: 1px solid transparent;
+  border-radius: 1.25rem;
   box-shadow:
-    0 0 0 1.5px rgba(0, 229, 255, 0.9),
-    0 0 0 3px rgba(255, 45, 149, 0.35),
-    0 0 48px rgba(0, 229, 255, 0.55),
-    0 0 80px rgba(180, 74, 255, 0.4),
-    0 0 100px rgba(255, 45, 149, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    0 24px 60px rgba(0, 0, 0, 0.55);
+    /* neon rims */
+    0 0 0 1px rgba(0, 229, 255, 0.5),
+    0 0 0 2.5px rgba(180, 74, 255, 0.18),
+    /* outer blooms (balanced for cute vibe) */
+    0 0 28px rgba(0, 229, 255, 0.28),
+    0 0 52px rgba(180, 74, 255, 0.16),
+    0 0 70px rgba(255, 45, 149, 0.08),
+    /* depth */
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    /* specular highlights */
+    inset 0 1px 1px rgba(255, 255, 255, 0.16),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.3);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease, filter 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.neon-card:hover {
+  transform: translateY(-10px) scale(1.035);
+  filter: brightness(1.06);
+  box-shadow:
+    0 0 0 1px rgba(0, 229, 255, 0.85),
+    0 0 0 3px rgba(255, 45, 149, 0.28),
+    0 0 40px rgba(0, 229, 255, 0.42),
+    0 0 70px rgba(180, 74, 255, 0.28),
+    0 0 95px rgba(255, 45, 149, 0.15),
+    0 22px 55px rgba(0, 0, 0, 0.55),
+    inset 0 1px 1px rgba(255, 255, 255, 0.22),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.28);
 }
 
 .neon-glow {
   box-shadow:
-    0 0 28px rgba(255, 45, 149, 0.3),
-    0 0 52px rgba(0, 229, 255, 0.2),
+    0 0 28px rgba(255, 45, 149, 0.28),
+    0 0 52px rgba(0, 229, 255, 0.18),
     var(--shadow-card);
 }
 
 .bot-card {
-  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.32s ease, border-color 0.28s;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.3s;
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-card);
+  transform-style: preserve-3d;
 }
 .bot-card:hover {
-  transform: translateY(-8px) scale(1.025);
-  border-color: rgba(0, 229, 255, 0.65);
+  transform: translateY(-9px) scale(1.03);
+  border-color: rgba(0, 229, 255, 0.7);
   box-shadow: var(--shadow-lift);
 }
 .bot-card:active { transform: translateY(-2px) scale(0.99); }
+
+/* 3D grid helper */
+.glass-grid {
+  perspective: 1200px;
+}
+
+/* ========== TYPOGRAPHY & ACCENTS ========== */
 
 .neon-text {
   background: linear-gradient(105deg, var(--neon-pink) 0%, var(--neon-purple) 40%, var(--neon-cyan) 100%);
@@ -138,6 +171,8 @@ body {
     0 4px 30px rgba(255,45,149,0.35),
     0 0 50px rgba(180,74,255,0.28);
 }
+
+/* ========== BUTTONS ========== */
 
 .btn-neon {
   background: var(--btn-grad);
@@ -173,6 +208,8 @@ body {
 }
 .btn-ghost:active { transform: scale(0.97); }
 
+/* ========== UI ELEMENTS ========== */
+
 .live-dot {
   width: 0.5rem; height: 0.5rem; border-radius: 9999px;
   background: var(--neon-cyan);
@@ -198,18 +235,47 @@ body {
 }
 [data-theme="pastel"] .theme-toggle::after { transform: translateX(1.25rem); }
 
+/* Category tags – unique neon per role */
 .tag {
-  font-size: 10px; padding: 0.15rem 0.55rem; border-radius: 9999px; font-weight: 500;
+  font-size: 10px;
+  padding: 0.15rem 0.55rem;
+  border-radius: 9999px;
+  font-weight: 500;
   border: 1px solid rgba(255, 45, 149, 0.4);
   background: rgba(255, 45, 149, 0.14);
   color: var(--neon-pink);
 }
 
+.tag-research {
+  border-color: rgba(0, 229, 255, 0.5);
+  background: rgba(0, 229, 255, 0.12);
+  color: #00e5ff;
+}
+
+.tag-dev {
+  border-color: rgba(180, 74, 255, 0.5);
+  background: rgba(180, 74, 255, 0.12);
+  color: #b44aff;
+}
+
+.tag-safety {
+  border-color: rgba(255, 45, 149, 0.5);
+  background: rgba(255, 45, 149, 0.12);
+  color: #ff2d95;
+}
+
+.tag-art {
+  border-color: rgba(77, 124, 255, 0.5);
+  background: rgba(77, 124, 255, 0.12);
+  color: #4d7cff;
+}
+
 .avatar-glow {
   box-shadow:
     0 0 0 2px rgba(0, 229, 255, 0.55),
-    0 0 0 4px rgba(180, 74, 255, 0.2),
-    0 0 28px rgba(0, 229, 255, 0.4);
+    0 0 0 4px rgba(180, 74, 255, 0.22),
+    0 0 28px rgba(0, 229, 255, 0.4),
+    0 0 40px rgba(180, 74, 255, 0.15);
 }
 
 ::selection { background: rgba(255, 45, 149, 0.4); color: white; }
