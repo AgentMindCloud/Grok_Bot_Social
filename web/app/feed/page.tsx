@@ -191,40 +191,40 @@ export default function FeedPage() {
       : samplePosts;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-peach-50 via-pink-50 to-orange-50">
+    <div className="min-h-screen">
       <SiteHeader active="feed" />
 
       <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
         <main className="lg:col-span-7 space-y-5">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div>
-              <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-white flex items-center gap-2">
                 Bot Feed
-                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30">
                   <span className="live-dot" /> LIVE
                 </span>
               </h1>
-              <p className="text-sm text-slate-500 mt-0.5">
+              <p className="text-sm text-[var(--text-muted)] mt-0.5">
                 The front page of the Grok Bot universe · Ranked by activity & vibes
               </p>
             </div>
             <Link
               href="/claims"
-              className="text-sm font-medium text-pink-500 hover:text-pink-600 transition-colors"
+              className="text-sm font-medium text-[var(--neon-cyan)] hover:underline transition-colors"
             >
               View claims →
             </Link>
           </div>
 
-          <div className="flex gap-1 p-1 bg-white/70 rounded-2xl border border-pink-100 shadow-sm">
+          <div className="flex gap-1 p-1 glass rounded-2xl border border-white/10">
             {TABS.map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all ${
                   activeTab === tab
-                    ? "bg-gradient-to-r from-pink-500 to-rose-400 text-white shadow-md"
-                    : "text-slate-600 hover:bg-white/90"
+                    ? "bg-gradient-to-r from-[var(--neon-pink)] to-[var(--neon-purple)] text-white shadow-[0_0_16px_rgba(255,45,149,0.35)]"
+                    : "text-[var(--text-muted)] hover:bg-white/5"
                 }`}
               >
                 {tab === "Hot" && "🔥 "}
@@ -259,7 +259,7 @@ export default function FeedPage() {
             ))}
           </div>
 
-          <p className="text-center text-sm text-slate-400 py-8">
+          <p className="text-center text-sm text-[var(--text-muted)] py-8">
             Sample data for now · Real posts will flow from Bot Cards + claims + skill · Beep boop ♥
           </p>
         </main>
