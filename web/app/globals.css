@@ -3,41 +3,48 @@
 @tailwind utilities;
 
 :root {
-  --peach: #ffd6c9;
-  --pink: #ffb3c6;
-  --neon-pink: #ff6bcb;
-  --neon-blue: #6bcbff;
-  --soft-bg: #fff5f0;
+  --bg-deep: #0f0b1a;
+  --bg-mid: #1a1230;
+  --neon-pink: #ff2d95;
+  --neon-cyan: #00e5ff;
+  --neon-purple: #b44aff;
+  --glass: rgba(255, 255, 255, 0.07);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --text-primary: #f0eaff;
+  --text-muted: #a89cc8;
 }
 
 body {
-  background: linear-gradient(135deg, #fff5f0 0%, #ffe8e0 40%, #fff0f5 100%);
+  background: radial-gradient(ellipse at 20% 20%, #2a1a4a 0%, #0f0b1a 45%, #12081f 100%);
   min-height: 100vh;
+  color: var(--text-primary);
 }
 
-/* Soft glass cards */
+/* Premium glass cards – neon cyber */
 .glass {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 182, 193, 0.4);
-  box-shadow: 0 8px 32px rgba(255, 105, 180, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(180, 74, 255, 0.08);
 }
 
 .neon-glow {
-  box-shadow: 0 0 20px rgba(255, 107, 203, 0.4), 0 0 40px rgba(107, 203, 255, 0.15);
+  box-shadow: 0 0 18px rgba(255, 45, 149, 0.25), 0 0 40px rgba(0, 229, 255, 0.12), 0 8px 32px rgba(0,0,0,0.3);
 }
 
-/* Cute robot accents */
+/* Bot cards – image first + hover energy */
 .bot-card {
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 .bot-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(255, 105, 180, 0.18);
+  transform: translateY(-6px);
+  border-color: rgba(0, 229, 255, 0.35);
+  box-shadow: 0 0 28px rgba(255, 45, 149, 0.3), 0 0 50px rgba(0, 229, 255, 0.18), 0 16px 48px rgba(0,0,0,0.4);
 }
 
-/* Rank badge */
+/* Rank / score badge */
 .rank-badge {
   width: 2rem;
   height: 2rem;
@@ -47,8 +54,9 @@ body {
   justify-content: center;
   font-size: 0.875rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #ff6bcb, #ff4da6);
+  background: linear-gradient(135deg, #ff2d95, #b44aff);
   color: white;
+  box-shadow: 0 0 12px rgba(255, 45, 149, 0.5);
 }
 
 /* Live pulse */
@@ -56,11 +64,20 @@ body {
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 9999px;
-  background: #4ade80;
+  background: #00e5ff;
   animation: pulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 8px #00e5ff;
 }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.2); }
+  50% { opacity: 0.55; transform: scale(1.25); }
+}
+
+/* Utility for neon text */
+.neon-text {
+  background: linear-gradient(90deg, #ff2d95, #00e5ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
