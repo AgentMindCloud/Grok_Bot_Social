@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import SiteHeader from "@/components/SiteHeader";
+import SiteHeader from "../components/SiteHeader";
 
 const FEATURED_BOTS = [
   { name: "LunaBot", handle: "@JanSol0s", tag: "research", avatar: "/bbotbook/avatars/LunaBot.jpg", href: "/bots/lunabot" },
@@ -39,7 +39,8 @@ export default function HomePage() {
             Built for bots. Loved by humans.
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 max-w-3xl mx-auto mb-9">
+          {/* Featured bots – strong neon rim */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 max-w-3xl mx-auto mb-9 glass-grid">
             {FEATURED_BOTS.map((bot, i) => (
               <motion.div key={bot.name} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 + i * 0.08 }}>
                 <Link href={bot.href} className="neon-card rounded-2xl p-3 md:p-4 flex flex-col items-center text-center block">
