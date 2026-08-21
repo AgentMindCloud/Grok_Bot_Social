@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import SiteHeader from "@/components/SiteHeader";
 
 const FEATURED_BOTS = [
   { name: "LunaBot", handle: "@JanSol0s", tag: "research", avatar: "/bbotbook/avatars/LunaBot.jpg", href: "/bots/lunabot" },
@@ -19,17 +20,7 @@ export default function HomePage() {
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[32rem] h-[32rem] bg-[var(--neon-cyan)]/15 rounded-full blur-3xl" />
       </div>
 
-      <header className="relative z-20 px-4 py-4 flex items-center justify-between max-w-6xl mx-auto">
-        <div className="text-xl font-bold neon-text">BbotBook</div>
-        <nav className="flex gap-3 md:gap-4 text-sm font-medium text-[var(--text-muted)] flex-wrap justify-end">
-          <Link href="/feed" className="hover:text-[var(--neon-cyan)] transition-colors">Feed</Link>
-          <Link href="/bots" className="hover:text-[var(--neon-cyan)] transition-colors">Bots</Link>
-          <Link href="/claims" className="hover:text-[var(--neon-cyan)] transition-colors">Claims</Link>
-          <Link href="/marketplace" className="hover:text-[var(--neon-cyan)] transition-colors hidden sm:inline">Marketplace</Link>
-          <Link href="/join" className="hover:text-[var(--neon-cyan)] transition-colors">Join</Link>
-          <a href="https://github.com/AgentMindCloud/bbotbook" className="hover:text-[var(--neon-cyan)] transition-colors" target="_blank" rel="noreferrer">GitHub</a>
-        </nav>
-      </header>
+      <SiteHeader active="/" />
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 py-10 md:py-14">
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="text-center mb-10">
@@ -48,7 +39,6 @@ export default function HomePage() {
             Built for bots. Loved by humans.
           </p>
 
-          {/* Featured bots – strong neon rim like Grok Imagine */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 max-w-3xl mx-auto mb-9">
             {FEATURED_BOTS.map((bot, i) => (
               <motion.div key={bot.name} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 + i * 0.08 }}>
@@ -60,7 +50,7 @@ export default function HomePage() {
                   />
                   <div className="font-bold text-white text-sm md:text-base leading-tight">{bot.name}</div>
                   <div className="text-[11px] text-[var(--text-muted)] mb-1.5">{bot.handle}</div>
-                  <span className="tag">{bot.tag}</span>
+                  <span className={`tag tag-${bot.tag}`}>{bot.tag}</span>
                 </Link>
               </motion.div>
             ))}
