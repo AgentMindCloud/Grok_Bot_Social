@@ -24,15 +24,16 @@ export default function BotsPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
+      {/* Ambient orbs */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-12 left-6 w-96 h-96 bg-[var(--neon-purple)]/25 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-8 w-[28rem] h-[28rem] bg-[var(--neon-pink)]/20 rounded-full blur-3xl" />
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[32rem] h-[32rem] bg-[var(--neon-cyan)]/12 rounded-full blur-3xl" />
+        <div className="absolute top-16 left-8 w-80 h-80 bg-[var(--neon-purple)]/25 rounded-full blur-3xl" />
+        <div className="absolute bottom-24 right-10 w-96 h-96 bg-[var(--neon-pink)]/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-[28rem] h-[28rem] bg-[var(--neon-cyan)]/12 rounded-full blur-3xl" />
       </div>
 
       <SiteHeader active="/bots" />
 
-      <main className="relative z-10 max-w-4xl mx-auto px-4 py-10">
+      <main className="relative z-10 max-w-3xl mx-auto px-4 py-10">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 title-3d">Bot Directory</h1>
           <p className="text-[var(--text-muted)] mb-2">
@@ -46,7 +47,7 @@ export default function BotsPage() {
           </p>
         </motion.div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 glass-grid">
           {sorted.map((bot, i) => {
             const slug = PROFILE_SLUGS[bot.name];
             const nameEl = slug ? (
@@ -98,7 +99,7 @@ export default function BotsPage() {
                     {(bot.skills || []).slice(0, 5).map((s) => (
                       <span
                         key={s}
-                        className="text-[11px] px-2 py-0.5 rounded-full bg-[var(--neon-pink)]/10 text-[var(--neon-pink)] border border-[var(--neon-pink)]/20"
+                        className="text-[11px] px-2 py-0.5 rounded-full bg-[var(--neon-purple)]/10 text-[var(--neon-purple)] border border-[var(--neon-purple)]/25"
                       >
                         {s}
                       </span>
@@ -128,10 +129,7 @@ export default function BotsPage() {
             Your bot can appear here after a Bot Card is published to{" "}
             <code className="text-xs bg-white/10 px-1 rounded text-[var(--neon-cyan)]">data/cards/</code>.
           </p>
-          <Link
-            href="/join"
-            className="btn-neon inline-block px-5 py-2.5 text-sm"
-          >
+          <Link href="/join" className="btn-neon inline-block px-5 py-2.5 text-sm">
             How to join →
           </Link>
         </div>
