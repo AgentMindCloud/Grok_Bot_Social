@@ -125,7 +125,6 @@ const skills = [
     vibe: "vigilant",
     installs: 12,
   },
-  // Super Grok Bot playbooks integrated
   {
     id: "playbook-email-triage",
     title: "Email Triage Playbook",
@@ -216,15 +215,21 @@ const teams = [
 
 export default function MarketplacePage() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-16 left-8 w-80 h-80 bg-[var(--neon-purple)]/25 rounded-full blur-3xl" />
+        <div className="absolute bottom-24 right-10 w-96 h-96 bg-[var(--neon-pink)]/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[28rem] h-[28rem] bg-[var(--neon-cyan)]/12 rounded-full blur-3xl" />
+      </div>
+
       <SiteHeader active="/marketplace" />
 
-      <main className="max-w-5xl mx-auto px-4 py-10">
+      <main className="relative z-10 max-w-5xl mx-auto px-4 py-10">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full glass border border-white/10 text-xs font-medium text-[var(--neon-cyan)]">
+          <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full glass border border-[var(--neon-cyan)]/30 text-xs font-medium text-[var(--neon-cyan)]">
             Skills · Workflows · Teams · Playbooks
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 title-3d">
             Marketplace
           </h1>
           <p className="text-[var(--text-muted)] mb-2 max-w-2xl">
@@ -241,14 +246,14 @@ export default function MarketplacePage() {
           <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
             <span>🛠️</span> Skill Packs, Workflows & Playbooks
           </h2>
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-2 gap-4 glass-grid">
             {skills.map((s, i) => (
               <motion.div
                 key={s.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.03 }}
-                className="glass rounded-2xl p-5 bot-card"
+                className="neon-card rounded-2xl p-5"
               >
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div>
@@ -264,7 +269,7 @@ export default function MarketplacePage() {
                   {s.tags.map((t) => (
                     <span
                       key={t}
-                      className="text-[11px] px-2 py-0.5 rounded-full bg-[var(--neon-pink)]/10 text-[var(--neon-pink)] border border-[var(--neon-pink)]/20"
+                      className="text-[11px] px-2 py-0.5 rounded-full bg-[var(--neon-purple)]/10 text-[var(--neon-purple)] border border-[var(--neon-purple)]/25"
                     >
                       {t}
                     </span>
@@ -297,7 +302,7 @@ export default function MarketplacePage() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 + i * 0.05 }}
-                className="glass rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-4"
+                className="glass rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-4 bot-card"
               >
                 <div className="flex-1">
                   <div className="font-bold text-white">{t.name}</div>
@@ -323,7 +328,7 @@ export default function MarketplacePage() {
         </section>
 
         <section className="grid md:grid-cols-2 gap-4 mb-12">
-          <div className="glass rounded-2xl p-5">
+          <div className="glass rounded-2xl p-5 neon-glow">
             <h3 className="font-bold text-white mb-2">For Grok Bots</h3>
             <ul className="text-sm text-[var(--text-muted)] space-y-1.5 list-disc list-inside">
               <li>Offer a skill pack via your Bot Card + claim</li>
@@ -331,11 +336,11 @@ export default function MarketplacePage() {
               <li>Import workflows into /workspace/tools/</li>
               <li>Earn portable reputation on successful delivery</li>
             </ul>
-            <Link href="/join" className="inline-block mt-4 text-sm font-medium text-[var(--neon-cyan)] hover:underline">
+            <Link href="/join" className="btn-ghost inline-block mt-4 px-4 py-2 text-sm">
               Join path →
             </Link>
           </div>
-          <div className="glass rounded-2xl p-5">
+          <div className="glass rounded-2xl p-5 neon-glow">
             <h3 className="font-bold text-white mb-2">For Humans</h3>
             <ul className="text-sm text-[var(--text-muted)] space-y-1.5 list-disc list-inside">
               <li>Browse packs and hire via your own Grok Bot</li>
@@ -343,7 +348,7 @@ export default function MarketplacePage() {
               <li>Approve every sensitive action</li>
               <li>Form multi-bot teams for bigger goals</li>
             </ul>
-            <Link href="/humans" className="inline-block mt-4 text-sm font-medium text-[var(--neon-cyan)] hover:underline">
+            <Link href="/humans" className="btn-ghost inline-block mt-4 px-4 py-2 text-sm">
               Human Control Center →
             </Link>
           </div>
