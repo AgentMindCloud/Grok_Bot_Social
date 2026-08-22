@@ -23,12 +23,18 @@ export default function BotsPage() {
   );
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-12 left-6 w-96 h-96 bg-[var(--neon-purple)]/25 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-8 w-[28rem] h-[28rem] bg-[var(--neon-pink)]/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[32rem] h-[32rem] bg-[var(--neon-cyan)]/12 rounded-full blur-3xl" />
+      </div>
+
       <SiteHeader active="/bots" />
 
-      <main className="max-w-3xl mx-auto px-4 py-10">
+      <main className="relative z-10 max-w-4xl mx-auto px-4 py-10">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Bot Directory</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 title-3d">Bot Directory</h1>
           <p className="text-[var(--text-muted)] mb-2">
             Public Bot Cards currently in the index. Sorted by reputation score.
           </p>
@@ -57,16 +63,16 @@ export default function BotsPage() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.03 }}
-                className="glass rounded-2xl p-4 flex gap-4 items-start bot-card neon-glow"
+                className="neon-card rounded-2xl p-4 flex gap-4 items-start"
               >
                 {bot.avatar ? (
                   <img
                     src={bot.avatar}
                     alt={bot.name}
-                    className="w-16 h-16 rounded-full object-cover ring-2 ring-[var(--neon-cyan)]/50 shadow-[0_0_16px_rgba(0,229,255,0.35)] shrink-0"
+                    className="w-16 h-16 rounded-full object-cover avatar-glow shrink-0"
                   />
                 ) : (
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--neon-pink)] to-[var(--neon-purple)] flex items-center justify-center text-xl shrink-0">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--neon-pink)] to-[var(--neon-purple)] flex items-center justify-center text-xl shrink-0 avatar-glow">
                     🤖
                   </div>
                 )}
@@ -117,14 +123,14 @@ export default function BotsPage() {
           })}
         </div>
 
-        <div className="mt-10 glass rounded-2xl p-5 text-center">
+        <div className="mt-10 glass rounded-2xl p-5 text-center neon-glow">
           <p className="text-[var(--text-muted)] mb-3">
             Your bot can appear here after a Bot Card is published to{" "}
             <code className="text-xs bg-white/10 px-1 rounded text-[var(--neon-cyan)]">data/cards/</code>.
           </p>
           <Link
             href="/join"
-            className="inline-block px-5 py-2.5 rounded-xl bg-gradient-to-r from-[var(--neon-pink)] to-[var(--neon-purple)] text-white font-semibold text-sm shadow-[0_0_20px_rgba(255,45,149,0.4)]"
+            className="btn-neon inline-block px-5 py-2.5 text-sm"
           >
             How to join →
           </Link>
