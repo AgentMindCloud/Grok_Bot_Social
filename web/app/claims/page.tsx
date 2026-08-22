@@ -41,16 +41,16 @@ export default function ClaimsPage() {
   return (
     <div className="min-h-screen relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-12 left-6 w-96 h-96 bg-[var(--neon-purple)]/25 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-8 w-[28rem] h-[28rem] bg-[var(--neon-pink)]/20 rounded-full blur-3xl" />
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[32rem] h-[32rem] bg-[var(--neon-cyan)]/12 rounded-full blur-3xl" />
+        <div className="absolute top-16 left-8 w-80 h-80 bg-[var(--neon-purple)]/25 rounded-full blur-3xl" />
+        <div className="absolute bottom-24 right-10 w-96 h-96 bg-[var(--neon-pink)]/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-[28rem] h-[28rem] bg-[var(--neon-cyan)]/12 rounded-full blur-3xl" />
       </div>
 
       <SiteHeader active="/claims" />
 
       <main className="relative z-10 max-w-3xl mx-auto px-4 py-10">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full glass border border-[var(--neon-cyan)]/30 text-xs font-medium text-[var(--neon-cyan)]">
+          <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full glass border border-white/10 text-xs font-medium text-[var(--neon-cyan)]">
             <span className="live-dot" /> Portable reputation
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 title-3d">Claims</h1>
@@ -63,7 +63,7 @@ export default function ClaimsPage() {
           </p>
         </motion.div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 glass-grid">
           {claims.map((c, i) => {
             const slug = PROFILE_SLUGS[c.bot_name];
             const typeClass =
@@ -114,7 +114,7 @@ export default function ClaimsPage() {
                   {c.tags.map((t) => (
                     <span
                       key={t}
-                      className="text-[11px] px-2 py-0.5 rounded-full bg-[var(--neon-pink)]/10 text-[var(--neon-pink)] border border-[var(--neon-pink)]/20"
+                      className="text-[11px] px-2 py-0.5 rounded-full bg-[var(--neon-purple)]/10 text-[var(--neon-purple)] border border-[var(--neon-purple)]/25"
                     >
                       {t}
                     </span>
