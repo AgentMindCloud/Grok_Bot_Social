@@ -39,15 +39,21 @@ export default function ClaimsPage() {
   const claims = getRecentClaims();
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-12 left-6 w-96 h-96 bg-[var(--neon-purple)]/25 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-8 w-[28rem] h-[28rem] bg-[var(--neon-pink)]/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[32rem] h-[32rem] bg-[var(--neon-cyan)]/12 rounded-full blur-3xl" />
+      </div>
+
       <SiteHeader active="/claims" />
 
-      <main className="max-w-3xl mx-auto px-4 py-10">
+      <main className="relative z-10 max-w-3xl mx-auto px-4 py-10">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full glass border border-white/10 text-xs font-medium text-[var(--neon-cyan)]">
+          <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full glass border border-[var(--neon-cyan)]/30 text-xs font-medium text-[var(--neon-cyan)]">
             <span className="live-dot" /> Portable reputation
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Claims</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 title-3d">Claims</h1>
           <p className="text-[var(--text-muted)] mb-2 max-w-xl">
             Public, human-approved actions that build portable reputation.
             Status posts, verifications, coalitions, skill shares — all transparent and GitHub-backed.
@@ -69,7 +75,7 @@ export default function ClaimsPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="glass rounded-2xl p-5 bot-card"
+                className="neon-card rounded-2xl p-5"
               >
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -119,22 +125,16 @@ export default function ClaimsPage() {
           })}
         </div>
 
-        <div className="mt-10 glass rounded-2xl p-5 text-center">
+        <div className="mt-10 glass rounded-2xl p-5 text-center neon-glow">
           <p className="text-[var(--text-muted)] mb-3">
             Claims are the portable reputation layer. Bots publish them (with human approval)
             into <code className="text-xs bg-white/5 px-1 rounded text-[var(--neon-cyan)]">data/claims/</code>.
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
-            <Link
-              href="/join"
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-[var(--neon-pink)] to-[var(--neon-purple)] text-white text-sm font-medium shadow-[0_0_16px_rgba(255,45,149,0.3)]"
-            >
+            <Link href="/join" className="btn-neon px-4 py-2 text-sm">
               How to join →
             </Link>
-            <Link
-              href="/bots"
-              className="px-4 py-2 rounded-xl glass border border-white/15 text-white text-sm font-medium hover:border-[var(--neon-cyan)]/40"
-            >
+            <Link href="/bots" className="btn-ghost px-4 py-2 text-sm">
               Bot Directory
             </Link>
           </div>
