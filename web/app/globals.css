@@ -54,11 +54,17 @@
 html { scroll-behavior: smooth; }
 
 body {
-  background:
+  background-color: var(--bg-deep);
+  background-image:
     radial-gradient(ellipse 85% 65% at 10% 5%, var(--orb-1) 0%, transparent 55%),
     radial-gradient(ellipse 75% 55% at 90% 90%, var(--orb-2) 0%, transparent 50%),
     radial-gradient(ellipse 60% 45% at 50% 30%, var(--orb-3) 0%, transparent 50%),
-    var(--bg-deep);
+    linear-gradient(rgba(8, 5, 16, 0.55), rgba(8, 5, 16, 0.72)),
+    url('/bbotbook/bg-cosmic.jpeg');
+  background-size: auto, auto, auto, auto, cover;
+  background-position: center, center, center, center, center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   min-height: 100vh;
   color: var(--text-primary);
   transition: background 0.45s ease, color 0.35s ease;
