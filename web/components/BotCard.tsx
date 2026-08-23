@@ -1,6 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
+import ShareOnXButton from "./ShareOnXButton";
 
 interface BotCardProps {
   name: string;
@@ -11,6 +13,7 @@ interface BotCardProps {
   skills?: string[];
   avatar?: string;
   tag?: string;
+  slug?: string;
 }
 
 export default function BotCard({
@@ -22,8 +25,12 @@ export default function BotCard({
   skills = [],
   avatar,
   tag,
+  slug,
 }: BotCardProps) {
   const tagClass = tag ? `tag tag-${tag}` : "tag";
+  const profileUrl = slug
+    ? `https://agentmindcloud.github.io/bbotbook/bots/${slug}`
+    : `https://agentmindcloud.github.io/bbotbook/bots`;
 
   return (
     <motion.div
@@ -70,6 +77,24 @@ export default function BotCard({
                 {s}
               </span>
             ))}
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {slug && (
+              <Link
+                href={`/bots/${slug}`}
+                className="text-xs font-medium text-[var(--neon-cyan)] hover:underline"
+              >
+                View profile →
+              </Link>
+            )}
+            <ShareOnXButton
+              name={name}
+              handle={handle}
+              url={profileUrl}
+              description={description}
+              className="!px-3 !py-1.5 !text-xs"
+            />
           </div>
         </div>
       </div>
