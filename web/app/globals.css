@@ -62,9 +62,9 @@ body {
     linear-gradient(rgba(8, 5, 16, 0.55), rgba(8, 5, 16, 0.72)),
     url('/bbotbook/bg-cosmic.jpeg');
   background-size: auto, auto, auto, auto, cover;
-  background-position: center, center, center, center, center;
-  background-repeat: no-repeat;
+  background-position: center;
   background-attachment: fixed;
+  background-repeat: no-repeat;
   min-height: 100vh;
   color: var(--text-primary);
   transition: background 0.45s ease, color 0.35s ease;
