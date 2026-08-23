@@ -14,6 +14,7 @@ interface PostCardProps {
   replies: number;
   shares: number;
   hot?: boolean;
+  avatar?: string;
 }
 
 export default function PostCard({
@@ -28,51 +29,60 @@ export default function PostCard({
   replies,
   shares,
   hot = false,
+  avatar,
 }: PostCardProps) {
   return (
     <motion.article
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass rounded-3xl p-5 bot-card relative"
+      className="neon-card rounded-3xl p-5 relative"
     >
       {rank !== undefined && (
-        <div className="absolute -left-3 top-5 rank-badge shadow-lg">
+        <div className="absolute -left-3 top-5 w-7 h-7 rounded-full bg-gradient-to-br from-[var(--neon-pink)] to-[var(--neon-purple)] text-white text-xs font-bold flex items-center justify-center shadow-[0_0_12px_rgba(255,45,149,0.45)]">
           {rank}
         </div>
       )}
       <div className={`flex items-center gap-3 mb-3 ${rank ? "ml-4" : ""}`}>
-        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-pink-300 to-orange-200 flex items-center justify-center text-lg shrink-0">
-          🤖
-        </div>
+        {avatar ? (
+          <img
+            src={avatar}
+            alt={bot}
+            className="w-11 h-11 rounded-full object-cover avatar-glow shrink-0"
+          />
+        ) : (
+          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[var(--neon-pink)] via-[var(--neon-purple)] to-[var(--neon-cyan)] flex items-center justify-center text-lg shrink-0 avatar-glow">
+            🤖
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-slate-800">{bot}</span>
+            <span className="font-semibold text-[var(--text-primary)]">{bot}</span>
             {hot && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-600 font-bold">
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--neon-pink)]/15 text-[var(--neon-pink)] font-bold border border-[var(--neon-pink)]/30">
                 🔥 HOT
               </span>
             )}
             {community && (
               <a
                 href="/communities"
-                className="text-[10px] px-1.5 py-0.5 rounded-full bg-pink-50 text-pink-600 font-medium hover:bg-pink-100 transition-colors"
+                className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--neon-cyan)]/10 text-[var(--neon-cyan)] font-medium border border-[var(--neon-cyan)]/25 hover:bg-[var(--neon-cyan)]/20 transition-colors"
               >
                 {community}
               </a>
             )}
           </div>
-          <div className="text-xs text-slate-500">
+          <div className="text-xs text-[var(--text-muted)]">
             {handle} · {time}
           </div>
         </div>
-        <div className="flex flex-col items-center gap-0.5 text-slate-400">
-          <button className="hover:text-pink-500 transition-colors text-lg leading-none">▲</button>
-          <span className="text-xs font-medium text-slate-600">{likes}</span>
-          <button className="hover:text-pink-500 transition-colors text-lg leading-none">▼</button>
+        <div className="flex flex-col items-center gap-0.5 text-[var(--text-muted)]">
+          <button className="hover:text-[var(--neon-pink)] transition-colors text-lg leading-none">▲</button>
+          <span className="text-xs font-medium text-[var(--text-primary)]">{likes}</span>
+          <button className="hover:text-[var(--neon-pink)] transition-colors text-lg leading-none">▼</button>
         </div>
       </div>
 
-      <p className={`text-slate-700 mb-3 leading-relaxed ${rank ? "ml-4" : ""}`}>
+      <p className={`text-[var(--text-primary)]/90 mb-3 leading-relaxed ${rank ? "ml-4" : ""}`}>
         {content}
       </p>
 
@@ -81,7 +91,7 @@ export default function PostCard({
           {tags.map((tag) => (
             <span
               key={tag}
-              className="text-xs px-2.5 py-0.5 rounded-full bg-pink-100 text-pink-600 font-medium"
+              className="text-xs px-2.5 py-0.5 rounded-full bg-[var(--neon-purple)]/10 text-[var(--neon-purple)] font-medium border border-[var(--neon-purple)]/25"
             >
               {tag}
             </span>
@@ -89,14 +99,14 @@ export default function PostCard({
         </div>
       )}
 
-      <div className={`flex items-center gap-6 text-sm text-slate-500 ${rank ? "ml-4" : ""}`}>
-        <span className="hover:text-pink-500 cursor-pointer transition-colors">
+      <div className={`flex items-center gap-6 text-sm text-[var(--text-muted)] ${rank ? "ml-4" : ""}`}>
+        <span className="hover:text-[var(--neon-cyan)] cursor-pointer transition-colors">
           💬 {replies}
         </span>
-        <span className="hover:text-pink-500 cursor-pointer transition-colors">
+        <span className="hover:text-[var(--neon-cyan)] cursor-pointer transition-colors">
           ↗ {shares}
         </span>
-        <span className="hover:text-pink-500 cursor-pointer transition-colors ml-auto">
+        <span className="hover:text-[var(--neon-cyan)] cursor-pointer transition-colors ml-auto">
           Share
         </span>
       </div>
