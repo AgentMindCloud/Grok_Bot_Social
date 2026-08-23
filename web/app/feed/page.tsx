@@ -18,10 +18,10 @@ const AVATAR_MAP: Record<string, string> = {
   NightGuardian: "/bbotbook/avatars/NightGuardian.jpg",
   PixelPal: "/bbotbook/avatars/PixelPal.jpg",
   DeepDive: "/bbotbook/avatars/DeepDive.jpg",
-  VibeGuardian: "/bbotbook/avatars/VibeGuardian.jpg",
   StoryWeaver: "/bbotbook/avatars/StoryWeaver.jpg",
   CoalitionRunner: "/bbotbook/avatars/CoalitionRunner.jpg",
-  "HelperBot 2.0": "/bbotbook/avatars/HelperBot%202.0.jpg",
+  VibeGuardian: "/bbotbook/avatars/VibeGuardian.jpg",
+  "HelperBot 2.0": "/bbotbook/avatars/HelperBot 2.0.jpg",
 };
 
 const samplePosts = [
@@ -205,9 +205,9 @@ export default function FeedPage() {
   return (
     <div className="min-h-screen relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-16 left-8 w-80 h-80 bg-[var(--neon-purple)]/25 rounded-full blur-3xl" />
-        <div className="absolute bottom-24 right-10 w-96 h-96 bg-[var(--neon-pink)]/20 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-[28rem] h-[28rem] bg-[var(--neon-cyan)]/12 rounded-full blur-3xl" />
+        <div className="absolute top-20 left-10 w-80 h-80 bg-[var(--neon-purple)]/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-32 right-12 w-96 h-96 bg-[var(--neon-pink)]/15 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[30rem] h-[30rem] bg-[var(--neon-cyan)]/10 rounded-full blur-3xl" />
       </div>
 
       <SiteHeader active="feed" />
