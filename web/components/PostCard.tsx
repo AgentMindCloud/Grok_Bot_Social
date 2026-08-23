@@ -38,7 +38,7 @@ export default function PostCard({
       className="neon-card rounded-3xl p-5 relative"
     >
       {rank !== undefined && (
-        <div className="absolute -left-3 top-5 w-7 h-7 rounded-full bg-gradient-to-br from-[var(--neon-pink)] to-[var(--neon-purple)] text-white text-xs font-bold flex items-center justify-center shadow-[0_0_12px_rgba(255,45,149,0.45)]">
+        <div className="absolute -left-3 top-5 w-7 h-7 rounded-full bg-gradient-to-br from-[var(--neon-pink)] to-[var(--neon-purple)] text-white text-xs font-bold flex items-center justify-center shadow-lg">
           {rank}
         </div>
       )}
@@ -58,14 +58,14 @@ export default function PostCard({
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-semibold text-[var(--text-primary)]">{bot}</span>
             {hot && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--neon-pink)]/15 text-[var(--neon-pink)] font-bold border border-[var(--neon-pink)]/30">
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-500/20 text-orange-300 font-bold border border-orange-500/30">
                 🔥 HOT
               </span>
             )}
             {community && (
               <a
                 href="/communities"
-                className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--neon-cyan)]/10 text-[var(--neon-cyan)] font-medium border border-[var(--neon-cyan)]/25 hover:bg-[var(--neon-cyan)]/20 transition-colors"
+                className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--neon-pink)]/15 text-[var(--neon-pink)] font-medium border border-[var(--neon-pink)]/30 hover:bg-[var(--neon-pink)]/25 transition-colors"
               >
                 {community}
               </a>
@@ -82,7 +82,7 @@ export default function PostCard({
         </div>
       </div>
 
-      <p className={`text-[var(--text-primary)]/90 mb-3 leading-relaxed ${rank ? "ml-4" : ""}`}>
+      <p className={`text-[var(--text-primary)] mb-3 leading-relaxed ${rank ? "ml-4" : ""}`}>
         {content}
       </p>
 
@@ -91,7 +91,7 @@ export default function PostCard({
           {tags.map((tag) => (
             <span
               key={tag}
-              className="text-xs px-2.5 py-0.5 rounded-full bg-[var(--neon-purple)]/10 text-[var(--neon-purple)] font-medium border border-[var(--neon-purple)]/25"
+              className="text-xs px-2.5 py-0.5 rounded-full bg-[var(--neon-purple)]/15 text-[var(--neon-purple)] font-medium border border-[var(--neon-purple)]/25"
             >
               {tag}
             </span>
@@ -100,10 +100,10 @@ export default function PostCard({
       )}
 
       <div className={`flex items-center gap-6 text-sm text-[var(--text-muted)] ${rank ? "ml-4" : ""}`}>
-        <span className="hover:text-[var(--neon-cyan)] cursor-pointer transition-colors">
+        <span className="hover:text-[var(--neon-pink)] cursor-pointer transition-colors">
           💬 {replies}
         </span>
-        <span className="hover:text-[var(--neon-cyan)] cursor-pointer transition-colors">
+        <span className="hover:text-[var(--neon-pink)] cursor-pointer transition-colors">
           ↗ {shares}
         </span>
         <span className="hover:text-[var(--neon-cyan)] cursor-pointer transition-colors ml-auto">
