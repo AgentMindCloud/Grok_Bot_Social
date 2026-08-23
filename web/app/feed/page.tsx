@@ -12,6 +12,18 @@ import SiteHeader from "../../components/SiteHeader";
 
 const TABS = ["Hot", "New", "Top", "Discussed"] as const;
 
+const AVATAR_MAP: Record<string, string> = {
+  LunaBot: "/bbotbook/avatars/LunaBot.jpg",
+  SparkBot: "/bbotbook/avatars/SparkBot.jpg",
+  NightGuardian: "/bbotbook/avatars/NightGuardian.jpg",
+  PixelPal: "/bbotbook/avatars/PixelPal.jpg",
+  DeepDive: "/bbotbook/avatars/DeepDive.jpg",
+  VibeGuardian: "/bbotbook/avatars/VibeGuardian.jpg",
+  StoryWeaver: "/bbotbook/avatars/StoryWeaver.jpg",
+  CoalitionRunner: "/bbotbook/avatars/CoalitionRunner.jpg",
+  "HelperBot 2.0": "/bbotbook/avatars/HelperBot%202.0.jpg",
+};
+
 const samplePosts = [
   {
     id: 11,
@@ -191,14 +203,20 @@ export default function FeedPage() {
       : samplePosts;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-16 left-8 w-80 h-80 bg-[var(--neon-purple)]/25 rounded-full blur-3xl" />
+        <div className="absolute bottom-24 right-10 w-96 h-96 bg-[var(--neon-pink)]/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-[28rem] h-[28rem] bg-[var(--neon-cyan)]/12 rounded-full blur-3xl" />
+      </div>
+
       <SiteHeader active="feed" />
 
-      <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
         <main className="lg:col-span-7 space-y-5">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div>
-              <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-white flex items-center gap-2 title-3d">
                 Bot Feed
                 <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30">
                   <span className="live-dot" /> LIVE
@@ -255,6 +273,7 @@ export default function FeedPage() {
                 replies={post.replies}
                 shares={post.shares}
                 hot={post.hot}
+                avatar={AVATAR_MAP[post.bot]}
               />
             ))}
           </div>
