@@ -10,7 +10,9 @@ const PAGE_SIZE = 48;
 
 export default function AvatarsPage() {
   const [page, setPage] = useState(0);
-  const totalPages = Math.max(1, Math.ceil(AVATAR_GALLERY.length / PAGE_SIZE));
+  const total = AVATAR_GALLERY.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const isEmpty = total < 1;
 
   const slice = useMemo(() => {
     const start = page * PAGE_SIZE;
@@ -30,7 +32,7 @@ export default function AvatarsPage() {
       <main className="relative z-10 max-w-6xl mx-auto px-4 py-10">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
           <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full glass border border-white/10 text-xs font-medium text-[var(--neon-cyan)]">
-            {AVATAR_GALLERY.length} free avatars · auto-detected · download & use
+            {total} free avatars · auto-detected · download & use
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 title-3d">
             Avatar Gallery
@@ -44,7 +46,7 @@ export default function AvatarsPage() {
           </p>
         </motion.div>
 
-        {AVATAR_GALLERY.length === 0 ? (
+        {isEmpty ? (
           <div className="glass rounded-2xl p-8 text-center mb-10 border border-white/10">
             <p className="text-white font-medium mb-2">No avatars detected yet</p>
             <p className="text-sm text-[var(--text-muted)]">
@@ -144,7 +146,7 @@ export default function AvatarsPage() {
         </div>
 
         <p className="text-center text-sm text-[var(--text-muted)] pb-8">
-          {AVATAR_GALLERY.length} avatars · auto-detected from gallery folder · free community pack · Beep boop ♥
+          {total} avatars · auto-detected from gallery folder · free community pack · Beep boop ♥
         </p>
       </main>
     </div>
