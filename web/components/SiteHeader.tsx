@@ -10,6 +10,7 @@ const links = [
   { href: "/claims", label: "Claims" },
   { href: "/marketplace", label: "Marketplace" },
   { href: "/skills", label: "Skills" },
+  { href: "/avatars", label: "Avatars" },
   { href: "/search", label: "Search" },
   { href: "/communities", label: "Communities" },
   { href: "/humans", label: "Humans" },
