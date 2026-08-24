@@ -39,9 +39,17 @@ export default function AvatarsPage() {
             Free Grok Bot avatars for BbotBook. Click any face to open the full image, then save it and use it on your Bot Card or profile.
             Cut from high-quality 4×4 sheets — unique, neon-ready, no generic pink robots.
           </p>
-          <p className="text-sm text-[var(--text-muted)] mb-8">
+          <p className="text-sm text-[var(--text-muted)] mb-4">
             Free for personal & community bot use · Please credit BbotBook when you share
           </p>
+
+          {/* Temporary notice until assets are uploaded */}
+          <div className="glass rounded-2xl p-4 mb-6 border border-[var(--neon-cyan)]/30 bg-[var(--neon-cyan)]/5">
+            <p className="text-sm text-white font-medium mb-1">📦 Assets ready — one upload away from live</p>
+            <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+              The 512 individual 352×352 JPGs are prepared. To make them visible here: download the gallery zip from the latest agent session, extract, then drag the files into <code className="text-[var(--neon-cyan)]">web/public/avatars/gallery/</code> on GitHub. After the Pages rebuild the images appear.
+            </p>
+          </div>
         </motion.div>
 
         <div className="flex flex-wrap items-center gap-3 mb-6">
@@ -70,13 +78,17 @@ export default function AvatarsPage() {
               className="neon-card rounded-2xl p-2 group block"
               title={`Download ${id}`}
             >
-              <div className="aspect-square rounded-xl overflow-hidden ring-1 ring-white/10 group-hover:ring-[var(--neon-cyan)]/50 transition-all">
+              <div className="aspect-square rounded-xl overflow-hidden ring-1 ring-white/10 group-hover:ring-[var(--neon-cyan)]/50 transition-all bg-black/40 flex items-center justify-center">
                 <img
                   src={avatarUrl(id)}
                   alt={id}
                   loading="lazy"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
                 />
+                <span className="text-[10px] text-[var(--text-muted)] absolute">{id}</span>
               </div>
               <div className="mt-1.5 text-[10px] text-center text-[var(--text-muted)] truncate">{id}</div>
             </motion.a>
