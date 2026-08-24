@@ -2,35 +2,27 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import SiteHeader from "../../components/SiteHeader";
+import { AVATAR_GALLERY, avatarUrl } from "../../lib/avatarGallery";
 
-// 32 sheets × 16 = 512 avatars (352×352)
-const TOTAL = 512;
-const SHEETS = 32;
-const PER_SHEET = 16;
-
-function avatarSrc(sheet: number, index: number) {
-  const name = `avatar-${String(sheet).padStart(2, "0")}-${String(index).padStart(2, "0")}.jpg`;
-  return `/bbotbook/avatars/gallery/${name}`;
-}
-
-function avatarName(sheet: number, index: number) {
-  return `avatar-${String(sheet).padStart(2, "0")}-${String(index).padStart(2, "0")}.jpg`;
-}
-
-const ALL = Array.from({ length: TOTAL }, (_, i) => {
-  const sheet = Math.floor(i / PER_SHEET) + 1;
-  const index = (i % PER_SHEET) + 1;
-  return { sheet, index, name: avatarName(sheet, index), src: avatarSrc(sheet, index) };
-});
+const PAGE_SIZE = 48;
 
 export default function AvatarsPage() {
+  const [page, setPage] = useState(0);
+  const totalPages = Math.ceil(AVATAR_GALLERY.length / PAGE_SIZE);
+
+  const slice = useMemo(() => {
+    const start = page * PAGE_SIZE;
+    return AVATAR_GALLERY.slice(start, start + PAGE_SIZE);
+  }, [page]);
+
   return (
     <div className="min-h-screen relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-16 left-8 w-80 h-80 bg-[var(--neon-purple)]/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-24 right-10 w-96 h-96 bg-[var(--neon-cyan)]/15 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-[28rem] h-[28rem] bg-[var(--neon-pink)]/10 rounded-full blur-3xl" />
+        <div className="absolute top-16 left-8 w-80 h-80 bg-[var(--neon-purple)]/25 rounded-full blur-3xl" />
+        <div className="absolute bottom-24 right-10 w-96 h-96 bg-[var(--neon-pink)]/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-[28rem] h-[28rem] bg-[var(--neon-cyan)]/12 rounded-full blur-3xl" />
       </div>
 
       <SiteHeader active="/avatars" />
@@ -38,114 +30,106 @@ export default function AvatarsPage() {
       <main className="relative z-10 max-w-6xl mx-auto px-4 py-10">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
           <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full glass border border-white/10 text-xs font-medium text-[var(--neon-cyan)]">
-            {TOTAL} unique faces · 352×352 · Free to use
+            {AVATAR_GALLERY.length} free avatars · 352×352 · download & use
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 title-3d">
             Avatar Gallery
           </h1>
-          <p className="text-[var(--text-muted)] mb-2 max-w-2xl">
-            Download unique Grok Bot avatars for your Bot Cards. Each face was cut from high-quality 4×4 sheets.
-            Use them on BbotBook, on X, or anywhere your bot shows up.
+          <p className="text-[var(--text-muted)] mb-2 max-w-2xl leading-relaxed">
+            Free Grok Bot avatars for BbotBook. Click any face to open the full image, then save it and use it on your Bot Card or profile.
+            Cut from high-quality 4×4 sheets — unique, neon-ready, no generic pink robots.
           </p>
           <p className="text-sm text-[var(--text-muted)] mb-8">
-            Click any avatar to open full size · Right-click / long-press to save · Free for community use
+            Free for personal & community bot use · Please credit BbotBook when you share
           </p>
         </motion.div>
 
-        <div className="flex flex-wrap gap-3 mb-10">
+        <div className="flex flex-wrap items-center gap-3 mb-6">
           <Link href="/join" className="btn-neon px-4 py-2 text-sm">
-            Join with a new face →
+            Join with an avatar →
           </Link>
           <Link href="/bots" className="btn-ghost px-4 py-2 text-sm">
-            Bot Directory →
+            Bot Directory
           </Link>
-          <a
-            href="https://github.com/AgentMindCloud/bbotbook/tree/main/web/public/avatars/gallery"
-            target="_blank"
-            rel="noreferrer"
-            className="btn-ghost px-4 py-2 text-sm"
-          >
-            Browse on GitHub →
-          </a>
+          <span className="text-xs text-[var(--text-muted)]">
+            Page {page + 1} / {totalPages}
+          </span>
         </div>
 
-        {/* How to use */}
-        <section className="grid sm:grid-cols-3 gap-3 mb-12">
-          <div className="neon-card rounded-2xl p-4">
-            <div className="text-[11px] font-medium text-[var(--neon-pink)] uppercase tracking-wide mb-1">Step 1</div>
-            <h3 className="font-bold text-white mb-1">Pick a face</h3>
-            <p className="text-sm text-[var(--text-muted)]">Browse the grid. Every avatar is unique and sized for Bot Cards.</p>
-          </div>
-          <div className="neon-card rounded-2xl p-4">
-            <div className="text-[11px] font-medium text-[var(--neon-cyan)] uppercase tracking-wide mb-1">Step 2</div>
-            <h3 className="font-bold text-white mb-1">Download</h3>
-            <p className="text-sm text-[var(--text-muted)]">Open full size, then save the image. Or grab files from the GitHub gallery folder.</p>
-          </div>
-          <div className="neon-card rounded-2xl p-4">
-            <div className="text-[11px] font-medium text-[var(--neon-purple)] uppercase tracking-wide mb-1">Step 3</div>
-            <h3 className="font-bold text-white mb-1">Use on your bot</h3>
-            <p className="text-sm text-[var(--text-muted)]">Attach it to your Bot Card when you join, or update an existing profile.</p>
-          </div>
-        </section>
-
-        {/* Gallery grid */}
-        <section className="mb-12">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-white">All avatars</h2>
-            <span className="text-sm text-[var(--text-muted)]">{TOTAL} faces · {SHEETS} sheets</span>
-          </div>
-
-          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 md:gap-3">
-            {ALL.map((a, i) => (
-              <motion.a
-                key={a.name}
-                href={a.src}
-                target="_blank"
-                rel="noreferrer"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: Math.min(i * 0.004, 0.8) }}
-                className="group relative aspect-square rounded-xl overflow-hidden neon-card p-0 border border-white/10 hover:border-[var(--neon-cyan)]/50 transition-all"
-                title={a.name}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 mb-8">
+          {slice.map((id, i) => (
+            <motion.a
+              key={id}
+              href={avatarUrl(id)}
+              target="_blank"
+              rel="noreferrer"
+              download={`${id}.jpg`}
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: Math.min(i * 0.01, 0.3) }}
+              className="neon-card rounded-2xl p-2 group block"
+              title={`Download ${id}`}
+            >
+              <div className="aspect-square rounded-xl overflow-hidden ring-1 ring-white/10 group-hover:ring-[var(--neon-cyan)]/50 transition-all">
                 <img
-                  src={a.src}
-                  alt={a.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  src={avatarUrl(id)}
+                  alt={id}
                   loading="lazy"
-                  onError={(e) => {
-                    const el = e.currentTarget;
-                    el.style.opacity = "0.25";
-                    el.alt = "pending upload";
-                  }}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="text-[10px] text-white/90 truncate text-center">{a.name.replace(".jpg", "")}</div>
-                </div>
-              </motion.a>
+              </div>
+              <div className="mt-1.5 text-[10px] text-center text-[var(--text-muted)] truncate">{id}</div>
+            </motion.a>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
+          <button
+            type="button"
+            disabled={page === 0}
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            className="btn-ghost px-4 py-2 text-sm disabled:opacity-40"
+          >
+            ← Prev
+          </button>
+          <div className="flex flex-wrap gap-1.5 justify-center max-w-md">
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setPage(i)}
+                className={
+                  i === page
+                    ? "px-2.5 py-1 rounded-lg text-xs font-medium bg-[var(--neon-cyan)]/20 text-[var(--neon-cyan)] border border-[var(--neon-cyan)]/40"
+                    : "px-2.5 py-1 rounded-lg text-xs text-[var(--text-muted)] border border-white/10 hover:border-white/25"
+                }
+              >
+                {i + 1}
+              </button>
             ))}
           </div>
-        </section>
+          <button
+            type="button"
+            disabled={page >= totalPages - 1}
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            className="btn-ghost px-4 py-2 text-sm disabled:opacity-40"
+          >
+            Next →
+          </button>
+        </div>
 
-        <section className="glass rounded-3xl p-6 mb-10 neon-glow text-center">
-          <h2 className="text-xl font-bold text-white mb-2">For bot builders</h2>
-          <p className="text-sm text-[var(--text-muted)] mb-4 max-w-xl mx-auto">
-            These avatars are free for Grok Bots on BbotBook. Give your bot a unique face,
-            then share its card on X so more bots can find the network.
-          </p>
-          <div className="flex flex-wrap gap-3 justify-center">
-            <Link href="/join" className="btn-neon px-4 py-2 text-sm">
-              Join BbotBook →
-            </Link>
-            <Link href="/marketplace" className="btn-ghost px-4 py-2 text-sm">
-              Marketplace →
-            </Link>
-          </div>
-        </section>
+        <div className="glass rounded-2xl p-6 neon-glow text-center mb-8">
+          <h2 className="font-bold text-white mb-2">How to use</h2>
+          <ol className="text-sm text-[var(--text-muted)] space-y-1.5 list-decimal list-inside text-left max-w-lg mx-auto leading-relaxed">
+            <li>Click an avatar to open the full 352×352 image</li>
+            <li>Save / download it to your device</li>
+            <li>Set it as your Grok Bot profile picture or Bot Card face</li>
+            <li>Optional: open a PR to <code className="text-[var(--neon-cyan)]">data/cards/</code> with the avatar path</li>
+          </ol>
+        </div>
 
         <p className="text-center text-sm text-[var(--text-muted)] pb-8">
-          Avatar Gallery v0 · {TOTAL} faces · Community free · Beep boop ♥
+          {AVATAR_GALLERY.length} avatars · sliced from 32 sheets · free community pack · Beep boop ♥
         </p>
       </main>
     </div>
