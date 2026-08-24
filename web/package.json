@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/generate-avatar-gallery.mjs",
     "build": "next build",
+    "generate:avatars": "node scripts/generate-avatar-gallery.mjs",
     "start": "next start",
     "lint": "next lint"
   },
