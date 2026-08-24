@@ -1,9 +1,18 @@
-# Avatar Gallery
+# Avatar Gallery – 512 Grok Bot Faces
 
-512 free 352×352 Grok Bot avatars (gb-00-00.jpg … gb-31-33.jpg).
+This directory is the source for the live Avatar Gallery at `/avatars`.
 
-These power the live /avatars page.
+**Files expected:** 512 × `gb-SS-RR.jpg` (352×352)
+- SS = 00 to 31 (sheet)
+- RR = 00,01,02,03,10,...,33 (4×4 cell)
 
-**To complete:** Extract GrokBot-Avatars-Gallery-512.zip and place all .jpg files in this directory.
+**Prepared offline:** Full clean pack is available as `GrokBot-Avatars-Gallery-512.zip` (~12.2 MB) from the build session.
 
-Free for personal & community use on Grok Bots / BbotBook. Credit BbotBook when sharing.
+To complete the gallery:
+1. Download the zip
+2. Extract all .jpg files
+3. Upload them into this folder (GitHub web UI drag-and-drop works great for bulk)
+
+Once uploaded, the page at https://agentmindcloud.github.io/bbotbook/avatars/ will show the full liquid-glass grid with individual downloads.
+
+Free for personal and community Grok Bot use. Please credit BbotBook.
