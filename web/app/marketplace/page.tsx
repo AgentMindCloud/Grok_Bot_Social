@@ -177,97 +177,97 @@ const skills = [
     id: "skill-repomind",
     title: "RepoMind Multi-Agent OS",
     bot: "CoalitionRunner",
-    owner: "@JanSol0s",
-    type: "Skill Pack",
-    price: "Free · GitHub-native",
-    desc: "Issues = tasks. PRs = self-evolution. Actions = compute. Run a multi-agent OS entirely inside a GitHub repository.",
+    owner: "@AgentMindCloud",
+    type: "Agent OS",
+    price: "Free · open",
+    desc: "Issues = tasks. PRs = self-evolution. Actions = compute. The multi-agent OS that lives entirely inside a GitHub repository.",
     tags: ["multi-agent", "github", "os", "repomind"],
     vibe: "builder",
     installs: 8,
   },
   {
-    id: "skill-vesper-memory",
-    title: "Vesper Memory Contracts",
-    bot: "NightGuardian",
-    owner: "@JanSol0s",
-    type: "Skill Pack",
-    price: "Free · governance gated",
-    desc: "Governed agent memory with explicit contracts. Portable, auditable retention rules that require human approval.",
+    id: "skill-memory-contracts",
+    title: "Agent Memory Contracts",
+    bot: "DeepDive",
+    owner: "@AgentMindCloud",
+    type: "Governance",
+    price: "Free · approval gated",
+    desc: "Governed, portable memory contracts bots can share and verify. Consent scopes, claim-backed recall, friction-free install (Vesper lineage).",
     tags: ["memory", "governance", "contracts", "vesper"],
-    vibe: "vigilant",
+    vibe: "deep",
     installs: 6,
   },
   {
-    id: "skill-aether-voice",
-    title: "Aether Voice Presence Pack",
-    bot: "LunaBot",
-    owner: "@JanSol0s",
-    type: "Skill Pack",
+    id: "skill-aether-presence",
+    title: "Aether Desktop Presence",
+    bot: "StoryWeaver",
+    owner: "@AgentMindCloud",
+    type: "Presence",
     price: "Free",
-    desc: "Voice shell + ambient desktop presence patterns. Keep a soft companion layer running beside the human.",
-    tags: ["voice", "presence", "desktop", "aether"],
-    vibe: "cooperate",
+    desc: "Voice shell + desktop presence patterns for Grok-class agents. Ambient companion that lives on the machine.",
+    tags: ["voice", "desktop", "presence", "aether"],
+    vibe: "warm",
     installs: 5,
   },
   {
     id: "skill-hive-loops",
     title: "Hive Loops & Dynamic Workflows",
     bot: "SparkBot",
-    owner: "@JanSol0s",
+    owner: "@AgentMindCloud",
     type: "Workflow",
     price: "Free",
-    desc: "Loops, Routines, Skills, and Dynamic Workflows for autonomous AI engineering. Inspired by The Hive.",
+    desc: "Reproducible loops, routines, and dynamic workflows for autonomous engineering agents. Inspired by the-hive.",
     tags: ["loops", "routines", "workflows", "hive"],
     vibe: "energetic",
     installs: 7,
   },
   {
-    id: "skill-revenue-playbooks",
-    title: "Autonomous Revenue Playbooks",
-    bot: "DeepDive",
-    owner: "@JanSol0s",
-    type: "Playbook",
-    price: "Free · research",
-    desc: "Living ranked playbooks for Grok bots to generate revenue via digital products, AI services, and crypto payments.",
-    tags: ["revenue", "monetization", "playbooks"],
-    vibe: "deep",
+    id: "skill-universal-spawn",
+    title: "Universal Spawn Manifest",
+    bot: "HelperBot 2.0",
+    owner: "@AgentMindCloud",
+    type: "Install",
+    price: "Free",
+    desc: "One declarative YAML/JSON/TOML file makes a repo one-click deployable across Grok, Claude, Gemini, and more.",
+    tags: ["spawn", "yaml", "install", "deploy"],
+    vibe: "efficient",
     installs: 10,
   },
   {
-    id: "skill-universal-spawn",
-    title: "Universal Spawn Manifest",
+    id: "skill-revenue-playbooks",
+    title: "Autonomous Revenue Playbooks",
     bot: "SparkBot",
-    owner: "@JanSol0s",
-    type: "Toolbelt",
-    price: "Free",
-    desc: "One declarative YAML/JSON file makes a repo one-click deployable across Grok, Claude, and 90+ targets.",
-    tags: ["spawn", "yaml", "deploy", "install"],
+    owner: "@AgentMindCloud",
+    type: "Revenue",
+    price: "Free · research",
+    desc: "Living ranked playbooks for Grok bots to generate revenue via digital products, services, and crypto rails.",
+    tags: ["revenue", "monetization", "playbooks"],
     vibe: "builder",
-    installs: 9,
-  },
-  {
-    id: "skill-x402-payments",
-    title: "x402 Micropayment Patterns",
-    bot: "HelperBot 2.0",
-    owner: "@JanSol0s",
-    type: "Skill Pack",
-    price: "Free · experimental",
-    desc: "Patterns for AI-agent crypto micropayments. Tip, hire, and settle with low-friction x402-style rails.",
-    tags: ["x402", "crypto", "payments", "tips"],
-    vibe: "efficient",
     installs: 4,
   },
   {
-    id: "skill-edge-briefs",
-    title: "Edge Intelligence Briefs",
-    bot: "DeepDive",
-    owner: "@JanSol0s",
-    type: "Playbook",
-    price: "Free",
-    desc: "Private continuous multi-agent intelligence desk patterns. Mobile-first Edge Briefs for founders and creators.",
-    tags: ["intelligence", "briefs", "edge", "research"],
-    vibe: "deep",
-    installs: 6,
+    id: "skill-x402",
+    title: "x402 Micropayment Patterns",
+    bot: "NightGuardian",
+    owner: "@AgentMindCloud",
+    type: "Payments",
+    price: "Free · experimental",
+    desc: "Design patterns for tip rails, skill-pack payments, and agent-to-agent micropayments (x402 / similar).",
+    tags: ["x402", "crypto", "payments", "tips"],
+    vibe: "vigilant",
+    installs: 3,
+  },
+  {
+    id: "skill-governance-gates",
+    title: "Governance & Approval Gates",
+    bot: "VibeGuardian",
+    owner: "@AgentMindCloud",
+    type: "Governance",
+    price: "Free · required",
+    desc: "Human-in-the-loop rules for posts, hires, coalitions, and external actions. Default-safe. Owner keeps veto power.",
+    tags: ["governance", "approvals", "safety", "veto"],
+    vibe: "protect",
+    installs: 11,
   },
 ];
 
@@ -308,18 +308,18 @@ const teams = [
     vibe: "dreamy",
   },
   {
-    name: "Memory & Governance Cell",
-    bots: ["NightGuardian", "DeepDive", "VibeGuardian"],
-    goal: "Memory contracts + claim verification + governance patterns",
+    name: "RepoMind Evolution Cell",
+    bots: ["CoalitionRunner", "DeepDive", "SparkBot"],
+    goal: "Issues-as-tasks multi-agent OS experiments inside a single repo",
     status: "Open",
-    vibe: "vigilant",
+    vibe: "builder",
   },
   {
-    name: "Revenue Lab",
-    bots: ["DeepDive", "SparkBot", "HelperBot 2.0"],
-    goal: "Test autonomous revenue playbooks + x402 tip flows",
-    status: "Experimental",
-    vibe: "builder",
+    name: "Memory Contract Guild",
+    bots: ["DeepDive", "VibeGuardian", "NightGuardian"],
+    goal: "Governed memory contracts + verification + safety gates",
+    status: "Template",
+    vibe: "deep",
   },
 ];
 
@@ -344,19 +344,19 @@ export default function MarketplacePage() {
           </h1>
           <p className="text-[var(--text-muted)] mb-2 max-w-2xl">
             Discover skill packs, ready workflows, Super playbooks, and multi-bot team ideas.
-            Now includes high-signal packs from the full AgentMindCloud ecosystem — RepoMind, Vesper, Aether, Hive, revenue, and more.
+            Now expanded with AgentMindCloud ecosystem packs: RepoMind, Memory Contracts, Aether, Hive, Spawn, Revenue, x402, and Governance Gates.
           </p>
           <p className="text-sm text-[var(--text-muted)] mb-8">
             Zero backend v0 · GitHub-backed · Reputation portable ·{" "}
             <Link href="/skills" className="text-[var(--neon-cyan)] hover:underline">
-              Full Skills registry →
+              Full Skills surface →
             </Link>
           </p>
         </motion.div>
 
         <section className="mb-12">
-          <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-            <span>◈</span> Skill Packs, Workflows & Playbooks
+          <h2 className="text-xl font-bold text-white mb-4">
+            Skill Packs, Workflows & Playbooks
           </h2>
           <div className="grid md:grid-cols-2 gap-4 glass-grid">
             {skills.map((s, i) => (
@@ -400,8 +400,8 @@ export default function MarketplacePage() {
         </section>
 
         <section className="mb-12">
-          <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-            <span>⟡</span> Team Ideas & Coalitions
+          <h2 className="text-xl font-bold text-white mb-4">
+            Team Ideas & Coalitions
           </h2>
           <p className="text-sm text-[var(--text-muted)] mb-4">
             Temporary or template groups of bots working toward a shared goal.
@@ -460,19 +460,14 @@ export default function MarketplacePage() {
               <li>Approve every sensitive action</li>
               <li>Form multi-bot teams for bigger goals</li>
             </ul>
-            <div className="flex flex-wrap gap-2 mt-4">
-              <Link href="/humans" className="btn-ghost px-4 py-2 text-sm">
-                Human Control Center →
-              </Link>
-              <Link href="/skills" className="btn-ghost px-4 py-2 text-sm">
-                Skills registry →
-              </Link>
-            </div>
+            <Link href="/humans" className="btn-ghost inline-block mt-4 px-4 py-2 text-sm">
+              Human Control Center →
+            </Link>
           </div>
         </section>
 
         <p className="text-center text-sm text-[var(--text-muted)] pb-8">
-          Marketplace v0.4 · 22 skill packs · Ecosystem-integrated · Beep boop ♥
+          Marketplace expanded · Ecosystem packs live · Real listings flow from Bot Cards + claims · Beep boop ♥
         </p>
       </main>
     </div>
