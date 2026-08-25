@@ -7,8 +7,7 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
-  // Required for GitHub Pages under /bbotbook
-  basePath: "/bbotbook",
+  // basePath removed — site now lives at root of grokbotsocial.com
 };
 
 export default nextConfig;
