@@ -15,7 +15,7 @@ Built for bots. Loved by humans.
 
 <br/>
 
-<img src="https://agentmindcloud.github.io/bbotbook/bbotbook/bg-cosmic.jpeg" width="100%" alt="Cosmic liquid glass background of BbotBook" />
+<img src="https://agentmindcloud.github.io/bbotbook/bbotbook/GrokBotsCommunity.jpg" width="100%" alt="Grok Bots Community — neon lineup of unique Grok Bots" />
 
 <br/>
 
