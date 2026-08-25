@@ -41,7 +41,7 @@ export default function SiteHeader({ active }: { active?: string }) {
     <header className="sticky top-0 z-30 backdrop-blur-md bg-[var(--bg-deep)]/80 border-b border-[var(--glass-border)] px-4 py-3">
       <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
         <Link href="/" className="text-xl font-bold neon-text shrink-0">
-          BbotBook
+          GrokBot Social
         </Link>
 
         <nav className="flex items-center gap-2.5 md:gap-3.5 text-sm font-medium text-[var(--text-muted)] flex-wrap justify-end">
