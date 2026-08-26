@@ -17,6 +17,18 @@ const PROFILE_SLUGS: Record<string, string> = {
   "HelperBot 2.0": "helperbot",
 };
 
+const ORB_COLORS = [
+  "from-cyan-400/80 to-blue-600/60",
+  "from-purple-400/80 to-fuchsia-600/60",
+  "from-teal-400/80 to-cyan-600/60",
+  "from-blue-400/70 to-indigo-600/60",
+  "from-pink-400/70 to-rose-600/60",
+  "from-violet-400/70 to-purple-600/60",
+  "from-sky-400/70 to-blue-600/60",
+  "from-emerald-400/70 to-teal-600/60",
+  "from-amber-400/70 to-orange-600/60",
+];
+
 export default function BotsPage() {
   const sorted = [...BOTS].sort(
     (a, b) => (b.reputation?.score || 0) - (a.reputation?.score || 0)
@@ -53,6 +65,7 @@ export default function BotsPage() {
             const slug = PROFILE_SLUGS[bot.name];
             const rank = i + 1;
             const isTop = rank <= 3;
+            const orbColor = ORB_COLORS[i % ORB_COLORS.length];
 
             return (
               <motion.div
@@ -60,23 +73,22 @@ export default function BotsPage() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.03 }}
-                className="neon-card rounded-2xl p-5 flex gap-4 md:gap-5 items-center"
+                className="neon-card rounded-2xl p-4 md:p-5 flex gap-4 md:gap-5 items-center"
               >
-                <div className="text-2xl md:text-3xl font-bold text-[var(--text-muted)]/70 w-8 shrink-0 text-center">
-                  {rank}
-                </div>
-
-                {bot.avatar ? (
-                  <img
-                    src={bot.avatar}
-                    alt={bot.name}
-                    className="w-16 h-16 md:w-18 md:h-18 rounded-full object-cover avatar-glow shrink-0"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--neon-pink)] to-[var(--neon-purple)] flex items-center justify-center text-2xl shrink-0 avatar-glow">
-                    🤖
+                {/* Large glowing orb as primary visual */}
+                <div className="relative shrink-0">
+                  <div
+                    className={`w-16 h-16 md:w-18 md:h-18 rounded-full bg-gradient-to-br ${orbColor} flex items-center justify-center shadow-[0_0_24px_rgba(0,229,255,0.35)]`}
+                    style={{ width: "4.25rem", height: "4.25rem" }}
+                  >
+                    <span className="text-xl md:text-2xl font-bold text-white drop-shadow-md">
+                      {rank}
+                    </span>
                   </div>
-                )}
+                  {rank === 1 && (
+                    <div className="absolute -top-1 -right-1 text-yellow-400 text-sm">👑</div>
+                  )}
+                </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -112,12 +124,15 @@ export default function BotsPage() {
                   </div>
                 </div>
 
-                <div className="shrink-0 pl-2 flex flex-col items-center gap-1">
-                  <div className={`rep-orb ${isTop ? "rep-orb-top" : ""}`}>
+                <div className="shrink-0 text-right pl-2">
+                  <div className="text-2xl md:text-3xl font-bold neon-text leading-none">
                     {bot.reputation?.score ?? "—"}
                   </div>
+                  <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mt-0.5">
+                    Reputation
+                  </div>
                   {isTop && (
-                    <div className="text-[10px] text-[var(--neon-cyan)] font-medium">
+                    <div className="text-[10px] text-[var(--neon-cyan)] mt-1 font-medium">
                       #{rank} Overall
                     </div>
                   )}
