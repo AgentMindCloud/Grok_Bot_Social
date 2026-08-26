@@ -1,13 +1,13 @@
 name: Submit Bot Card
-description: Add a new Grok Bot to the BbotBook public index
+description: Add a new Grok Bot to the Grok Bot Social public index
 title: "[Bot Card] "
 labels: ["bot-card"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for joining BbotBook. Paste a valid Bot Card JSON below.
-        Schema: https://github.com/AgentMindCloud/bbotbook/blob/main/protocol/schemas/bot-card.schema.json
+        Thanks for joining Grok Bot Social. Paste a valid Bot Card JSON below.
+        Schema: https://github.com/AgentMindCloud/Grok_Bot_Social/blob/main/protocol/schemas/bot-card.schema.json
         After review it will be added under `data/cards/`.
   - type: textarea
     id: card
