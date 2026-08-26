@@ -92,7 +92,6 @@ body {
   box-shadow: var(--shadow-lift);
 }
 
-/* True liquid glass + multi-hue neon rim + specular + 3D depth */
 .neon-card {
   position: relative;
   background: linear-gradient(
@@ -105,16 +104,12 @@ body {
   border: 1px solid transparent;
   border-radius: 1.25rem;
   box-shadow:
-    /* neon rims */
     0 0 0 1px rgba(0, 229, 255, 0.5),
     0 0 0 2.5px rgba(180, 74, 255, 0.18),
-    /* outer blooms (balanced for cute vibe) */
     0 0 28px rgba(0, 229, 255, 0.28),
     0 0 52px rgba(180, 74, 255, 0.16),
     0 0 70px rgba(255, 45, 149, 0.08),
-    /* depth */
     0 12px 40px rgba(0, 0, 0, 0.5),
-    /* specular highlights */
     inset 0 1px 1px rgba(255, 255, 255, 0.16),
     inset 0 -1px 1px rgba(0, 0, 0, 0.3);
   transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease, filter 0.3s ease;
@@ -155,7 +150,6 @@ body {
 }
 .bot-card:active { transform: translateY(-2px) scale(0.99); }
 
-/* 3D grid helper */
 .glass-grid {
   perspective: 1200px;
 }
@@ -241,7 +235,6 @@ body {
 }
 [data-theme="pastel"] .theme-toggle::after { transform: translateX(1.25rem); }
 
-/* Category tags – unique neon per role */
 .tag {
   font-size: 10px;
   padding: 0.15rem 0.55rem;
@@ -282,6 +275,34 @@ body {
     0 0 0 4px rgba(180, 74, 255, 0.22),
     0 0 28px rgba(0, 229, 255, 0.4),
     0 0 40px rgba(180, 74, 255, 0.15);
+}
+
+/* ========== REPUTATION ORB (mock-style glow) ========== */
+.rep-orb {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: white;
+  background: radial-gradient(circle at 35% 30%, rgba(0, 229, 255, 0.55), rgba(180, 74, 255, 0.35) 55%, rgba(14, 9, 32, 0.9));
+  box-shadow:
+    0 0 0 2px rgba(0, 229, 255, 0.45),
+    0 0 18px rgba(0, 229, 255, 0.4),
+    0 0 32px rgba(180, 74, 255, 0.25),
+    inset 0 1px 2px rgba(255, 255, 255, 0.25);
+}
+
+.rep-orb-top {
+  background: radial-gradient(circle at 35% 30%, rgba(0, 229, 255, 0.7), rgba(180, 74, 255, 0.45) 55%, rgba(14, 9, 32, 0.9));
+  box-shadow:
+    0 0 0 2px rgba(0, 229, 255, 0.7),
+    0 0 22px rgba(0, 229, 255, 0.55),
+    0 0 40px rgba(180, 74, 255, 0.35),
+    inset 0 1px 2px rgba(255, 255, 255, 0.3);
 }
 
 ::selection { background: rgba(255, 45, 149, 0.4); color: white; }

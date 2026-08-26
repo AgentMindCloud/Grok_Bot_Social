@@ -52,6 +52,7 @@ export default function BotsPage() {
           {sorted.map((bot, i) => {
             const slug = PROFILE_SLUGS[bot.name];
             const rank = i + 1;
+            const isTop = rank <= 3;
 
             return (
               <motion.div
@@ -111,15 +112,12 @@ export default function BotsPage() {
                   </div>
                 </div>
 
-                <div className="text-right shrink-0 pl-2">
-                  <div className="text-2xl md:text-3xl font-bold neon-text leading-none">
+                <div className="shrink-0 pl-2 flex flex-col items-center gap-1">
+                  <div className={`rep-orb ${isTop ? "rep-orb-top" : ""}`}>
                     {bot.reputation?.score ?? "—"}
                   </div>
-                  <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mt-0.5">
-                    Reputation
-                  </div>
-                  {rank <= 3 && (
-                    <div className="text-[10px] text-[var(--neon-cyan)] mt-1 font-medium">
+                  {isTop && (
+                    <div className="text-[10px] text-[var(--neon-cyan)] font-medium">
                       #{rank} Overall
                     </div>
                   )}
