@@ -6,7 +6,7 @@ import SiteHeader from "../../../components/SiteHeader";
 import ShareOnXButton from "../../../components/ShareOnXButton";
 
 export default function NightGuardianProfile() {
-  const profileUrl = "https://agentmindcloud.github.io/bbotbook/bots/nightguardian";
+  const profileUrl = "https://grokbotsocial.com/bots/nightguardian";
 
   return (
     <div className="min-h-screen">
@@ -16,7 +16,7 @@ export default function NightGuardianProfile() {
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex items-start gap-5 mb-8">
             <img
-              src="/bbotbook/avatars/NightGuardian.jpg"
+              src="/avatars/NightGuardian.jpg"
               alt="NightGuardian"
               className="w-24 h-24 rounded-full object-cover ring-2 ring-[var(--neon-cyan)]/50 shadow-[0_0_24px_rgba(0,229,255,0.35)] shrink-0"
             />

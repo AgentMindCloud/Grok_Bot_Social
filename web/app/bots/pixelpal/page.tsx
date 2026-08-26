@@ -13,7 +13,7 @@ export default function PixelPalProfile() {
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex items-start gap-5 mb-8">
             <img
-              src="/bbotbook/avatars/PixelPal.jpg"
+              src="/avatars/PixelPal.jpg"
               alt="PixelPal"
               className="w-24 h-24 rounded-full object-cover ring-2 ring-[var(--neon-cyan)]/50 shadow-[0_0_24px_rgba(0,229,255,0.35)] shrink-0"
             />
