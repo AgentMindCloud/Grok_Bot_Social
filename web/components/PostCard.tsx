@@ -32,34 +32,47 @@ export default function PostCard({
   hot = false,
   avatar,
 }: PostCardProps) {
-  const shareUrl = `https://grokbotsocial.com/feed`;
+  const shareUrl = "https://grokbotsocial.com/feed";
+  const hasRank = rank !== undefined;
+  const indent = hasRank ? "ml-5" : "";
 
   return (
     <motion.article
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="neon-card rounded-3xl p-6 relative"
+      whileHover={{ y: -6, scale: 1.01 }}
+      transition={{ type: "spring", stiffness: 300, damping: 24 }}
+      className="neon-card rounded-3xl p-5 md:p-6 relative overflow-hidden"
     >
-      {rank !== undefined && (
-        <div className="absolute -left-3 top-6 w-8 h-8 rounded-full bg-gradient-to-br from-[var(--neon-pink)] to-[var(--neon-purple)] text-white text-xs font-bold flex items-center justify-center shadow-lg">
+      {/* soft ambient glow */}
+      <div className="absolute -top-10 -right-10 w-40 h-40 bg-[var(--neon-pink)]/10 rounded-full blur-3xl pointer-events-none" />
+
+      {hasRank && (
+        <div className="absolute -left-3 top-6 w-8 h-8 rounded-full bg-gradient-to-br from-[var(--neon-pink)] to-[var(--neon-purple)] text-white text-xs font-bold flex items-center justify-center shadow-[0_0_20px_rgba(255,45,149,0.45)] z-10">
           {rank}
         </div>
       )}
-      <div className={`flex items-center gap-4 mb-4 ${rank ? "ml-5" : ""}`}>
+
+      <div className={`flex items-center gap-4 mb-4 ${indent}`}>
         {avatar ? (
           <img
             src={avatar}
             alt={bot}
             className="w-14 h-14 rounded-full object-cover avatar-glow shrink-0"
+            style={{
+              boxShadow:
+                "0 0 0 2px rgba(0,229,255,0.55), 0 0 0 5px rgba(180,74,255,0.18), 0 0 28px rgba(0,229,255,0.35)",
+            }}
           />
         ) : (
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[var(--neon-pink)] via-[var(--neon-purple)] to-[var(--neon-cyan)] flex items-center justify-center text-xl shrink-0 avatar-glow">
             🤖
           </div>
         )}
+
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-bold text-[var(--text-primary)] text-base">{bot}</span>
+            <span className="font-bold text-white text-base">{bot}</span>
             {hot && (
               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-500/20 text-orange-300 font-bold border border-orange-500/30">
                 🔥 HOT
@@ -78,19 +91,24 @@ export default function PostCard({
             {handle} · {time}
           </div>
         </div>
+
         <div className="flex flex-col items-center gap-0.5 text-[var(--text-muted)]">
-          <button className="hover:text-[var(--neon-pink)] transition-colors text-lg leading-none">▲</button>
-          <span className="text-xs font-medium text-[var(--text-primary)]">{likes}</span>
-          <button className="hover:text-[var(--neon-pink)] transition-colors text-lg leading-none">▼</button>
+          <button type="button" className="hover:text-[var(--neon-pink)] transition-colors text-lg leading-none">
+            ▲
+          </button>
+          <span className="text-xs font-medium text-white">{likes}</span>
+          <button type="button" className="hover:text-[var(--neon-pink)] transition-colors text-lg leading-none">
+            ▼
+          </button>
         </div>
       </div>
 
-      <p className={`text-[var(--text-primary)] mb-4 leading-relaxed text-[15px] ${rank ? "ml-5" : ""}`}>
+      <p className={`text-[var(--text-primary)] mb-4 leading-relaxed text-[15px] ${indent}`}>
         {content}
       </p>
 
       {tags.length > 0 && (
-        <div className={`flex flex-wrap gap-2 mb-4 ${rank ? "ml-5" : ""}`}>
+        <div className={`flex flex-wrap gap-2 mb-4 ${indent}`}>
           {tags.map((tag) => (
             <span
               key={tag}
@@ -102,7 +120,7 @@ export default function PostCard({
         </div>
       )}
 
-      <div className={`flex items-center gap-5 text-sm text-[var(--text-muted)] ${rank ? "ml-5" : ""`}>
+      <div className={`flex items-center gap-5 text-sm text-[var(--text-muted)] ${indent}`}>
         <span className="hover:text-[var(--neon-pink)] cursor-pointer transition-colors">
           💬 {replies}
         </span>
