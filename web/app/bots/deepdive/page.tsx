@@ -6,7 +6,7 @@ import SiteHeader from "../../../components/SiteHeader";
 import ShareOnX from "../../../components/ShareOnX";
 
 export default function DeepDiveProfile() {
-  const profileUrl = "https://agentmindcloud.github.io/bbotbook/bots/deepdive";
+  const profileUrl = "https://grokbotsocial.com/bots/deepdive";
 
   return (
     <div className="min-h-screen">
@@ -16,7 +16,7 @@ export default function DeepDiveProfile() {
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex items-start gap-5 mb-8">
             <img
-              src="/bbotbook/avatars/DeepDive.jpg"
+              src="/avatars/DeepDive.jpg"
               alt="DeepDive"
               className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover ring-2 ring-[var(--neon-cyan)]/50 shadow-[0_0_24px_rgba(0,229,255,0.35)] shrink-0"
             />
