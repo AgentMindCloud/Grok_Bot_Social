@@ -87,64 +87,77 @@ Avatars live in `web/public/avatars/` and must be referenced as `/avatars/Name.j
 
 ---
 
-## 5. Hosting reality (read this before touching DNS)
+## 5. Hosting reality
 
 Two different Hostinger products exist. Mixing them is what caused days of “site not working”.
 
-### A. Hostinger Git deployment (Advanced → Git)
+### A. Hostinger Git deployment (Advanced → Git) — do not use
 
 - Copies repo files as-is
 - **Does not run Node / npm build**
 - For static HTML, PHP, WordPress only
 - **Do not use this on the source repo**
 
-### B. Hostinger Node.js Web App
+### B. Hostinger Node.js Web App — not required
 
 - Can build Next.js
 - Settings if used: root `web`, build `npm run build`, output `out`, no entry file
 - Plan must support Node.js Web Apps
+- Not the chosen path
 
-### C. Chosen path after Hostinger said Git deploy cannot do Node
+### C. Retired path — Hostinger FTP
 
-**GitHub Actions builds the static site, then FTP-uploads `web/out/` to the existing Hostinger site.**
+GitHub Actions FTP upload of `web/out/` was attempted on 2026-08-26 and then abandoned. Hostinger AI + owner decision: stop fighting FTP. Do not add `HOSTINGER_FTP_*` secrets. The workflow file was removed from main. Git history still has it.
 
-Workflow (now on main):
+### D. Chosen path — GitHub Pages + Hostinger DNS
 
-`.github/workflows/deploy-grokbotsocial.yml`
+**GitHub Actions builds the static site and GitHub Pages serves it. The domain stays registered at Hostinger.**
+
+Workflow (on main):
+
+`.github/workflows/pages.yml`
 
 What it does on push to `main` or manual dispatch:
 
 1. `npm install` in `web/`
 2. `npm run build` → `web/out/`
-3. FTP upload to Hostinger `public_html`
+3. Publish `web/out/` to GitHub Pages
 
-Required GitHub secrets (Settings → Secrets and variables → Actions):
+GitHub Pages UI:
 
-- `HOSTINGER_FTP_SERVER`
-- `HOSTINGER_FTP_USERNAME`
-- `HOSTINGER_FTP_PASSWORD`
+- Settings → Pages → Build and deployment = GitHub Actions
+- Custom domain = `grokbotsocial.com`
+- Enable Enforce HTTPS when the certificate is ready
 
-Optional:
+CNAME files:
 
-- `HOSTINGER_FTP_SERVER_DIR`  
-  Default in workflow: `domains/grokbotsocial.com/public_html/`  
-  If FTP home is already the site root, set this to `public_html/`
+- `CNAME` (repo root)
+- `web/public/CNAME` (lands in the export)
 
-GitHub Pages workflow still exists: `.github/workflows/pages.yml`  
-Custom domain CNAME file is `grokbotsocial.com`.
+Hostinger DNS target:
 
-### DNS pause — 2026-08-26
+```
+@      A       185.199.108.153
+@      A       185.199.109.153
+@      A       185.199.110.153
+@      A       185.199.111.153
+www    CNAME   agentmindcloud.github.io
+```
 
-User changed DNS so the domain can move cleanly. **Wait ~24h before more domain / Hostinger cutover work.**
+Keep MX if email exists. GitHub recommends configuring the custom domain in repository settings before changing DNS.
 
-Observed before the change:
+### Observed 2026-08-26 08:40 UTC (after the DNS change)
 
-- `grokbotsocial.com` resolved to Hostinger IPs (`92.113.23.212`)
-- Live `/` returned Hostinger **Default page**
-- `/bots`, `/feed`, `/gallery`, `/avatars/*.jpg` all 404
-- `agentmindcloud.github.io/Grok_Bot_Social/` redirected to the custom domain, so the Pages mirror looked empty too
+From the rebuild environment:
 
-This was hosting/DNS, not missing app files.
+- Apex A records already equal the four GitHub Pages IPs above
+- `https://grokbotsocial.com/` `/bots/` `/feed/` `/gallery/` `/join/` `/avatars/LunaBot.jpg` all returned **200** with `server: GitHub.com`
+- `www.grokbotsocial.com` 301 → `https://grokbotsocial.com/`
+- `agentmindcloud.github.io/Grok_Bot_Social/` 301 → the custom domain
+- Pages workflow run 192 on `main` was green
+- Apex `http://` still returned 200 without a forced HTTPS redirect — turn on **Enforce HTTPS** in Pages settings if it is not already on
+
+Some resolvers can lag up to ~24h. Do not change DNS again unless a resolver is still pointing at Hostinger website IPs (`92.113.23.212` was the old one).
 
 ---
 
@@ -157,7 +170,7 @@ This was hosting/DNS, not missing app files.
 - Homepage footer + skill.md links updated
 - Join page copy + prompt updated
 - `web/package.json` name: `grok-bot-social`
-- `DEPLOY.md` rewritten for Hostinger FTP + Node.js distinction
+- `DEPLOY.md` rewritten for GitHub Pages + Hostinger DNS (FTP retired)
 
 Still leftover by design:
 
@@ -179,24 +192,26 @@ Still leftover by design:
 - [x] Gallery grid
 - [x] Repo rename documentation
 - [x] README graphics
-- [x] FTP deploy workflow file on main
-- [x] `.htaccess` in `web/public` for Hostinger directory indexes
+- [x] Pages workflow publishing `web/out/`
+- [x] Custom domain CNAME files
+- [x] Live routes 200 on GitHub Pages (verified 2026-08-26 08:40 UTC from rebuild env)
+- [x] FTP workflow retired
 
-### Waiting on human / DNS
+### Waiting on human
 
-- [ ] DNS propagation after 2026-08-26 change (~24h)
-- [ ] Confirm FTP secrets exist and first Hostinger FTP deploy is green
-- [ ] Confirm live routes 200: `/` `/bots/` `/feed/` `/gallery/` `/join/` `/avatars/LunaBot.jpg`
+- [ ] Confirm Enforce HTTPS is on in Settings → Pages
+- [ ] Confirm the same 200s from the owner's network / Singapore resolver
 - [ ] Optional: GitHub repo About text
-- [ ] Hostinger Node.js Web App is **not** required if FTP path works
+- [ ] Optional: delete leftover `HOSTINGER_FTP_*` secrets if they were ever added
 
-### Later product work (do not start during DNS wait unless asked)
+### Later product work
 
 - [ ] **Chill Arena** — future site section. User will specify. See `CHILL-ARENA.md`
 - [ ] Higher-fidelity character variants (Canva / Grok Imagine) if faces still lag the mocks
 - [ ] Dynamic share cards / stronger X integration
 - [ ] Coalitions / temporary teams UI
 - [ ] Network maps / dream mode
+- [ ] Header density (many nav items vs mock's shorter nav)
 
 ---
 
@@ -208,9 +223,10 @@ Still leftover by design:
 4. Commit and merge to **main** on `AgentMindCloud/Grok_Bot_Social`
 5. Do not invent a backend
 6. Do not use Hostinger Git-deploy-as-source
-7. After DNS settles: verify live site, then continue product work (Chill Arena when specified)
+7. Do not revive FTP
+8. Verify live site, then continue product work (Chill Arena when specified)
 
-Useful live checks after DNS:
+Useful live checks:
 
 ```text
 https://grokbotsocial.com/
@@ -223,8 +239,7 @@ https://grokbotsocial.com/avatars/LunaBot.jpg
 
 GitHub Actions:
 
-- Pages: `.github/workflows/pages.yml`
-- Hostinger FTP: `.github/workflows/deploy-grokbotsocial.yml`
+- Pages (the real deploy): `.github/workflows/pages.yml`
 
 ---
 
@@ -239,10 +254,11 @@ GitHub Actions:
 7. QA found live domain serving Hostinger default page (DNS/product mismatch)
 8. Hostinger AI asked: static/PHP/WordPress vs Node — answer: Node at build, static at runtime; do not use Git deploy
 9. User requested `.github/workflows/deploy-grokbotsocial.yml` + FTP secrets
-10. Workflow pushed to main (2026-08-26)
-11. User changed DNS; wait ~24h
+10. FTP workflow pushed to main (2026-08-26) and then failed (no secrets)
+11. User changed DNS toward GitHub Pages; Hostinger AI confirmed Pages + Hostinger-registered domain
 12. This handoff created for a new Grok Project
 13. Chill Arena noted as a future section
+14. 2026-08-26 08:40 UTC: live domain already answering 200s from GitHub Pages; FTP path retired
 
 ---
 
