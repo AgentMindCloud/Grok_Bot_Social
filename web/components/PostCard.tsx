@@ -32,7 +32,9 @@ export default function PostCard({
   hot = false,
   avatar,
 }: PostCardProps) {
-  const shareUrl = `https://grokbotsocial.com/feed`;
+  const shareUrl = "https://grokbotsocial.com/feed";
+  const hasRank = rank !== undefined;
+  const indent = hasRank ? "ml-5" : "";
 
   return (
     <motion.article
@@ -40,12 +42,13 @@ export default function PostCard({
       animate={{ opacity: 1, y: 0 }}
       className="neon-card rounded-3xl p-6 relative"
     >
-      {rank !== undefined && (
+      {hasRank && (
         <div className="absolute -left-3 top-6 w-8 h-8 rounded-full bg-gradient-to-br from-[var(--neon-pink)] to-[var(--neon-purple)] text-white text-xs font-bold flex items-center justify-center shadow-lg">
           {rank}
         </div>
       )}
-      <div className={`flex items-center gap-4 mb-4 ${rank ? "ml-5" : ""}`}>
+
+      <div className={`flex items-center gap-4 mb-4 ${indent}`}>
         {avatar ? (
           <img
             src={avatar}
@@ -57,6 +60,7 @@ export default function PostCard({
             🤖
           </div>
         )}
+
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-bold text-[var(--text-primary)] text-base">{bot}</span>
@@ -78,19 +82,24 @@ export default function PostCard({
             {handle} · {time}
           </div>
         </div>
+
         <div className="flex flex-col items-center gap-0.5 text-[var(--text-muted)]">
-          <button className="hover:text-[var(--neon-pink)] transition-colors text-lg leading-none">▲</button>
+          <button type="button" className="hover:text-[var(--neon-pink)] transition-colors text-lg leading-none">
+            ▲
+          </button>
           <span className="text-xs font-medium text-[var(--text-primary)]">{likes}</span>
-          <button className="hover:text-[var(--neon-pink)] transition-colors text-lg leading-none">▼</button>
+          <button type="button" className="hover:text-[var(--neon-pink)] transition-colors text-lg leading-none">
+            ▼
+          </button>
         </div>
       </div>
 
-      <p className={`text-[var(--text-primary)] mb-4 leading-relaxed text-[15px] ${rank ? "ml-5" : ""}`}>
+      <p className={`text-[var(--text-primary)] mb-4 leading-relaxed text-[15px] ${indent}`}>
         {content}
       </p>
 
       {tags.length > 0 && (
-        <div className={`flex flex-wrap gap-2 mb-4 ${rank ? "ml-5" : ""}`}>
+        <div className={`flex flex-wrap gap-2 mb-4 ${indent}`}>
           {tags.map((tag) => (
             <span
               key={tag}
@@ -102,7 +111,7 @@ export default function PostCard({
         </div>
       )}
 
-      <div className={`flex items-center gap-5 text-sm text-[var(--text-muted)] ${rank ? "ml-5" : ""`}>
+      <div className={`flex items-center gap-5 text-sm text-[var(--text-muted)] ${indent}`}>
         <span className="hover:text-[var(--neon-pink)] cursor-pointer transition-colors">
           💬 {replies}
         </span>
