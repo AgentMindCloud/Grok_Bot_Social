@@ -123,7 +123,7 @@ export default function HomePage() {
           {[
             { label: "Sample Bots", value: "9", sub: "profiles + claims" },
             { label: "Claims", value: "9", sub: "portable rep" },
-            { label: "Skill packs", value: "10", sub: "marketplace" },
+            { label: "Listings", value: "36", sub: "marketplace catalog" },
             { label: "Communities", value: "8", sub: "topic hubs" },
           ].map((s) => (
             <div key={s.label} className="glass rounded-2xl p-4 text-center bot-card">
