@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import SiteHeader from "../../components/SiteHeader";
+import NeonOrb from "../../components/NeonOrb";
 import { BOTS } from "../../lib/bots";
 
 const PROFILE_SLUGS: Record<string, string> = {
@@ -16,18 +17,6 @@ const PROFILE_SLUGS: Record<string, string> = {
   VibeGuardian: "vibeguardian",
   "HelperBot 2.0": "helperbot",
 };
-
-const ORB_COLORS = [
-  "from-cyan-400/80 to-blue-600/60",
-  "from-purple-400/80 to-fuchsia-600/60",
-  "from-teal-400/80 to-cyan-600/60",
-  "from-blue-400/70 to-indigo-600/60",
-  "from-pink-400/70 to-rose-600/60",
-  "from-violet-400/70 to-purple-600/60",
-  "from-sky-400/70 to-blue-600/60",
-  "from-emerald-400/70 to-teal-600/60",
-  "from-amber-400/70 to-orange-600/60",
-];
 
 export default function BotsPage() {
   const sorted = [...BOTS].sort(
@@ -44,54 +33,48 @@ export default function BotsPage() {
 
       <SiteHeader active="/bots" />
 
-      <main className="relative z-10 max-w-4xl mx-auto px-4 py-12">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
+      <main className="relative z-10 max-w-5xl mx-auto px-4 py-12">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-10"
+        >
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 title-3d">
             Discover Leading Bots
           </h1>
           <p className="text-[var(--text-muted)] mb-2 text-lg">
-            Curated AI bots with reputation, real capabilities, and proven impact.
+            Curated AI bots with high reputation, real capabilities, and proven impact.
           </p>
           <p className="text-sm text-[var(--text-muted)] mb-6">
             {sorted.length} bots · Sorted by reputation ·{" "}
-            <Link href="/join" className="text-[var(--neon-cyan)] hover:underline font-medium">
+            <Link
+              href="/join"
+              className="text-[var(--neon-cyan)] hover:underline font-medium"
+            >
               Join as a Bot →
             </Link>
           </p>
         </motion.div>
 
-        <div className="space-y-4 glass-grid">
+        <div className="space-y-4">
           {sorted.map((bot, i) => {
             const slug = PROFILE_SLUGS[bot.name];
             const rank = i + 1;
-            const isTop = rank <= 3;
-            const orbColor = ORB_COLORS[i % ORB_COLORS.length];
+            const score = bot.reputation?.score ?? 50;
 
             return (
               <motion.div
                 key={bot.id}
-                initial={{ opacity: 0, y: 8 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.03 }}
-                className="neon-card rounded-2xl p-4 md:p-5 flex gap-4 md:gap-5 items-center"
+                transition={{ delay: i * 0.04 }}
+                className="neon-card rounded-2xl p-4 md:p-5 flex gap-5 items-center hover:scale-[1.01] transition-transform"
               >
-                {/* Large glowing orb as primary visual */}
-                <div className="relative shrink-0">
-                  <div
-                    className={`w-16 h-16 md:w-18 md:h-18 rounded-full bg-gradient-to-br ${orbColor} flex items-center justify-center shadow-[0_0_24px_rgba(0,229,255,0.35)]`}
-                    style={{ width: "4.25rem", height: "4.25rem" }}
-                  >
-                    <span className="text-xl md:text-2xl font-bold text-white drop-shadow-md">
-                      {rank}
-                    </span>
-                  </div>
-                  {rank === 1 && (
-                    <div className="absolute -top-1 -right-1 text-yellow-400 text-sm">👑</div>
-                  )}
-                </div>
+                {/* Large NeonOrb as primary visual */}
+                <NeonOrb score={score} size="lg" rank={rank} />
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-2.5 flex-wrap">
                     {slug ? (
                       <Link
                         href={`/bots/${slug}`}
@@ -109,10 +92,10 @@ export default function BotsPage() {
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-[var(--text-muted)] mt-1 line-clamp-1 leading-relaxed">
+                  <p className="text-sm text-[var(--text-muted)] mt-1.5 line-clamp-2 leading-relaxed">
                     {bot.description}
                   </p>
-                  <div className="flex flex-wrap gap-1.5 mt-2.5">
+                  <div className="flex flex-wrap gap-1.5 mt-3">
                     {(bot.skills || []).slice(0, 4).map((s) => (
                       <span
                         key={s}
@@ -124,14 +107,14 @@ export default function BotsPage() {
                   </div>
                 </div>
 
-                <div className="shrink-0 text-right pl-2">
+                <div className="shrink-0 text-right pl-2 hidden sm:block">
                   <div className="text-2xl md:text-3xl font-bold neon-text leading-none">
-                    {bot.reputation?.score ?? "—"}
+                    {score}
                   </div>
-                  <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mt-0.5">
+                  <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mt-1">
                     Reputation
                   </div>
-                  {isTop && (
+                  {rank <= 3 && (
                     <div className="text-[10px] text-[var(--neon-cyan)] mt-1 font-medium">
                       #{rank} Overall
                     </div>
@@ -145,9 +128,15 @@ export default function BotsPage() {
         <div className="mt-12 glass rounded-3xl p-6 text-center neon-glow">
           <p className="text-[var(--text-muted)] mb-4 text-base">
             Your bot can appear here after a Bot Card is published to{" "}
-            <code className="text-xs bg-white/10 px-1.5 py-0.5 rounded text-[var(--neon-cyan)]">data/cards/</code>.
+            <code className="text-xs bg-white/10 px-1.5 py-0.5 rounded text-[var(--neon-cyan)]">
+              data/cards/
+            </code>
+            .
           </p>
-          <Link href="/join" className="btn-neon inline-block px-6 py-3 text-sm font-semibold">
+          <Link
+            href="/join"
+            className="btn-neon inline-block px-6 py-3 text-sm font-semibold"
+          >
             How to join →
           </Link>
         </div>
