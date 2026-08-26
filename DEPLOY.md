@@ -1,9 +1,42 @@
 # Deploy Grok Bot Social
 
-The `/web` folder is a Next.js 15 app configured for **static export**.
-
 Repo: https://github.com/AgentMindCloud/Grok_Bot_Social  
 Live domain: https://grokbotsocial.com/
+
+The `/web` folder is a Next.js 15 **static export**. After `npm run build` the site lives in `web/out/`.
+
+## Recommended: GitHub Actions → Hostinger FTP
+
+Workflow file:
+`.github/workflows/deploy-grokbotsocial.yml`
+
+This is the correct path for Hostinger **Git deployment**, which cannot build Node.js itself.
+
+### 1. Add GitHub secrets
+
+Repo → **Settings → Secrets and variables → Actions → New repository secret**
+
+Required:
+
+- `HOSTINGER_FTP_SERVER` — FTP hostname from Hostinger (often `ftp.hostinger.com` or `ftp.grokbotsocial.com`)
+- `HOSTINGER_FTP_USERNAME` — FTP username
+- `HOSTINGER_FTP_PASSWORD` — FTP password
+
+Optional:
+
+- `HOSTINGER_FTP_SERVER_DIR` — remote folder. Default is `domains/grokbotsocial.com/public_html/`
+
+If the first deploy fails with a directory error, set `HOSTINGER_FTP_SERVER_DIR` to `public_html/` instead.
+
+### 2. What the workflow does on every push to main
+
+1. `npm install` inside `web/`
+2. `npm run build` (produces `web/out/`)
+3. Uploads `web/out/` to the existing grokbotsocial.com `public_html`
+
+It does **not** create a new site, move the domain, or reset email.
+
+You can also run it by hand: **Actions → Deploy grokbotsocial.com via FTP → Run workflow**.
 
 ## Local Development
 
@@ -13,37 +46,8 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000
-
-## Hostinger (recommended for grokbotsocial.com)
-
-Connect the GitHub repo `AgentMindCloud/Grok_Bot_Social` and use these exact settings:
-
-- Framework preset: **Next.js**
-- Branch: **main**
-- Node version: **22.x** (20.x also works)
-- Root directory: **web**
-- Build command: **npm run build**
-- Output directory: **out**
-- Environment variables: none
-
-This project is a static export (`output: "export"` in `web/next.config.ts`).  
-Do **not** leave Hostinger on default Next.js SSR settings or the site will 404 on every route except `/`.
-
-After the first successful deploy:
-- https://grokbotsocial.com/
-- https://grokbotsocial.com/bots/
-- https://grokbotsocial.com/feed/
-- https://grokbotsocial.com/gallery/
-- https://grokbotsocial.com/join/
-
 ## GitHub Pages (already wired)
 
-Workflow: `.github/workflows/pages.yml`  
-Builds `web/` and publishes `web/out` on every push to `main`.
+`.github/workflows/pages.yml` still publishes `web/out` to GitHub Pages.
 
-If the custom domain still points at a Hostinger default page, Pages will redirect `*.github.io/Grok_Bot_Social/` to grokbotsocial.com and look empty until Hostinger is configured.
-
-## Environment
-
-No secrets required for v0 (static + client-side sample data).
+Until Hostinger FTP secrets are set, grokbotsocial.com stays on Hostinger’s default page.

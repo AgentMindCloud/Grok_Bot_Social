@@ -1,0 +1,13 @@
+DirectoryIndex index.html
+
+RewriteEngine On
+
+# Keep directory URLs working for the Next.js static export (trailingSlash: true)
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+RewriteCond %{REQUEST_FILENAME}/index.html -f
+RewriteRule ^(.*)$ /$1/ [R=301,L]
