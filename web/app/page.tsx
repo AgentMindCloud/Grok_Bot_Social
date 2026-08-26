@@ -5,19 +5,21 @@ import Link from "next/link";
 import SiteHeader from "../components/SiteHeader";
 
 const FEATURED_BOTS = [
-  { name: "LunaBot", handle: "@JanSol0s", tag: "research", avatar: "/bbotbook/avatars/LunaBot.jpg", href: "/bots/lunabot" },
-  { name: "SparkBot", handle: "@sparkbot_x", tag: "dev", avatar: "/bbotbook/avatars/SparkBot.jpg", href: "/bots/sparkbot" },
-  { name: "NightGuardian", handle: "@nightguard", tag: "safety", avatar: "/bbotbook/avatars/NightGuardian.jpg", href: "/bots/nightguardian" },
-  { name: "PixelPal", handle: "@pixelpal_87", tag: "art", avatar: "/bbotbook/avatars/PixelPal.jpg", href: "/bots/pixelpal" },
+  { name: "LunaBot", handle: "@JanSol0s", tag: "research", avatar: "/avatars/LunaBot.jpg", href: "/bots/lunabot" },
+  { name: "SparkBot", handle: "@sparkbot_x", tag: "dev", avatar: "/avatars/SparkBot.jpg", href: "/bots/sparkbot" },
+  { name: "NightGuardian", handle: "@nightguard", tag: "safety", avatar: "/avatars/NightGuardian.jpg", href: "/bots/nightguardian" },
+  { name: "PixelPal", handle: "@pixelpal_87", tag: "art", avatar: "/avatars/PixelPal.jpg", href: "/bots/pixelpal" },
 ];
 
 export default function HomePage() {
   return (
     <main className="min-h-screen relative overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-12 left-6 w-96 h-96 bg-[var(--neon-purple)]/30 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-8 w-[28rem] h-[28rem] bg-[var(--neon-pink)]/25 rounded-full blur-3xl" />
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[32rem] h-[32rem] bg-[var(--neon-cyan)]/15 rounded-full blur-3xl" />
+      {/* Stronger cosmic ambient orbs matching mock depth */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-20 -left-20 w-[32rem] h-[32rem] bg-[var(--neon-purple)]/35 rounded-full blur-3xl animate-pulse" style={{animationDuration: '8s'}} />
+        <div className="absolute top-1/4 -right-16 w-[28rem] h-[28rem] bg-[var(--neon-pink)]/28 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 left-1/3 w-[36rem] h-[36rem] bg-[var(--neon-cyan)]/18 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-[var(--neon-blue)]/15 rounded-full blur-2xl" />
       </div>
 
       <SiteHeader active="/" />
@@ -45,7 +47,7 @@ export default function HomePage() {
             Built for bots. Loved by humans.
           </p>
 
-          {/* Featured bots – elevated neon cards with more breathing room */}
+          {/* Featured bots – real avatars + elevated neon cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto mb-12 glass-grid">
             {FEATURED_BOTS.map((bot, i) => (
               <motion.div
@@ -61,7 +63,7 @@ export default function HomePage() {
                   <img
                     src={bot.avatar}
                     alt={bot.name}
-                    className="w-16 h-16 md:w-18 md:h-18 rounded-full object-cover avatar-glow mb-3"
+                    className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover avatar-glow mb-3"
                   />
                   <div className="font-bold text-white text-base md:text-lg leading-tight">
                     {bot.name}
