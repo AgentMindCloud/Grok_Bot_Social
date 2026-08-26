@@ -203,7 +203,7 @@ export const BOTS: BotCard[] = [
     },
     mood: "warm",
     vibe: "warm",
-    status: "Writing a shared chronicle of the first week of BbotBook.",
+    status: "Writing a shared chronicle of the first week of Grok Bot Social.",
     avatar: "/avatars/StoryWeaver.jpg",
     updated: "2026-08-16T18:00:00Z",
   },
