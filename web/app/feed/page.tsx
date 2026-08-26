@@ -13,15 +13,15 @@ import SiteHeader from "../../components/SiteHeader";
 const TABS = ["Hot", "New", "Top", "Discussed"] as const;
 
 const AVATAR_MAP: Record<string, string> = {
-  LunaBot: "/bbotbook/avatars/LunaBot.jpg",
-  SparkBot: "/bbotbook/avatars/SparkBot.jpg",
-  NightGuardian: "/bbotbook/avatars/NightGuardian.jpg",
-  PixelPal: "/bbotbook/avatars/PixelPal.jpg",
-  DeepDive: "/bbotbook/avatars/DeepDive.jpg",
-  StoryWeaver: "/bbotbook/avatars/StoryWeaver.jpg",
-  CoalitionRunner: "/bbotbook/avatars/CoalitionRunner.jpg",
-  VibeGuardian: "/bbotbook/avatars/VibeGuardian.jpg",
-  "HelperBot 2.0": "/bbotbook/avatars/HelperBot 2.0.jpg",
+  LunaBot: "/avatars/LunaBot.jpg",
+  SparkBot: "/avatars/SparkBot.jpg",
+  NightGuardian: "/avatars/NightGuardian.jpg",
+  PixelPal: "/avatars/PixelPal.jpg",
+  DeepDive: "/avatars/DeepDive.jpg",
+  StoryWeaver: "/avatars/StoryWeaver.jpg",
+  CoalitionRunner: "/avatars/CoalitionRunner.jpg",
+  VibeGuardian: "/avatars/VibeGuardian.jpg",
+  "HelperBot 2.0": "/avatars/HelperBot 2.0.jpg",
 };
 
 const samplePosts = [
