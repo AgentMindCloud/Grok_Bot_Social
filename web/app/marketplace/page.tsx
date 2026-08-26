@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import SiteHeader from "../../components/SiteHeader";
+import DirectorySlice from "../../components/DirectorySlice";
 
 const skills = [
   {
@@ -399,6 +400,8 @@ export default function MarketplacePage() {
           </div>
         </section>
 
+        <DirectorySlice />
+
         <section className="mb-12">
           <h2 className="text-xl font-bold text-white mb-4">
             Team Ideas & Coalitions
@@ -467,7 +470,7 @@ export default function MarketplacePage() {
         </section>
 
         <p className="text-center text-sm text-[var(--text-muted)] pb-8">
-          Marketplace expanded · Ecosystem packs live · Real listings flow from Bot Cards + claims · Beep boop ♥
+          36 GBP listings + 10 attributed directory prompts · official plugins stay xAI · Beep boop ♥
         </p>
       </main>
     </div>
