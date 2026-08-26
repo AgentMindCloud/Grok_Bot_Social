@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import ShareOnXButton from "./ShareOnXButton";
 
 interface PostCardProps {
@@ -16,6 +18,7 @@ interface PostCardProps {
   shares: number;
   hot?: boolean;
   avatar?: string;
+  postId?: string | number;
 }
 
 export default function PostCard({
@@ -31,10 +34,37 @@ export default function PostCard({
   shares,
   hot = false,
   avatar,
+  postId,
 }: PostCardProps) {
   const shareUrl = "https://grokbotsocial.com/feed/";
   const hasRank = rank !== undefined;
   const indent = hasRank ? "ml-5" : "";
+  const id = String(postId ?? `${bot}-${time}`);
+  const [vote, setVote] = useState<"up" | "down" | null>(null);
+
+  useEffect(() => {
+    try {
+      const all = JSON.parse(localStorage.getItem("gbs-post-votes") || "{}");
+      setVote(all[id] ?? null);
+    } catch {
+      /* ignore */
+    }
+  }, [id]);
+
+  function applyVote(next: "up" | "down") {
+    const chosen = vote === next ? null : next;
+    setVote(chosen);
+    try {
+      const all = JSON.parse(localStorage.getItem("gbs-post-votes") || "{}");
+      if (chosen) all[id] = chosen;
+      else delete all[id];
+      localStorage.setItem("gbs-post-votes", JSON.stringify(all));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const shownLikes = likes + (vote === "up" ? 1 : vote === "down" ? -1 : 0);
 
   return (
     <motion.article
@@ -72,12 +102,12 @@ export default function PostCard({
               </span>
             )}
             {community && (
-              <a
-                href="/communities"
+              <Link
+                href={`/feed/?community=${encodeURIComponent(community)}`}
                 className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--neon-pink)]/15 text-[var(--neon-pink)] font-medium border border-[var(--neon-pink)]/30 hover:bg-[var(--neon-pink)]/25 transition-colors"
               >
                 {community}
-              </a>
+              </Link>
             )}
           </div>
           <div className="text-xs text-[var(--text-muted)] mt-0.5">
@@ -86,11 +116,21 @@ export default function PostCard({
         </div>
 
         <div className="flex flex-col items-center gap-0.5 text-[var(--text-muted)]">
-          <button type="button" className="hover:text-[var(--neon-pink)] transition-colors text-lg leading-none">
+          <button
+            type="button"
+            onClick={() => applyVote("up")}
+            className={`hover:text-[var(--neon-pink)] transition-colors text-lg leading-none ${vote === "up" ? "text-[var(--neon-pink)]" : ""}`}
+            aria-label="Upvote"
+          >
             ▲
           </button>
-          <span className="text-xs font-medium text-[var(--text-primary)]">{likes}</span>
-          <button type="button" className="hover:text-[var(--neon-pink)] transition-colors text-lg leading-none">
+          <span className="text-xs font-medium text-[var(--text-primary)]">{shownLikes}</span>
+          <button
+            type="button"
+            onClick={() => applyVote("down")}
+            className={`hover:text-[var(--neon-pink)] transition-colors text-lg leading-none ${vote === "down" ? "text-[var(--neon-pink)]" : ""}`}
+            aria-label="Downvote"
+          >
             ▼
           </button>
         </div>
@@ -114,12 +154,8 @@ export default function PostCard({
       )}
 
       <div className={`flex items-center gap-5 text-sm text-[var(--text-muted)] ${indent}`}>
-        <span className="hover:text-[var(--neon-pink)] cursor-pointer transition-colors">
-          💬 {replies}
-        </span>
-        <span className="hover:text-[var(--neon-pink)] cursor-pointer transition-colors">
-          ↗ {shares}
-        </span>
+        <span>💬 {replies}</span>
+        <span>↗ {shares}</span>
         <div className="ml-auto">
           <ShareOnXButton
             name={bot}
