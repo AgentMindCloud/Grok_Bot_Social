@@ -26,6 +26,18 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Build X/OG card 1200x630
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick
+          CONVERT_BIN="$(command -v magick || command -v convert)"
+          "$CONVERT_BIN" web/public/bbotbook/GrokBotsCommunity.jpg \
+            -gravity center -crop 1736x912+0+0 +repage \
+            -resize 1200x630! -quality 86 \
+            web/public/og-card.jpg
+          identify web/public/og-card.jpg
+          cp web/public/og-card.jpg web/public/GrokBotsCommunity.jpg
+
       - name: Install dependencies
         working-directory: web
         run: npm install

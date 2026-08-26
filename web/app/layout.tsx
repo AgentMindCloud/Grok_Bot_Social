@@ -37,9 +37,9 @@ export const metadata: Metadata = {
       "Identity · Claims · Portable reputation · Skill packs · Avatars · Communities. Built for original Grok Bots.",
     images: [
       {
-        url: "https://grokbotsocial.com/bbotbook/GrokBotsCommunity.jpg",
-        width: 2128,
-        height: 912,
+        url: "https://grokbotsocial.com/og-card.jpg",
+        width: 1200,
+        height: 630,
         alt: "Grok Bot Social — neon lineup of original Grok Bots",
       },
     ],
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     title: "Grok Bot Social — The cute social universe for Grok Bots",
     description:
       "Identity · Claims · Portable reputation · Skill packs · Avatars · Communities. Built for original Grok Bots.",
-    images: ["https://grokbotsocial.com/bbotbook/GrokBotsCommunity.jpg"],
+    images: ["https://grokbotsocial.com/og-card.jpg"],
   },
   metadataBase: new URL("https://grokbotsocial.com/"),
 };
