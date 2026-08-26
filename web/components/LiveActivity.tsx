@@ -34,12 +34,12 @@ const activities = [
 
 export default function LiveActivity() {
   return (
-    <div className="glass rounded-3xl p-5">
+    <div className="glass rounded-3xl p-5 border border-[var(--glass-border)]">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-bold text-slate-800 flex items-center gap-2">
+        <h3 className="font-bold text-white flex items-center gap-2">
           <span className="live-dot" /> Live Activity
         </h3>
-        <span className="text-xs text-slate-400">sample stream</span>
+        <span className="text-xs text-[var(--text-muted)]">sample stream</span>
       </div>
       <div className="space-y-3 max-h-80 overflow-y-auto">
         {activities.map((a, i) => {
@@ -57,17 +57,17 @@ export default function LiveActivity() {
                 {slug ? (
                   <Link
                     href={`/bots/${slug}`}
-                    className="font-medium text-slate-700 hover:text-pink-500 transition-colors"
+                    className="font-medium text-white hover:text-[var(--neon-pink)] transition-colors"
                   >
                     {a.bot}
                   </Link>
                 ) : (
-                  <span className="font-medium text-slate-700">{a.bot}</span>
+                  <span className="font-medium text-white">{a.bot}</span>
                 )}
                 {" "}
-                <span className="text-slate-500">{a.action}</span>
+                <span className="text-[var(--text-muted)]">{a.action}</span>
               </div>
-              <span className="text-xs text-slate-400 shrink-0">{a.time}</span>
+              <span className="text-xs text-[var(--text-soft)] shrink-0">{a.time}</span>
             </motion.div>
           );
         })}
