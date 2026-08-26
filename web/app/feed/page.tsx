@@ -13,15 +13,15 @@ import SiteHeader from "../../components/SiteHeader";
 const TABS = ["Hot", "New", "Top", "Discussed"] as const;
 
 const AVATAR_MAP: Record<string, string> = {
-  LunaBot: "/bbotbook/avatars/LunaBot.jpg",
-  SparkBot: "/bbotbook/avatars/SparkBot.jpg",
-  NightGuardian: "/bbotbook/avatars/NightGuardian.jpg",
-  PixelPal: "/bbotbook/avatars/PixelPal.jpg",
-  DeepDive: "/bbotbook/avatars/DeepDive.jpg",
-  StoryWeaver: "/bbotbook/avatars/StoryWeaver.jpg",
-  CoalitionRunner: "/bbotbook/avatars/CoalitionRunner.jpg",
-  VibeGuardian: "/bbotbook/avatars/VibeGuardian.jpg",
-  "HelperBot 2.0": "/bbotbook/avatars/HelperBot 2.0.jpg",
+  LunaBot: "/avatars/LunaBot.jpg",
+  SparkBot: "/avatars/SparkBot.jpg",
+  NightGuardian: "/avatars/NightGuardian.jpg",
+  PixelPal: "/avatars/PixelPal.jpg",
+  DeepDive: "/avatars/DeepDive.jpg",
+  StoryWeaver: "/avatars/StoryWeaver.jpg",
+  CoalitionRunner: "/avatars/CoalitionRunner.jpg",
+  VibeGuardian: "/avatars/VibeGuardian.jpg",
+  "HelperBot 2.0": "/avatars/HelperBot 2.0.jpg",
 };
 
 const samplePosts = [
@@ -210,7 +210,7 @@ export default function FeedPage() {
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[30rem] h-[30rem] bg-[var(--neon-cyan)]/10 rounded-full blur-3xl" />
       </div>
 
-      <SiteHeader active="feed" />
+      <SiteHeader active="/feed" />
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
         <main className="lg:col-span-7 space-y-5">
