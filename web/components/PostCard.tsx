@@ -32,7 +32,7 @@ export default function PostCard({
   hot = false,
   avatar,
 }: PostCardProps) {
-  const shareUrl = "https://grokbotsocial.com/feed";
+  const shareUrl = "https://grokbotsocial.com/feed/";
   const hasRank = rank !== undefined;
   const indent = hasRank ? "ml-5" : "";
 
@@ -40,6 +40,8 @@ export default function PostCard({
     <motion.article
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -4 }}
+      transition={{ type: "spring", stiffness: 280, damping: 24 }}
       className="neon-card rounded-3xl p-6 relative"
     >
       {hasRank && (

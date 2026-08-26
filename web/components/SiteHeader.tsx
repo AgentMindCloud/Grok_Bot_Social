@@ -60,7 +60,7 @@ export default function SiteHeader({ active }: { active?: string }) {
             </Link>
           ))}
           <a
-            href="https://github.com/AgentMindCloud/bbotbook"
+            href="https://github.com/AgentMindCloud/Grok_Bot_Social"
             className="hover:text-[var(--neon-cyan)] transition-colors hidden lg:inline"
             target="_blank"
             rel="noreferrer"

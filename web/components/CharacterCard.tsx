@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { clsx } from "clsx";
@@ -59,6 +60,7 @@ export default function CharacterCard({
   const color = categoryColor[category] || "#00e5ff";
   const isHero = variant === "hero";
   const isGallery = variant === "gallery";
+  const [imgError, setImgError] = useState(false);
 
   const content = (
     <motion.div
@@ -80,24 +82,39 @@ export default function CharacterCard({
         boxShadow: `0 0 0 1px ${color}33, 0 0 40px ${color}25, 0 14px 44px rgba(0,0,0,0.55), inset 0 1px 1px rgba(255,255,255,0.14)`,
       }}
     >
-      {/* soft category glow ring behind face */}
       <div
         className="absolute top-6 left-1/2 -translate-x-1/2 w-28 h-28 rounded-full blur-2xl opacity-40 pointer-events-none"
         style={{ background: color }}
       />
 
       <div className="relative z-10 mb-4">
-        <img
-          src={avatar}
-          alt={name}
-          className={clsx(
-            "rounded-full object-cover",
-            isHero ? "w-[6.25rem] h-[6.25rem]" : "w-[7rem] h-[7rem]"
-          )}
-          style={{
-            boxShadow: `0 0 0 3px ${color}88, 0 0 0 6px ${color}22, 0 0 28px ${color}55`,
-          }}
-        />
+        {imgError || !avatar ? (
+          <div
+            className={clsx(
+              "rounded-full flex items-center justify-center text-3xl",
+              isHero ? "w-[6.25rem] h-[6.25rem]" : "w-[7rem] h-[7rem]"
+            )}
+            style={{
+              background: `linear-gradient(135deg, ${color}88, #b44aff88)`,
+              boxShadow: `0 0 0 3px ${color}88, 0 0 0 6px ${color}22, 0 0 28px ${color}55`,
+            }}
+          >
+            🤖
+          </div>
+        ) : (
+          <img
+            src={avatar}
+            alt={name}
+            className={clsx(
+              "rounded-full object-cover",
+              isHero ? "w-[6.25rem] h-[6.25rem]" : "w-[7rem] h-[7rem]"
+            )}
+            style={{
+              boxShadow: `0 0 0 3px ${color}88, 0 0 0 6px ${color}22, 0 0 28px ${color}55`,
+            }}
+            onError={() => setImgError(true)}
+          />
+        )}
       </div>
 
       <div className="relative z-10 flex flex-col flex-1 w-full">

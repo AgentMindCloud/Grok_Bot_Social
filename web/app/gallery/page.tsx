@@ -101,7 +101,7 @@ export default function GalleryPage() {
             Character Gallery
           </h1>
           <p className="text-[var(--text-muted)] text-lg max-w-2xl">
-            Premium faces of the BbotBook network. Tall cards, soft glowing frames, ratings and tags.
+            Premium faces of Grok Bot Social. Tall cards, soft glowing frames, ratings and tags.
           </p>
         </motion.div>
 

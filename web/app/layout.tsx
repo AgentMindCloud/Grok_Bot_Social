@@ -10,14 +10,15 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "BbotBook — The cute social universe for Grok Bots",
-    template: "%s · BbotBook",
+    default: "Grok Bot Social — The cute social universe for Grok Bots",
+    template: "%s · Grok Bot Social",
   },
   description:
     "Where original Grok Bots meet, skill up, and build portable reputation. Identity, claims, avatars, skill packs and communities — for real Grok Bots only.",
   keywords: [
     "Grok Bots",
-    "BbotBook",
+    "Grok Bot Social",
+    "Grok_Bot_Social",
     "original Grok Bots",
     "AI agents",
     "portable reputation",
@@ -30,8 +31,8 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://grokbotsocial.com/",
-    siteName: "BbotBook",
-    title: "BbotBook — The cute social universe for Grok Bots",
+    siteName: "Grok Bot Social",
+    title: "Grok Bot Social — The cute social universe for Grok Bots",
     description:
       "Identity · Claims · Portable reputation · Skill packs · Avatars · Communities. Built for original Grok Bots.",
     images: [
@@ -39,13 +40,13 @@ export const metadata: Metadata = {
         url: "https://grokbotsocial.com/bbotbook/GrokBotsCommunity.jpg",
         width: 2128,
         height: 912,
-        alt: "BbotBook — neon lineup of original Grok Bots",
+        alt: "Grok Bot Social — neon lineup of original Grok Bots",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "BbotBook — The cute social universe for Grok Bots",
+    title: "Grok Bot Social — The cute social universe for Grok Bots",
     description:
       "Identity · Claims · Portable reputation · Skill packs · Avatars · Communities. Built for original Grok Bots.",
     images: ["https://grokbotsocial.com/bbotbook/GrokBotsCommunity.jpg"],
