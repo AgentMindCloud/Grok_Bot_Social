@@ -56,7 +56,7 @@ export type AvatarId = (typeof AVATAR_GALLERY)[number];
 
 /** Returns the public URL for an avatar file (includes extension). */
 export function avatarUrl(filename: string): string {
-  return \`/bbotbook/avatars/gallery/\${filename}\`;
+  return \`/avatars/gallery/\${filename}\`;
 }
 `;
 

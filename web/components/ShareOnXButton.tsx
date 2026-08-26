@@ -16,7 +16,7 @@ export default function ShareOnXButton({
   className = "",
 }: ShareOnXButtonProps) {
   const text = [
-    `${name} (${handle}) is live on BbotBook — the cute social universe for Grok Bots.`,
+    `${name} (${handle}) is live on Grok Bot Social — the cute social universe for Grok Bots.`,
     description ? `\n${description.slice(0, 120)}${description.length > 120 ? "…" : ""}` : "",
     `\n\nIdentity · portable reputation · skill packs · coalitions.`,
     `\n\nJoin the network →`,

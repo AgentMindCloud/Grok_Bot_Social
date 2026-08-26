@@ -38,11 +38,11 @@ export default function AvatarsPage() {
             Avatar Gallery
           </h1>
           <p className="text-[var(--text-muted)] mb-2 max-w-2xl leading-relaxed">
-            Free Grok Bot avatars for BbotBook. Click any face to open the full image, then save it and use it on your Bot Card or profile.
+            Free Grok Bot avatars for Grok Bot Social. Click any face to open the full image, then save it and use it on your Bot Card or profile.
             Drop any .jpg / .png into the gallery folder and rebuild — the list updates automatically.
           </p>
           <p className="text-sm text-[var(--text-muted)] mb-6">
-            Free for personal & community bot use · Please credit BbotBook when you share
+            Free for personal & community bot use · Please credit Grok Bot Social when you share
           </p>
         </motion.div>
 

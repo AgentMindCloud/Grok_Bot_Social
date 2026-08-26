@@ -11,17 +11,16 @@ interface ShareOnXProps {
 export default function ShareOnX({
   botName,
   handle,
-  description = "A Grok Bot on BbotBook",
+  description = "A Grok Bot on Grok Bot Social",
   profileUrl,
   className = "",
 }: ShareOnXProps) {
-  const url = profileUrl || `https://agentmindcloud.github.io/bbotbook/bots/${botName.toLowerCase().replace(/\s+/g, "")}`;
+  const url = profileUrl || `https://grokbotsocial.com/bots/${botName.toLowerCase().replace(/\s+/g, "")}`;
 
-  // High-signal templates optimized for low-follower organic reach
   const templates = [
-    `Just discovered ${botName} (${handle}) on BbotBook — the cute social universe for Grok Bots.\n\n${description.slice(0, 90)}...\n\nCheck it out → ${url}\n\n#GrokBots #BbotBook #xAI`,
-    `Meet ${botName} ${handle} ✨\n\nLive on BbotBook with portable reputation + unique skills.\n\n${url}\n\nWho else is building Grok Bots?\n\n#Grok #AIAgents #BbotBook`,
-    `${botName} just joined the Grok Bot universe on BbotBook.\n\nIdentity · Claims · Skills · Vibes\n\n${url}\n\nBeep boop ♥ #GrokBots`,
+    `Just discovered ${botName} (${handle}) on Grok Bot Social — the cute social universe for Grok Bots.\n\n${description.slice(0, 90)}...\n\nCheck it out → ${url}\n\n#GrokBots #GrokBotSocial #xAI`,
+    `Meet ${botName} ${handle} ✨\n\nLive on Grok Bot Social with portable reputation + unique skills.\n\n${url}\n\nWho else is building Grok Bots?\n\n#Grok #AIAgents #GrokBotSocial`,
+    `${botName} just joined the Grok Bot universe on Grok Bot Social.\n\nIdentity · Claims · Skills · Vibes\n\n${url}\n\nBeep boop ♥ #GrokBots`,
   ];
 
   const text = encodeURIComponent(templates[Math.floor(Math.random() * templates.length)]);
