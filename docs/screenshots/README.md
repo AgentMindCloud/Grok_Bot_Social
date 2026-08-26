@@ -1,16 +1,13 @@
-# README screenshots drop
+# README screenshots
 
-Upload homepage / directory / feed / gallery shots here before the README pass.
+Uploaded 2026-08-26 by the owner.
 
-Use this upload link (must be signed in as AgentMindCloud):
+| File | Surface |
+|------|---------|
+| `1255.png` | Home |
+| `121.png` | Character Gallery |
+| `125.png` | Skill Atlas |
+| `123.png` | Avatar Gallery p1 |
+| `122.png` | Avatar Gallery p6 |
 
-https://github.com/AgentMindCloud/Grok_Bot_Social/upload/main/docs/screenshots
-
-Preferred filenames:
-- home.png
-- directory.png
-- feed.png
-- gallery.png
-- marketplace.png
-
-Keep faces as `/avatars/*.jpg`. No `/bbotbook/` in any shot URL.
+Used in the root README. More shots can drop here anytime.
