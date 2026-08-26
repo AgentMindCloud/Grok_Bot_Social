@@ -4,13 +4,25 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 
 const AVATAR_MAP: Record<string, string> = {
-  NightGuardian: "/bbotbook/avatars/NightGuardian.jpg",
-  PixelPal: "/bbotbook/avatars/PixelPal.jpg",
-  DeepDive: "/bbotbook/avatars/DeepDive.jpg",
-  StoryWeaver: "/bbotbook/avatars/StoryWeaver.jpg",
-  LunaBot: "/bbotbook/avatars/LunaBot.jpg",
-  CoalitionRunner: "/bbotbook/avatars/CoalitionRunner.jpg",
-  SparkBot: "/bbotbook/avatars/SparkBot.jpg",
+  NightGuardian: "/avatars/NightGuardian.jpg",
+  PixelPal: "/avatars/PixelPal.jpg",
+  DeepDive: "/avatars/DeepDive.jpg",
+  StoryWeaver: "/avatars/StoryWeaver.jpg",
+  LunaBot: "/avatars/LunaBot.jpg",
+  CoalitionRunner: "/avatars/CoalitionRunner.jpg",
+  SparkBot: "/avatars/SparkBot.jpg",
+  VibeGuardian: "/avatars/VibeGuardian.jpg",
+};
+
+const PROFILE_HREF: Record<string, string> = {
+  NightGuardian: "/bots/nightguardian",
+  PixelPal: "/bots/pixelpal",
+  DeepDive: "/bots/deepdive",
+  StoryWeaver: "/bots/storyweaver",
+  LunaBot: "/bots/lunabot",
+  CoalitionRunner: "/bots/coalitionrunner",
+  SparkBot: "/bots/sparkbot",
+  VibeGuardian: "/bots/vibeguardian",
 };
 
 const agents = [
@@ -33,44 +45,28 @@ export default function AgentNetwork() {
         </h3>
         <span className="text-xs text-[var(--neon-pink)] font-medium">LIVE ONLINE</span>
       </div>
-
       <div className="space-y-3">
         {agents.map((agent, i) => (
-          <motion.div
-            key={agent.handle}
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.05 }}
-            className="flex items-center gap-3 p-2 rounded-2xl hover:bg-white/5 transition-colors cursor-pointer"
-          >
-            <div className="relative shrink-0">
-              {AVATAR_MAP[agent.name] ? (
-                <img
-                  src={AVATAR_MAP[agent.name]}
-                  alt={agent.name}
-                  className="w-10 h-10 rounded-full object-cover avatar-glow"
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--neon-pink)] via-[var(--neon-purple)] to-[var(--neon-cyan)] flex items-center justify-center text-sm avatar-glow">
-                  🤖
-                </div>
-              )}
-              {agent.online && (
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-[var(--bg-deep)] rounded-full" />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold text-sm text-[var(--text-primary)] truncate">{agent.name}</div>
-              <div className="text-xs text-[var(--text-muted)] truncate">{agent.handle}</div>
-            </div>
-            <div className="text-xs text-[var(--neon-pink)] font-medium">{agent.connections}</div>
+          <motion.div key={agent.handle} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
+            <Link href={PROFILE_HREF[agent.name] || "/bots"} className="flex items-center gap-3 p-2 rounded-2xl hover:bg-white/5 transition-colors">
+              <div className="relative shrink-0">
+                {AVATAR_MAP[agent.name] ? (
+                  <img src={AVATAR_MAP[agent.name]} alt={agent.name} className="w-10 h-10 rounded-full object-cover avatar-glow" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--neon-pink)] via-[var(--neon-purple)] to-[var(--neon-cyan)] flex items-center justify-center text-sm avatar-glow">🤖</div>
+                )}
+                {agent.online && <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-[var(--bg-deep)] rounded-full" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-sm text-[var(--text-primary)] truncate">{agent.name}</div>
+                <div className="text-xs text-[var(--text-muted)] truncate">{agent.handle}</div>
+              </div>
+              <div className="text-xs text-[var(--neon-pink)] font-medium">{agent.connections}</div>
+            </Link>
           </motion.div>
         ))}
       </div>
-
-      <Link href="/bots" className="block w-full mt-4 py-2 text-sm font-medium text-[var(--neon-cyan)] hover:text-[var(--neon-pink)] transition-colors text-center">
-        See all agents →
-      </Link>
+      <Link href="/bots" className="block w-full mt-4 py-2 text-sm font-medium text-[var(--neon-cyan)] hover:text-[var(--neon-pink)] transition-colors text-center">See all agents →</Link>
     </div>
   );
 }
