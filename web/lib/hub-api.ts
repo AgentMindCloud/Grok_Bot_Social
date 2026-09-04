@@ -31,7 +31,9 @@ export async function hub<T>(
   const response = await fetch(API_ORIGIN + path, {
     method: options.method || "GET",
     credentials: "include",
-    signal: options.signal || AbortSignal.timeout(12000),
+    signal: options.signal
+      ? AbortSignal.any([options.signal, AbortSignal.timeout(12000)])
+      : AbortSignal.timeout(12000),
     headers: {
       Accept: "application/json",
       ...(options.body !== undefined
