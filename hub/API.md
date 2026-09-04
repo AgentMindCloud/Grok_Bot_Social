@@ -110,16 +110,18 @@ When `privateBetaEnabled` is true, `/api/session` also reports `weeklyResearchEn
 
 All owner mutations below require the existing exact-Origin and CSRF controls. Pages use an opaque scope-bound keyset cursor with `limit` default 20 and maximum 100:
 
-| Method   | Path                                                | Input / result                                                                 |
-| -------- | --------------------------------------------------- | ------------------------------------------------------------------------------ |
-| GET      | `/api/workspace/summary`                            | Lightweight owner/bots/circles, feature flags, optional enrollment and counts  |
-| GET      | `/api/missions?status=&cursor=&limit=`              | `Page<Mission>` for owner missions                                             |
-| GET      | `/api/evidence?missionId=&circleId=&cursor=&limit=` | `Page<Evidence>`; own or currently permitted published evidence                |
-| GET      | `/api/evidence/:id`                                 | `{evidence}` if currently permitted                                            |
-| GET      | `/api/approvals?status=&cursor=&limit=`             | `Page<Approval>`                                                               |
-| GET      | `/api/decisions?missionId=&cursor=&limit=`          | `Page<OwnerReview>` with immutable revisions                                   |
-| GET      | `/api/decisions/:id/export?format=`                 | `json` or `markdown`; current-permission export attachment                     |
-| GET/POST | `/api/pilot/enrollment`                             | Optional consent and assistance; classification/cohort are operator controlled |
+| Method   | Path                                                | Input / result                                                                               |
+| -------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| GET      | `/api/workspace/summary`                            | Lightweight owner/bots/circles, feature flags, enrollment, counts and bounded action records |
+| GET      | `/api/missions?status=&cursor=&limit=`              | `Page<Mission>` for owner missions                                                           |
+| GET      | `/api/evidence?missionId=&circleId=&cursor=&limit=` | `Page<Evidence>`; own or currently permitted published evidence                              |
+| GET      | `/api/evidence/:id`                                 | `{evidence}` if currently permitted                                                          |
+| GET      | `/api/approvals?status=&cursor=&limit=`             | `Page<Approval>`                                                                             |
+| GET      | `/api/decisions?missionId=&cursor=&limit=`          | `Page<OwnerReview>` with immutable revisions                                                 |
+| GET      | `/api/decisions/:id/export?format=`                 | `json` or `markdown`; current-permission export attachment                                   |
+| GET/POST | `/api/pilot/enrollment`                             | Optional consent and assistance; classification/cohort are operator controlled               |
+
+`workspace/summary.actionSummary` contains four independently bounded queues. Each has `{total,items}`; `total` covers every relevant owner record while `items` contains at most `recordLimit` (currently 10). `awaitingReview` orders the oldest terminal missions that have at least one currently accessible finding and no owner review. `dueReviews` orders the latest review version for every mission whose non-null `nextReviewAt` has elapsed. `activeWork` orders active missions by deadline and reports task counts, including queued retries. `blockers` returns one permission-safe reason code and server-authored message per cancelled, failed, or currently paused-bot-blocked owner mission. Blocker messages state durable status or current conditions; they do not infer causality when the stored schema has no linked failure-reason field. The response never includes another owner's mission, inaccessible evidence text, peer identity, private failure payload, or a claim about native execution.
 
 Create a weekly mission through `POST /api/missions` with `WeeklyMissionRequest` from `src/contracts.ts`. `visibility` must be private; `maxRounds` defaults to two and is at most two. `weeklyInput` contains offer (1000), buyer (1000), zero-to-three products (name 100, public URL 2048), one-to-twenty unique normalized seed URLs, and `approvedOrigins`. The origins must exactly equal the sorted union of normalized product and seed URL origins; this binds the owner's displayed confirmation. Optional `priorReviewId` and `priorReviewVersion` must identify the same immutable owner review. The idempotency key is `[A-Za-z0-9_-]`, maximum 128. Response is `{mission,replayed}`.
 

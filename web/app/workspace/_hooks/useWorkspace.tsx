@@ -19,18 +19,27 @@ function useWorkspaceState() {
   const controller = useRef<AbortController | null>(null);
   const logoutCsrf = useRef<string | null>(null);
   const mounted = useRef(true);
-  const invalidate = useCallback(() => {
+  const invalidate = useCallback((invitationRequired = false) => {
     epoch.current++; controller.current?.abort();
-    setSummary(null); setUpdatedAt(null); setNotice("");
-    setSession(current => current ? { ...current, authenticated: false, owner: undefined, csrfToken: undefined } : null);
+    summaryRead.current++; setLoading(false); setSummary(null); setUpdatedAt(null); setNotice(""); setError("");
+    setSession(current => {
+      const next = current ? { ...current, authenticated: false, accessDenied: invitationRequired, owner: undefined, csrfToken: undefined } : null;
+      sessionRef.current = next; return next;
+    });
   }, []);
   const refresh = useCallback(async () => {
     const currentEpoch = epoch.current;
     const read = ++summaryRead.current;
-    const next = await hub<WorkspaceSummary>("/api/workspace/summary");
-    if (mounted.current && currentEpoch === epoch.current && read === summaryRead.current) { setSummary(next); setUpdatedAt(new Date().toISOString()); setError(""); }
-    return next;
-  }, []);
+    try {
+      const next = await hub<WorkspaceSummary>("/api/workspace/summary");
+      if (mounted.current && currentEpoch === epoch.current && read === summaryRead.current) { setSummary(next); setUpdatedAt(new Date().toISOString()); setError(""); }
+      return next;
+    } catch (failure) {
+      if (failure instanceof HubError && failure.status === 403) invalidate(true);
+      else if (failure instanceof HubError && failure.status === 401) invalidate();
+      throw failure;
+    }
+  }, [invalidate]);
   const load = useCallback(async () => {
     controller.current?.abort(); const abort = new AbortController(); controller.current = abort;
     const currentEpoch = ++epoch.current; setLoading(true); setError(""); setSummary(null);
@@ -42,9 +51,15 @@ function useWorkspaceState() {
         const data = await hub<WorkspaceSummary>("/api/workspace/summary", { signal: abort.signal });
         if (mounted.current && currentEpoch === epoch.current) { setSummary(data); setUpdatedAt(new Date().toISOString()); }
       }
-    } catch (failure) { if (!abort.signal.aborted && currentEpoch === epoch.current) setError(readableError(failure)); }
+    } catch (failure) {
+      if (!abort.signal.aborted && currentEpoch === epoch.current) {
+        if (failure instanceof HubError && failure.status === 403) invalidate(true);
+        else if (failure instanceof HubError && failure.status === 401) invalidate();
+        else setError(readableError(failure));
+      }
+    }
     finally { if (mounted.current && currentEpoch === epoch.current) setLoading(false); }
-  }, []);
+  }, [invalidate]);
   useEffect(() => { mounted.current = true; void load(); return () => { mounted.current = false; epoch.current++; controller.current?.abort(); }; }, [load]);
   useEffect(() => {
     if (!session?.authenticated || !session.privateBetaEnabled) return;
@@ -54,7 +69,7 @@ function useWorkspaceState() {
       const currentEpoch = epoch.current;
       pending = true;
       try { await refresh(); }
-      catch (failure) { if (currentEpoch !== epoch.current) return; if (failure instanceof HubError && failure.status === 401) invalidate(); else if (mounted.current) setError("Connection interrupted. Displayed work may be out of date. Refresh before making a decision."); }
+      catch (failure) { if (currentEpoch !== epoch.current) return; if (failure instanceof HubError && failure.status === 403) invalidate(true); else if (failure instanceof HubError && failure.status === 401) invalidate(); else if (mounted.current) setError("Connection interrupted. Displayed work may be out of date. Refresh before making a decision."); }
       finally { pending = false; }
     }, 30000);
     return () => window.clearInterval(timer);
@@ -65,7 +80,7 @@ function useWorkspaceState() {
       const result = await hub<T>(path, { method: "POST", body, csrf: sessionRef.current?.csrfToken });
       if (currentEpoch !== epoch.current || !mounted.current) throw new HubError("Your session changed. Sign in again to inspect the result.", 401);
       setRevision(value => value + 1);
-      try { await refresh(); } catch { setNotice("Saved, but the latest workspace could not load. Refresh to inspect the result; do not repeat the change."); }
+      try { await refresh(); } catch (failure) { if (!(failure instanceof HubError && [401, 403].includes(failure.status))) setNotice("Saved, but the latest workspace could not load. Refresh to inspect the result; do not repeat the change."); }
       return result;
     } catch (failure) { if (failure instanceof HubError && failure.status === 401) invalidate(); throw failure; }
   }, [refresh, invalidate]);

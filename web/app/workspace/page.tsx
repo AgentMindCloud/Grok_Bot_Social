@@ -67,6 +67,10 @@ function BetaWorkspace() {
   const [management, setManagement] = useState<{ kind: ManagementAction; sequence: number } | null>(null);
   const sequence = useRef(0);
   const title = useMemo(() => headings[view], [view]);
+  useEffect(() => {
+    if (session?.authenticated) return;
+    setView("overview"); setMissionId(null); setWeeklySource(null); setWeeklyOpen(false); setManagement(null);
+  }, [session?.authenticated, session?.accessDenied]);
   const choose = (next: View) => { setView(next); setMissionId(null); setError(""); setNotice(""); };
   const manage = (kind: ManagementAction, destination: View = kind === "pair" ? "bots" : "knowledge") => { choose(destination); setManagement({ kind, sequence: ++sequence.current }); };
   const create = (source: MissionDetail | null = null) => {

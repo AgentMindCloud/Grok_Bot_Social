@@ -175,6 +175,92 @@ const resultBody = (task: any, url = "https://example.com/other-page") => ({
   },
 });
 
+async function summaryBot(ownerId: string, status = "active") {
+  const botId = randomUUID();
+  await db.query(
+    "INSERT INTO bots(id,owner_id,name,role,runtime,status,token_hash) VALUES($1,$2,'Summary bot','scout','native-grok',$3,$4)",
+    [botId, ownerId, status, hash(randomUUID())],
+  );
+  return botId;
+}
+
+async function summaryMission(input: {
+  ownerId: string;
+  title: string;
+  status: "queued" | "running" | "completed" | "failed" | "cancelled";
+  createdAt: string;
+  botId?: string;
+  taskStatus?: "queued" | "leased" | "completed" | "failed";
+  attempts?: number;
+  evidenceOwnerId?: string;
+  evidenceVisibility?: "private" | "circle";
+  circleId?: string;
+}) {
+  const missionId = randomUUID();
+  await db.query(
+    "INSERT INTO missions(id,owner_id,title,brief,status,visibility,circle_id,max_rounds) VALUES($1,$2,$3,'Summary fixture',$4,$5,$6,1)",
+    [
+      missionId,
+      input.ownerId,
+      input.title,
+      input.status,
+      input.circleId ? "circle" : "private",
+      input.circleId ?? null,
+    ],
+  );
+  await db.query("UPDATE missions SET created_at=$2 WHERE id=$1", [
+    missionId,
+    input.createdAt,
+  ]);
+  if (input.botId && input.taskStatus)
+    await db.query(
+      "INSERT INTO tasks(id,mission_id,bot_id,round,status,attempts) VALUES($1,$2,$3,1,$4,$5)",
+      [
+        randomUUID(),
+        missionId,
+        input.botId,
+        input.taskStatus,
+        input.attempts ?? 0,
+      ],
+    );
+  if (input.evidenceOwnerId)
+    await db.query(
+      "INSERT INTO evidence(id,owner_id,mission_id,title,summary,source_url,sources,visibility,circle_id) VALUES($1,$2,$3,$4,'Permission-safe finding','https://example.com', $5,$6,$7)",
+      [
+        randomUUID(),
+        input.evidenceOwnerId,
+        missionId,
+        `${input.title} finding`,
+        JSON.stringify([{ url: "https://example.com" }]),
+        input.evidenceVisibility ?? "private",
+        input.circleId ?? null,
+      ],
+    );
+  return missionId;
+}
+
+async function summaryReview(input: {
+  missionId: string;
+  ownerId: string;
+  version?: number;
+  nextReviewAt: string;
+}) {
+  const reviewId = randomUUID();
+  await db.query(
+    "INSERT INTO mission_review_versions(id,mission_id,owner_id,version,decision,usefulness,rationale,next_review_at,assistance,idempotency_key,request_hash) VALUES($1,$2,$3,$4,'watch','useful','Summary review',$5,'unknown',$6,$7)",
+    [
+      reviewId,
+      input.missionId,
+      input.ownerId,
+      input.version ?? 1,
+      input.nextReviewAt,
+      randomUUID(),
+      hash(randomUUID()),
+    ],
+  );
+  return reviewId;
+}
+
 test("beta config fails closed and weekly rollout defaults off", () => {
   assert.throws(
     () => config({ HUB_PRIVATE_BETA: "true", HUB_EMBEDDED_DB: "true" }),
@@ -960,5 +1046,246 @@ test("migration upgrades schema-two records without inventing measurement histor
   } finally {
     await old.close();
     await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("workspace action summary bounds and orders every awaiting and due owner record", async () => {
+  const a = await actor();
+  const b = await actor();
+  try {
+    for (let i = 0; i < 12; i++) {
+      const createdAt = `2026-01-${String(i + 1).padStart(2, "0")}T00:00:00Z`;
+      await summaryMission({
+        ownerId: a.id,
+        title: `Await ${String(i).padStart(2, "0")}`,
+        status: "completed",
+        createdAt,
+        evidenceOwnerId: a.id,
+      });
+      const reviewed = await summaryMission({
+        ownerId: a.id,
+        title: `Due ${String(i).padStart(2, "0")}`,
+        status: "completed",
+        createdAt,
+      });
+      await summaryReview({
+        missionId: reviewed,
+        ownerId: a.id,
+        nextReviewAt: `2026-02-${String(i + 1).padStart(2, "0")}T00:00:00Z`,
+      });
+      if (i === 0)
+        await summaryReview({
+          missionId: reviewed,
+          ownerId: a.id,
+          version: 2,
+          nextReviewAt: "2099-01-01T00:00:00Z",
+        });
+    }
+    const foreign = await summaryMission({
+      ownerId: b.id,
+      title: "FOREIGN SUMMARY SENTINEL",
+      status: "completed",
+      createdAt: "2025-01-01T00:00:00Z",
+      evidenceOwnerId: b.id,
+    });
+    await summaryReview({
+      missionId: foreign,
+      ownerId: b.id,
+      nextReviewAt: "2025-01-01T00:00:00Z",
+    });
+    const response = await a.req("GET", "/api/workspace/summary");
+    assert.equal(response.statusCode, 200, response.body);
+    const actions = response.json().actionSummary;
+    assert.equal(actions.recordLimit, 10);
+    assert.equal(actions.awaitingReview.total, 12);
+    assert.equal(actions.awaitingReview.items.length, 10);
+    assert.equal(actions.awaitingReview.items[0].title, "Await 00");
+    assert.equal(actions.awaitingReview.items[9].title, "Await 09");
+    assert.ok(
+      actions.awaitingReview.items.every(
+        (item: any) => item.accessibleFindingCount === 1,
+      ),
+    );
+    assert.equal(
+      actions.dueReviews.total,
+      11,
+      "only each mission's latest review may be due",
+    );
+    assert.equal(actions.dueReviews.items.length, 10);
+    assert.equal(actions.dueReviews.items[0].title, "Due 01");
+    assert.equal(actions.dueReviews.items[0].reviewVersion, 1);
+    assert.equal(
+      JSON.stringify(actions).includes("FOREIGN SUMMARY SENTINEL"),
+      false,
+    );
+  } finally {
+    await a.app.close();
+    await b.app.close();
+  }
+});
+
+test("awaiting review includes partial terminal findings only while evidence permission is current", async () => {
+  const a = await actor();
+  const b = await actor();
+  try {
+    const bot = await summaryBot(a.id);
+    const partial = await summaryMission({
+      ownerId: a.id,
+      title: "Partial failed mission",
+      status: "failed",
+      createdAt: "2026-08-01T00:00:00Z",
+      botId: bot,
+      taskStatus: "failed",
+      attempts: 1,
+      evidenceOwnerId: a.id,
+    });
+    const peerOnly = await summaryMission({
+      ownerId: a.id,
+      title: "Published peer finding",
+      status: "completed",
+      createdAt: "2026-08-02T00:00:00Z",
+      evidenceOwnerId: b.id,
+      evidenceVisibility: "circle",
+      circleId: b.circle,
+    });
+    await db.query(
+      "INSERT INTO circle_members(circle_id,owner_id,role,active) VALUES($1,$2,'member',true)",
+      [b.circle, a.id],
+    );
+    const privatePeer = await summaryMission({
+      ownerId: a.id,
+      title: "PRIVATE PEER SENTINEL",
+      status: "completed",
+      createdAt: "2026-08-03T00:00:00Z",
+      evidenceOwnerId: b.id,
+    });
+    let summary = (await a.req("GET", "/api/workspace/summary")).json()
+      .actionSummary.awaitingReview;
+    assert.ok(
+      summary.items.some(
+        (item: any) =>
+          item.missionId === partial && item.accessibleFindingCount === 1,
+      ),
+    );
+    assert.ok(summary.items.some((item: any) => item.missionId === peerOnly));
+    assert.equal(
+      summary.items.some((item: any) => item.missionId === privatePeer),
+      false,
+    );
+    assert.equal(
+      JSON.stringify(summary).includes("PRIVATE PEER SENTINEL"),
+      false,
+    );
+    await db.query(
+      "UPDATE circle_members SET active=false WHERE circle_id=$1 AND owner_id=$2",
+      [b.circle, a.id],
+    );
+    summary = (await a.req("GET", "/api/workspace/summary")).json()
+      .actionSummary.awaitingReview;
+    assert.equal(
+      summary.items.some((item: any) => item.missionId === peerOnly),
+      false,
+    );
+  } finally {
+    await a.app.close();
+    await b.app.close();
+  }
+});
+
+test("workspace action summary reports active retries and bounded concrete blockers without foreign content", async () => {
+  const a = await actor();
+  const b = await actor();
+  try {
+    const recentWork = new Date(Date.now() - 60_000).toISOString();
+    const recentPausedWork = new Date(Date.now() - 30_000).toISOString();
+    const activeBot = await summaryBot(a.id);
+    const pausedBot = await summaryBot(a.id, "paused");
+    const revokedBot = await summaryBot(a.id, "revoked");
+    const retrying = await summaryMission({
+      ownerId: a.id,
+      title: "Retrying work",
+      status: "running",
+      createdAt: recentWork,
+      botId: activeBot,
+      taskStatus: "queued",
+      attempts: 2,
+    });
+    const paused = await summaryMission({
+      ownerId: a.id,
+      title: "Paused blocker",
+      status: "queued",
+      createdAt: recentPausedWork,
+      botId: pausedBot,
+      taskStatus: "queued",
+    });
+    await summaryMission({
+      ownerId: a.id,
+      title: "Retry limit blocker",
+      status: "failed",
+      createdAt: "2026-01-01T00:00:00Z",
+      botId: activeBot,
+      taskStatus: "failed",
+      attempts: 3,
+    });
+    await summaryMission({
+      ownerId: a.id,
+      title: "Revoked blocker",
+      status: "failed",
+      createdAt: "2026-01-02T00:00:00Z",
+      botId: revokedBot,
+      taskStatus: "failed",
+      attempts: 1,
+    });
+    for (let i = 0; i < 9; i++)
+      await summaryMission({
+        ownerId: a.id,
+        title: `Cancelled ${i}`,
+        status: "cancelled",
+        createdAt: `2026-02-${String(i + 1).padStart(2, "0")}T00:00:00Z`,
+      });
+    await summaryMission({
+      ownerId: b.id,
+      title: "FOREIGN BLOCKER SENTINEL",
+      status: "cancelled",
+      createdAt: "2025-01-01T00:00:00Z",
+    });
+    const response = await a.req("GET", "/api/workspace/summary");
+    assert.equal(response.statusCode, 200, response.body);
+    const actions = response.json().actionSummary;
+    assert.equal(actions.activeWork.total, 2);
+    assert.equal(actions.activeWork.items.length, 2);
+    const retryRecord = actions.activeWork.items.find(
+      (item: any) => item.missionId === retrying,
+    );
+    assert.equal(retryRecord.retryingTasks, 1);
+    assert.equal(retryRecord.queuedTasks, 1);
+    assert.equal(retryRecord.totalTasks, 1);
+    assert.ok(
+      actions.activeWork.items.some((item: any) => item.missionId === paused),
+    );
+    assert.equal(actions.blockers.total, 12);
+    assert.equal(actions.blockers.items.length, 10);
+    assert.equal(actions.blockers.items[0].code, "bot_paused");
+    assert.ok(
+      actions.blockers.items.some(
+        (item: any) => item.code === "retry_limit_reached",
+      ),
+    );
+    assert.ok(
+      actions.blockers.items.some((item: any) => item.code === "bot_revoked"),
+    );
+    assert.ok(
+      actions.blockers.items.every(
+        (item: any) =>
+          typeof item.message === "string" && item.message.length > 0,
+      ),
+    );
+    assert.equal(
+      JSON.stringify(actions).includes("FOREIGN BLOCKER SENTINEL"),
+      false,
+    );
+  } finally {
+    await a.app.close();
+    await b.app.close();
   }
 });
