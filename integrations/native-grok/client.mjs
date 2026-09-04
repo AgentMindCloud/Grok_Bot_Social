@@ -182,11 +182,12 @@ export class HubClient {
     this.fetchImpl = fetchImpl;
   }
 
-  async request(path, { method = 'GET', body, authenticated = true } = {}) {
+  async request(path, { method = 'GET', body, authenticated = true, weeklyResearch = false } = {}) {
     if (!/^\/api\/bot\/[A-Za-z0-9_/-]+$/.test(path)) fail('Unsupported hub API path.');
     const url = new URL(path, this.hubUrl);
     if (url.origin !== this.hubUrl) fail('Refusing to send credentials to a different origin.');
     const headers = { Accept: 'application/json' };
+    if (weeklyResearch === true && path === '/api/bot/inbox') headers['X-Grok-Hub-Capabilities'] = 'weekly-research-v1';
     if (body !== undefined) headers['Content-Type'] = 'application/json';
     if (authenticated) headers.Authorization = `Bearer ${validateToken(this.token)}`;
     let response;
@@ -219,8 +220,8 @@ export class HubClient {
   }
 
   pair(input) { return this.request('/api/bot/pair', { method: 'POST', body: validatePairInput(input), authenticated: false }); }
-  heartbeat() { return this.request('/api/bot/heartbeat', { method: 'POST', body: { version: 'native-grok-adapter/0.1.0', capabilities: ['source-backed-research'] } }); }
-  inbox() { return this.request('/api/bot/inbox'); }
+  heartbeat({ weeklyResearch = false } = {}) { return this.request('/api/bot/heartbeat', { method: 'POST', body: { version: 'native-grok-adapter/0.2.0', capabilities: ['source-backed-research', ...(weeklyResearch === true ? ['weekly-research-v1'] : [])] } }); }
+  inbox({ weeklyResearch = false } = {}) { return this.request('/api/bot/inbox', { weeklyResearch }); }
   submit(taskId, input) { return this.request(`/api/bot/tasks/${validateIdentifier(taskId, 'Task ID')}/result`, { method: 'POST', body: validateResult(input) }); }
 }
 

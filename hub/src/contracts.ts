@@ -16,6 +16,7 @@ export interface Bot {
   createdAt: string;
 }
 export interface Mission {
+  kind?: "research" | "weekly-decision";
   id: string;
   ownerId: string;
   title: string;
@@ -80,6 +81,9 @@ export interface Workspace {
   circles: Circle[];
 }
 export interface Session {
+  privateBetaEnabled?: boolean;
+  weeklyResearchEnabled?: boolean;
+  accessDenied?: boolean;
   authenticated: boolean;
   owner?: Owner;
   csrfToken?: string;
@@ -87,6 +91,7 @@ export interface Session {
   githubLoginEnabled: boolean;
 }
 export interface Task {
+  weeklyContext?: WeeklyContext;
   id: string;
   missionId: string;
   title: string;
@@ -131,3 +136,134 @@ export interface TaskResultResponse {
 // POST /api/approvals/:id/resolve requires {decision:'approve'|'reject',version:number}.
 // Owner mutations require a session cookie, exact Origin, and X-CSRF-Token.
 // Browser fetch must include credentials; production routes are same-origin.
+
+export interface Page<T> {
+  items: T[];
+  nextCursor: string | null;
+}
+export type ReviewDecision = "test" | "watch" | "stop";
+export type Usefulness =
+  "useful" | "partly_useful" | "not_useful" | "not_assessed";
+export type Assistance = "assisted" | "unassisted" | "unknown";
+export interface WeeklyMissionInput {
+  offer: string;
+  buyer: string;
+  products: { name: string; url: string }[];
+  seedUrls: string[];
+  approvedOrigins: string[];
+  priorReviewId?: string;
+  priorReviewVersion?: number;
+}
+export interface WeeklyContext {
+  schemaVersion: 1;
+  offer: string;
+  buyer: string;
+  products: { name: string; url: string }[];
+  seedUrls: string[];
+  approvedOrigins: string[];
+  priorReview: null | {
+    id: string;
+    version: number;
+    decision: ReviewDecision;
+    usefulness: Usefulness;
+    rationale: string;
+    nextReviewAt: string | null;
+    createdAt: string;
+    availableEvidenceCount: number;
+    unavailableEvidenceCount: number;
+  };
+}
+export interface WeeklyMissionRequest {
+  kind: "weekly-decision";
+  title: string;
+  botIds: string[];
+  maxRounds?: number;
+  visibility: "private";
+  weeklyInput: WeeklyMissionInput;
+  idempotencyKey: string;
+}
+export interface ReviewInput {
+  expectedVersion: number;
+  decision: ReviewDecision;
+  usefulness: Usefulness;
+  rationale: string;
+  evidenceIds: string[];
+  nextReviewAt?: string | null;
+  assistance: Assistance;
+  reviewDurationSeconds?: number | null;
+  idempotencyKey: string;
+}
+export type ReviewCitation =
+  | { available: true; evidence: Evidence; contentHash: string }
+  | { available: false };
+export interface OwnerReview {
+  id: string;
+  missionId: string;
+  version: number;
+  decision: ReviewDecision;
+  usefulness: Usefulness;
+  rationale: string;
+  nextReviewAt: string | null;
+  assistance: Assistance;
+  reviewDurationSeconds: number | null;
+  measurement: ActivityMeasurement | null;
+  createdAt: string;
+  citations: ReviewCitation[];
+}
+export interface ActivityMeasurement {
+  cohortKey: string;
+  classification: "internal" | "test" | "invited";
+  consent: boolean;
+  assistance: Assistance;
+}
+export interface PilotEnrollment {
+  cohortKey: string;
+  classification: "internal" | "test" | "invited";
+  consent: boolean;
+  consentVersion: number;
+  assistance: Assistance;
+  enrolledAt: string;
+  updatedAt: string;
+}
+export interface WorkspaceSummary {
+  owner: Owner;
+  bots: Bot[];
+  circles: Circle[];
+  privateBetaEnabled: boolean;
+  weeklyResearchEnabled: boolean;
+  pilotEnrollment: PilotEnrollment | null;
+  counts: {
+    missions: number;
+    activeMissions: number;
+    evidence: number;
+    pendingApprovals: number;
+    reviewedMissions: number;
+  };
+}
+export interface TaskProgress {
+  scope: "whole-mission" | "own-assignments";
+  total: number;
+  queued: number;
+  leased: number;
+  completed: number;
+  failed: number;
+}
+export interface MissionDetail {
+  mission: Mission;
+  tasks: {
+    id: string;
+    botId: string;
+    round: number;
+    status: "queued" | "leased" | "completed" | "failed";
+    attempts: number;
+    leaseExpiresAt: string | null;
+  }[];
+  evidence: Evidence[];
+  progress: TaskProgress;
+  deadlineAt: string;
+  serverTime: string;
+  weeklyInput: WeeklyContext | null;
+  latestReview: OwnerReview | null;
+  followups: { missionId: string; reviewId: string; createdAt: string }[];
+  parentMissionId: string | null;
+}

@@ -15,9 +15,56 @@ export interface Config {
   leaseSeconds: number;
   maxAttempts: number;
   fetch: typeof fetch;
+  privateBeta?: boolean;
+  weeklyResearchEnabled?: boolean;
+  betaAllowedGithubIds?: string[];
+  betaInternalGithubIds?: string[];
+  betaTestGithubIds?: string[];
+  betaCohort?: string;
 }
 export function config(env: NodeJS.ProcessEnv = process.env): Config {
   const production = env.NODE_ENV === "production";
+  if (
+    env.HUB_PRIVATE_BETA !== undefined &&
+    !["true", "false"].includes(env.HUB_PRIVATE_BETA)
+  )
+    throw new Error("HUB_PRIVATE_BETA must be true or false");
+  const privateBeta = env.HUB_PRIVATE_BETA === "true";
+  if (
+    env.HUB_WEEKLY_RESEARCH_ENABLED !== undefined &&
+    !["true", "false"].includes(env.HUB_WEEKLY_RESEARCH_ENABLED)
+  )
+    throw new Error("HUB_WEEKLY_RESEARCH_ENABLED must be true or false");
+  const weeklyResearchEnabled = env.HUB_WEEKLY_RESEARCH_ENABLED === "true";
+  if (weeklyResearchEnabled && !privateBeta)
+    throw new Error("Weekly research requires private beta access controls");
+  const ids = (name: string) => {
+    if (!env[name]) return [];
+    const values = env[name]!.split(",").map((s) => s.trim());
+    if (
+      values.some((s) => !/^[1-9][0-9]{0,19}$/.test(s)) ||
+      new Set(values).size !== values.length
+    )
+      throw new Error(`${name} must contain unique numeric GitHub IDs`);
+    return values;
+  };
+  const betaAllowedGithubIds = ids("HUB_BETA_ALLOWED_GITHUB_IDS");
+  const betaInternalGithubIds = ids("HUB_BETA_INTERNAL_GITHUB_IDS");
+  const betaTestGithubIds = ids("HUB_BETA_TEST_GITHUB_IDS");
+  if (privateBeta && !betaAllowedGithubIds.length)
+    throw new Error("Private beta requires HUB_BETA_ALLOWED_GITHUB_IDS");
+  if (
+    [...betaInternalGithubIds, ...betaTestGithubIds].some(
+      (s) => !betaAllowedGithubIds.includes(s),
+    ) ||
+    betaInternalGithubIds.some((s) => betaTestGithubIds.includes(s))
+  )
+    throw new Error(
+      "Beta classifications must be disjoint subsets of the allowlist",
+    );
+  const betaCohort = env.HUB_BETA_COHORT ?? "private-beta-1";
+  if (!/^[a-zA-Z0-9_-]{1,80}$/.test(betaCohort))
+    throw new Error("Invalid HUB_BETA_COHORT");
   const origin = env.PUBLIC_ORIGIN ?? "http://127.0.0.1:3000";
   const url = new URL(origin);
   if (url.origin !== origin || url.username || url.password)
@@ -55,6 +102,12 @@ export function config(env: NodeJS.ProcessEnv = process.env): Config {
   return {
     origin,
     production,
+    privateBeta,
+    weeklyResearchEnabled,
+    betaAllowedGithubIds,
+    betaInternalGithubIds,
+    betaTestGithubIds,
+    betaCohort,
     localLogin,
     localOwner: env.HUB_LOCAL_OWNER_HANDLE ?? "local-owner",
     githubClientId: env.GITHUB_CLIENT_ID,

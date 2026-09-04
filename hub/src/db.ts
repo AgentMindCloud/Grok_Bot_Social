@@ -89,7 +89,11 @@ export async function migrate(db: Database): Promise<void> {
     await tx.exec(
       "CREATE TABLE IF NOT EXISTS schema_migrations (version integer PRIMARY KEY, applied_at timestamptz NOT NULL DEFAULT now())",
     );
-    const migrations = ["001_initial.sql", "002_mission_cancel.sql"];
+    const migrations = [
+      "001_initial.sql",
+      "002_mission_cancel.sql",
+      "003_private_beta.sql",
+    ];
     for (const [index, file] of migrations.entries()) {
       const version = index + 1;
       const found = await tx.query(

@@ -47,7 +47,7 @@ jobs:
         env:
           TEST_DATABASE_URL: postgresql://grokbot_test:ephemeral-ci-only@127.0.0.1:5432/grokbot_test
       - name: Native adapter checks
-        run: node --test integrations/native-grok/client.test.mjs
+        run: npm test --prefix integrations/native-grok
       - name: Install frontend dependencies
         working-directory: web
         run: npm ci --no-audit --no-fund
@@ -71,6 +71,10 @@ jobs:
       POSTGRES_ADMIN_PASSWORD: ephemeral_ci_admin_different_0123456789abcdef
       GITHUB_CLIENT_ID: ci-startup-check-only
       GITHUB_CLIENT_SECRET: ci-placeholder-no-account-access
+      HUB_PRIVATE_BETA: "true"
+      HUB_BETA_ALLOWED_GITHUB_IDS: "123"
+      HUB_BETA_INTERNAL_GITHUB_IDS: "123"
+      HUB_WEEKLY_RESEARCH_ENABLED: "true"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

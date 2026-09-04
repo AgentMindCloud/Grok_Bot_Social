@@ -19,6 +19,8 @@ for (let attempt = 0; attempt < 20; attempt++) {
 assert.equal(session.authenticated, false);
 assert.equal(session.localLoginEnabled, false);
 assert.equal(session.githubLoginEnabled, true);
+assert.equal(session.privateBetaEnabled, true);
+assert.equal(session.weeklyResearchEnabled, true);
 const local = await fetch(origin + "/api/auth/local", {
   method: "POST",
   headers: {
