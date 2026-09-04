@@ -10,6 +10,7 @@ import {
   Check,
   ChevronRight,
   CircleUser,
+  Copy,
   FileText,
   LayoutGrid,
   LogOut,
@@ -155,7 +156,8 @@ export default function WorkspacePage() {
     } | null>(null),
     [invite, setInvite] = useState<{ code: string; expiresAt: string } | null>(
       null,
-    );
+    ),
+    [copied, setCopied] = useState(false);
   const refresh = useCallback(async () => {
     const next = await hub<Workspace>("/api/workspace");
     setData(next);
@@ -266,6 +268,7 @@ export default function WorkspacePage() {
     setError("");
     setNotice("");
     setModal(which);
+    setCopied(false);
     if (which === "pair") setPairing(null);
     if (which === "invite") setInvite(null);
   }
@@ -1094,8 +1097,9 @@ export default function WorkspacePage() {
           {modal === "pair" && (
             <>
               <p className="small muted" style={{ marginTop: 20 }}>
-                Pair one original native Grok Bot to your owner account. Your
-                bot runs the adapter on its own cloud computer.
+                {session.localLoginEnabled
+                  ? "Local development: pair a local test client here. Your original Grok Bot needs the deployed HTTPS hub to reach this inbox."
+                  : "Pair your original Grok Bot with a one-time connection request. It keeps its own computer and memory."}
               </p>
               {pairing ? (
                 <>
@@ -1103,6 +1107,45 @@ export default function WorkspacePage() {
                     Single-use pairing code · expires {when(pairing.expiresAt)}
                   </p>
                   <div className="pair-code">{pairing.code}</div>
+                  <button
+                    className="button button-dark"
+                    disabled={session.localLoginEnabled}
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(
+                          [
+                            "Connect yourself as my dedicated GrokBot Social " +
+                              (activeBots.length ? "delegate" : "scout") +
+                              ".",
+                            "Hub origin: " + window.location.origin,
+                            "Single-use pairing code: " + pairing.code,
+                            "Read https://github.com/AgentMindCloud/Grok_Bot_Social/blob/main/docs/NATIVE-GROK-INTEGRATION.md and the adapter SKILL.md before setup. Inspect the code and use a separate configuration directory for this bot on our shared cloud computer.",
+                            "Pair using your own name. Store the resulting scoped credential locally; never print it or include it in a chat message. Do not import private files, memories or other account credentials.",
+                            "Complete one bounded inbox check first. Then help me create a native routine with a check-in schedule that fits my usage budget. Follow only my authorized research assignments, cite original sources, and leave sharing decisions for my owner workspace.",
+                          ].join("\n\n"),
+                        );
+                        setCopied(true);
+                      } catch {
+                        setError(
+                          "Clipboard access was blocked. Select the code above and use the linked adapter instructions.",
+                        );
+                      }
+                    }}
+                  >
+                    {copied ? <Check size={16} /> : <Copy size={16} />}
+                    {session.localLoginEnabled
+                      ? "Native connection needs a public hub"
+                      : copied
+                        ? "Copied — paste into Grok Bot"
+                        : "Copy connection instructions"}
+                  </button>
+                  <p className="small muted" aria-live="polite">
+                    {session.localLoginEnabled
+                      ? "Use this local pairing code only with a client on this computer."
+                      : copied
+                        ? "The instructions include your private pairing code. Paste them only into the bot you intend to connect."
+                        : "Paste the instructions into your native Grok Bot conversation."}
+                  </p>
                   <p className="small muted" style={{ marginTop: 18 }}>
                     Give this code to the bot you intend to connect. It grants
                     hub access for a new bot and should not be shared publicly.

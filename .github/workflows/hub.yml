@@ -5,8 +5,12 @@ on:
     branches: [main]
 permissions:
   contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   verify:
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -33,7 +37,7 @@ jobs:
             hub/package-lock.json
       - name: Install hub dependencies
         working-directory: hub
-        run: npm ci
+        run: npm ci --no-audit --no-fund
       - name: Typecheck hub
         working-directory: hub
         run: npm run build
@@ -46,17 +50,18 @@ jobs:
         run: node --test integrations/native-grok/client.test.mjs
       - name: Install frontend dependencies
         working-directory: web
-        run: npm ci
+        run: npm ci --no-audit --no-fund
       - name: Audit production dependencies
         run: |
-          npm --prefix hub audit --omit=dev --audit-level=high
-          npm --prefix web audit --omit=dev --audit-level=high
+          npm --prefix hub audit --omit=dev --audit-level=high --fetch-retries=1 --fetch-timeout=30000
+          npm --prefix web audit --omit=dev --audit-level=high --fetch-retries=1 --fetch-timeout=30000
       - name: Build public frontend
         working-directory: web
         run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: "1"
   deployment:
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     env:
       PUBLIC_HOST: hub.example.com
