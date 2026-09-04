@@ -535,39 +535,121 @@ export function betaApi(db: Database, config: Config, s: Services) {
       requireBeta(config);
       const owner = await s.owner(request);
       await s.reconcile();
-      const [bots, circles, counts, enrollment] = await Promise.all([
-        db.query(
+      return db.transaction(async (tx) => {
+        await lockMemberships(tx, owner.id);
+        // A transaction owns one pg client. Keep its queries sequential; concurrent
+        // client.query calls are deprecated by pg and do not improve throughput.
+        const bots = await tx.query(
           "SELECT * FROM bots WHERE owner_id=$1 ORDER BY created_at,id",
           [owner.id],
-        ),
-        db.query(
+        );
+        const circles = await tx.query(
           "SELECT c.id,c.name,m.role FROM circles c JOIN circle_members m ON m.circle_id=c.id WHERE m.owner_id=$1 AND m.active=true ORDER BY c.id",
           [owner.id],
-        ),
-        db.query(
+        );
+        const counts = await tx.query(
           "SELECT (SELECT count(*)::integer FROM missions WHERE owner_id=$1) AS missions,(SELECT count(*)::integer FROM missions WHERE owner_id=$1 AND status IN ('queued','running')) AS active,(SELECT count(*)::integer FROM evidence WHERE owner_id=$1) AS evidence,(SELECT count(*)::integer FROM approvals WHERE owner_id=$1 AND status='pending') AS approvals,(SELECT count(DISTINCT mission_id)::integer FROM mission_review_versions WHERE owner_id=$1) AS reviewed",
           [owner.id],
-        ),
-        db.query("SELECT * FROM pilot_enrollments WHERE owner_id=$1", [
-          owner.id,
-        ]),
-      ]);
-      const c = counts.rows[0];
-      return {
-        owner: s.ownerView(owner),
-        bots: bots.rows.map(s.botView),
-        circles: circles.rows,
-        privateBetaEnabled: !!config.privateBeta,
-        weeklyResearchEnabled: !!config.weeklyResearchEnabled,
-        counts: {
-          missions: c.missions,
-          activeMissions: c.active,
-          evidence: c.evidence,
-          pendingApprovals: c.approvals,
-          reviewedMissions: c.reviewed,
-        },
-        pilotEnrollment: enrollView(enrollment.rows[0]),
-      };
+        );
+        const enrollment = await tx.query(
+          "SELECT * FROM pilot_enrollments WHERE owner_id=$1",
+          [owner.id],
+        );
+        const awaiting = await tx.query(
+          "SELECT m.id,m.title,m.status,m.created_at,count(e.id)::integer AS finding_count,(count(*) OVER())::integer AS total_count FROM missions m JOIN evidence e ON e.mission_id=m.id AND (e.owner_id=$1 OR (e.visibility='circle' AND EXISTS(SELECT 1 FROM circle_members cm WHERE cm.circle_id=e.circle_id AND cm.owner_id=$1 AND cm.active=true))) WHERE m.owner_id=$1 AND m.status IN ('completed','failed','cancelled') AND NOT EXISTS(SELECT 1 FROM mission_review_versions r WHERE r.mission_id=m.id AND r.owner_id=$1) GROUP BY m.id,m.title,m.status,m.created_at ORDER BY m.created_at,m.id LIMIT 10",
+          [owner.id],
+        );
+        const due = await tx.query(
+          "WITH latest AS (SELECT DISTINCT ON (r.mission_id) r.* FROM mission_review_versions r WHERE r.owner_id=$1 ORDER BY r.mission_id,r.version DESC) SELECT r.id AS review_id,r.version,r.decision,r.usefulness,r.next_review_at,m.id,m.title,m.status,m.created_at,(count(*) OVER())::integer AS total_count FROM latest r JOIN missions m ON m.id=r.mission_id AND m.owner_id=$1 WHERE r.next_review_at IS NOT NULL AND r.next_review_at<=now() ORDER BY r.next_review_at,r.id LIMIT 10",
+          [owner.id],
+        );
+        const active = await tx.query(
+          "SELECT m.id,m.title,m.status,m.created_at,(m.created_at+interval '24 hours') AS deadline_at,count(t.id)::integer AS total_tasks,count(t.id) FILTER(WHERE t.status='queued')::integer AS queued_tasks,count(t.id) FILTER(WHERE t.status='leased')::integer AS leased_tasks,count(t.id) FILTER(WHERE t.status='completed')::integer AS completed_tasks,count(t.id) FILTER(WHERE t.status='queued' AND t.attempts>0)::integer AS retrying_tasks,(count(*) OVER())::integer AS total_count FROM missions m JOIN tasks t ON t.mission_id=m.id WHERE m.owner_id=$1 AND m.status IN ('queued','running') GROUP BY m.id,m.title,m.status,m.created_at ORDER BY deadline_at,m.id LIMIT 10",
+          [owner.id],
+        );
+        const blocked = await tx.query(
+          "WITH states AS (SELECT m.id,m.title,m.status,m.created_at,CASE WHEN m.status='cancelled' THEN 'owner_cancelled' WHEN m.status='failed' AND EXISTS(SELECT 1 FROM tasks t JOIN bots b ON b.id=t.bot_id WHERE t.mission_id=m.id AND b.status='revoked') THEN 'bot_revoked' WHEN m.status='failed' AND m.visibility='circle' AND EXISTS(SELECT 1 FROM tasks t JOIN bots b ON b.id=t.bot_id WHERE t.mission_id=m.id AND NOT EXISTS(SELECT 1 FROM circle_members cm WHERE cm.circle_id=m.circle_id AND cm.owner_id=b.owner_id AND cm.active=true)) THEN 'participant_membership_removed' WHEN m.status='failed' AND EXISTS(SELECT 1 FROM tasks t WHERE t.mission_id=m.id AND t.status='failed' AND t.attempts>=$2) THEN 'retry_limit_reached' WHEN m.status='failed' AND m.created_at<=now()-interval '24 hours' THEN 'deadline_elapsed' WHEN m.status IN ('queued','running') AND EXISTS(SELECT 1 FROM tasks t JOIN bots b ON b.id=t.bot_id WHERE t.mission_id=m.id AND t.status IN ('queued','leased') AND b.status='paused') THEN 'bot_paused' WHEN m.status='failed' THEN 'mission_failed' END AS code FROM missions m WHERE m.owner_id=$1) SELECT *, (count(*) OVER())::integer AS total_count FROM states WHERE code IS NOT NULL ORDER BY CASE WHEN status IN ('queued','running') THEN 0 ELSE 1 END,created_at,id LIMIT 10",
+          [owner.id, config.maxAttempts],
+        );
+        const c = counts.rows[0];
+        const total = (rows: Row[]) => rows[0]?.total_count ?? 0;
+        const base = (row: Row) => ({
+          missionId: row.id,
+          title: row.title,
+          status: row.status,
+          createdAt: iso(row.created_at)!,
+        });
+        const blockerMessages: Record<string, string> = {
+          owner_cancelled: "The owner cancelled this mission.",
+          bot_revoked:
+            "This failed mission has an assigned bot that is now revoked.",
+          participant_membership_removed:
+            "This failed mission has an assigned participant without current circle membership.",
+          retry_limit_reached:
+            "A research task reached the bounded retry limit.",
+          deadline_elapsed: "This failed mission is past its 24-hour deadline.",
+          bot_paused: "An assigned bot is paused and cannot claim its task.",
+          mission_failed:
+            "The mission ended before all tasks completed; no more specific structured cause is available.",
+        };
+        return {
+          owner: s.ownerView(owner),
+          bots: bots.rows.map(s.botView),
+          circles: circles.rows,
+          privateBetaEnabled: !!config.privateBeta,
+          weeklyResearchEnabled: !!config.weeklyResearchEnabled,
+          counts: {
+            missions: c.missions,
+            activeMissions: c.active,
+            evidence: c.evidence,
+            pendingApprovals: c.approvals,
+            reviewedMissions: c.reviewed,
+          },
+          pilotEnrollment: enrollView(enrollment.rows[0]),
+          actionSummary: {
+            generatedAt: new Date().toISOString(),
+            recordLimit: 10,
+            awaitingReview: {
+              total: total(awaiting.rows),
+              items: awaiting.rows.map((row) => ({
+                ...base(row),
+                accessibleFindingCount: row.finding_count,
+              })),
+            },
+            dueReviews: {
+              total: total(due.rows),
+              items: due.rows.map((row) => ({
+                ...base(row),
+                reviewId: row.review_id,
+                reviewVersion: row.version,
+                decision: row.decision,
+                usefulness: row.usefulness,
+                nextReviewAt: iso(row.next_review_at)!,
+              })),
+            },
+            activeWork: {
+              total: total(active.rows),
+              items: active.rows.map((row) => ({
+                ...base(row),
+                deadlineAt: iso(row.deadline_at)!,
+                totalTasks: row.total_tasks,
+                queuedTasks: row.queued_tasks,
+                leasedTasks: row.leased_tasks,
+                completedTasks: row.completed_tasks,
+                retryingTasks: row.retrying_tasks,
+              })),
+            },
+            blockers: {
+              total: total(blocked.rows),
+              items: blocked.rows.map((row) => ({
+                ...base(row),
+                code: row.code,
+                message: blockerMessages[row.code],
+              })),
+            },
+          },
+        };
+      });
     });
     app.get("/api/missions", async (request) => {
       requireBeta(config);

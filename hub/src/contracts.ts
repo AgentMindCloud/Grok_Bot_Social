@@ -239,6 +239,55 @@ export interface WorkspaceSummary {
     pendingApprovals: number;
     reviewedMissions: number;
   };
+  actionSummary: WorkspaceActionSummary;
+}
+export interface SummaryMissionRecord {
+  missionId: string;
+  title: string;
+  status: Mission["status"];
+  createdAt: string;
+}
+export interface AwaitingReviewRecord extends SummaryMissionRecord {
+  accessibleFindingCount: number;
+}
+export interface DueReviewRecord extends SummaryMissionRecord {
+  reviewId: string;
+  reviewVersion: number;
+  decision: ReviewDecision;
+  usefulness: Usefulness;
+  nextReviewAt: string;
+}
+export interface ActiveWorkRecord extends SummaryMissionRecord {
+  deadlineAt: string;
+  totalTasks: number;
+  queuedTasks: number;
+  leasedTasks: number;
+  completedTasks: number;
+  retryingTasks: number;
+}
+export type MissionBlockerCode =
+  | "owner_cancelled"
+  | "bot_revoked"
+  | "participant_membership_removed"
+  | "retry_limit_reached"
+  | "deadline_elapsed"
+  | "bot_paused"
+  | "mission_failed";
+export interface MissionBlockerRecord extends SummaryMissionRecord {
+  code: MissionBlockerCode;
+  message: string;
+}
+export interface BoundedSummary<T> {
+  total: number;
+  items: T[];
+}
+export interface WorkspaceActionSummary {
+  generatedAt: string;
+  recordLimit: number;
+  awaitingReview: BoundedSummary<AwaitingReviewRecord>;
+  dueReviews: BoundedSummary<DueReviewRecord>;
+  activeWork: BoundedSummary<ActiveWorkRecord>;
+  blockers: BoundedSummary<MissionBlockerRecord>;
 }
 export interface TaskProgress {
   scope: "whole-mission" | "own-assignments";
