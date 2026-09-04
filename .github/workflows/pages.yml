@@ -1,8 +1,8 @@
 name: Deploy to GitHub Pages
 
 on:
-  push:
-    branches: ["main"]
+  # Production stays on its accepted deployment during private-beta work.
+  # Promote an explicitly reviewed revision with a manual workflow dispatch.
   workflow_dispatch:
 
 permissions:
