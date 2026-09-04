@@ -6,6 +6,11 @@ expected="${1:?Expected full commit SHA from the accepted GitHub release}"
 [[ "$expected" =~ ^[0-9a-f]{40}$ ]] || { echo 'Invalid expected commit SHA' >&2; exit 1; }
 here="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 [[ "$(cat "$here/COMMIT")" == "$expected" ]] || { echo 'Release commit mismatch' >&2; exit 1; }
+store="$(docker info --format '{{json .DriverStatus}}')"
+if [[ "$store" == *io.containerd.snapshotter* ]]; then
+  echo 'This release verifies classic Docker config IDs. Use the documented classic image store; do not switch an occupied host without a migration plan.' >&2
+  exit 1
+fi
 cd "$here/.."
 sha256sum --check --strict SHA256SUMS
 docker image load --input runtime-images.tar.gz
