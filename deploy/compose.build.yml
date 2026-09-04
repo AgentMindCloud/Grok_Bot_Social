@@ -1,0 +1,8 @@
+# Development/CI only. Production loads the images from a verified release.
+services:
+  hub:
+    build: ../hub
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/web.Dockerfile

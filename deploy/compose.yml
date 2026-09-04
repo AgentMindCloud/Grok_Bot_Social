@@ -1,7 +1,7 @@
 name: grokbot-social
 services:
   database:
-    image: postgres:17-alpine
+    image: ${POSTGRES_IMAGE:-postgres:17-alpine}
     restart: unless-stopped
     environment:
       POSTGRES_DB: grokbot
@@ -18,7 +18,7 @@ services:
       retries: 10
     networks: [private]
   hub:
-    build: ../hub
+    image: ${HUB_IMAGE:-grokbot-social-hub:local}
     restart: unless-stopped
     init: true
     environment:
@@ -39,9 +39,7 @@ services:
     read_only: true
     tmpfs: [/tmp]
   web:
-    build:
-      context: ..
-      dockerfile: deploy/web.Dockerfile
+    image: ${WEB_IMAGE:-grokbot-social-web:local}
     restart: unless-stopped
     environment:
       PUBLIC_HOST: ${PUBLIC_HOST}

@@ -79,7 +79,7 @@ jobs:
       - name: Validate deployment without printing resolved environment
         run: docker compose -f deploy/compose.yml config --quiet
       - name: Build production images
-        run: docker compose -f deploy/compose.yml build
+        run: docker compose -f deploy/compose.yml -f deploy/compose.build.yml build
       - name: Validate Caddy ingress configuration
         run: docker compose -f deploy/compose.yml run --rm --no-deps web caddy validate --config /etc/caddy/Caddyfile
       - name: Verify production API startup and disabled developer login
@@ -94,8 +94,49 @@ jobs:
         run: |
           docker compose -f deploy/compose.yml run -d --no-deps --name grokbot-social-ci-web -p 127.0.0.1:18080:8080 -e PUBLIC_HOST=:8080 web
           node deploy/smoke.mjs
+      - name: Package the tested runtime for small VPS deployment
+        run: |
+          bash -n deploy/package-release.sh deploy/load-release.sh
+          bash deploy/package-release.sh "$GITHUB_SHA" dist-release
+          bash dist-release/deployment/load-release.sh "$GITHUB_SHA"
+          docker compose --env-file dist-release/deployment/release.env -f dist-release/deployment/compose.yml config --quiet
+      - name: Preserve the accepted runtime images
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-${{ github.sha }}
+          path: |
+            dist-release/runtime-images.tar.gz
+            dist-release/deployment.tar.gz
+            dist-release/SHA256SUMS
+          retention-days: 7
+          compression-level: 0
       - name: Clean up disposable CI containers
         if: always()
         run: |
           docker rm -f grokbot-social-ci-web || true
           docker compose -f deploy/compose.yml down --volumes
+  publish:
+    needs: [verify, deployment]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: runtime-${{ github.sha }}
+          path: dist-release
+      - name: Publish the verified runtime bundle
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          cd dist-release
+          sha256sum --check --strict SHA256SUMS
+          cd ..
+          tag="runtime-${GITHUB_SHA:0:12}"
+          gh release create "$tag" dist-release/runtime-images.tar.gz dist-release/deployment.tar.gz dist-release/SHA256SUMS --target "$GITHUB_SHA" --title "GrokBot Social runtime ${GITHUB_SHA:0:12}" --notes-file deploy/RELEASE-NOTES.md --draft --latest=false
+          gh release edit "$tag" --draft=false --latest=false
