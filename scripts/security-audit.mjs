@@ -346,8 +346,12 @@ export async function githubPage(
       !url.hash,
     "Unsafe advisory API destination.",
   );
+  // Credentials are opaque. Accept visible ASCII, including Actions token dots,
+  // while rejecting whitespace and control characters before building a header.
   check(
-    !token || (typeof token === "string" && /^[A-Za-z0-9_]+$/.test(token)),
+    token === undefined ||
+      token === "" ||
+      (typeof token === "string" && /^[\x21-\x7E]+$/.test(token)),
     "Invalid GitHub token format.",
   );
   const headers = {
@@ -791,6 +795,55 @@ async function selfTest() {
       }),
       /every required/,
     );
+  });
+  await test("opaque Actions token shapes reach the header; whitespace and controls never reach fetch", async () => {
+    // Synthetic values test local header handling only, not GitHub authentication.
+    for (const token of [
+      "v1.synthetic-actions.token-2_~+/=",
+      "github_pat_SYNTHETIC_ONLY",
+    ]) {
+      let calls = 0;
+      const result = await githubPage(queryUrl([entry], "reviewed"), {
+        token,
+        fetchImpl: async (url, options) => {
+          calls += 1;
+          assert.equal(url.origin, "https://api.github.com");
+          assert.equal(options.headers.authorization, `Bearer ${token}`);
+          return new Response("[]", {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          });
+        },
+      });
+      assert.equal(calls, 1);
+      assert.deepEqual(result.data, []);
+    }
+    for (const token of [
+      "v1.synthetic\rX-Injected:value",
+      "v1.synthetic\nX-Injected:value",
+      "v1.synthetic\r\nX-Injected:value",
+      " v1.synthetic",
+      "v1.synthetic ",
+      "v1. synthetic",
+      "v1.\tsynthetic",
+      "v1.\u0000synthetic",
+      "v1.\u001fsynthetic",
+      "v1.\u007fsynthetic",
+      "v1.\u00a0synthetic",
+    ]) {
+      let calls = 0;
+      await assert.rejects(
+        githubPage(queryUrl([entry], "reviewed"), {
+          token,
+          fetchImpl: async () => {
+            calls += 1;
+            throw new Error("Fetch must not be reached");
+          },
+        }),
+        (error) => error.message === "Invalid GitHub token format.",
+      );
+      assert.equal(calls, 0);
+    }
   });
   await test("API redirects/errors never forward or print tokens", async () => {
     const token = "github_pat_TEST_SECRET";

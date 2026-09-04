@@ -51,6 +51,8 @@ jobs:
       - name: Install frontend dependencies
         working-directory: web
         run: npm ci --no-audit --no-fund
+      - name: Verify advisory gate failure handling
+        run: node scripts/security-audit.mjs --self-test
       - name: Audit production dependencies
         run: node scripts/security-audit.mjs web hub
         env:
