@@ -1,0 +1,67 @@
+name: grokbot-social
+services:
+  database:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: grokbot
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:?Set a separate PostgreSQL administrator password}
+      GROKBOT_DB_PASSWORD: ${POSTGRES_PASSWORD:?Set a unique application database password in deploy/.env}
+    volumes:
+      - database:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U postgres -d grokbot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [private]
+  hub:
+    build: ../hub
+    restart: unless-stopped
+    init: true
+    environment:
+      NODE_ENV: production
+      HUB_HOST: 0.0.0.0
+      PORT: "4311"
+      HUB_LOCAL_OWNER_LOGIN: "false"
+      HUB_EMBEDDED_DB: "false"
+      PUBLIC_ORIGIN: https://${PUBLIC_HOST:?Set the host name in deploy/.env}
+      DATABASE_URL: postgresql://grokbot:${POSTGRES_PASSWORD}@database:5432/grokbot
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:?Set the GitHub OAuth client ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:?Set the GitHub OAuth client secret}
+    depends_on:
+      database:
+        condition: service_healthy
+    networks: [private, outbound]
+    security_opt: [no-new-privileges:true]
+    read_only: true
+    tmpfs: [/tmp]
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/web.Dockerfile
+    restart: unless-stopped
+    environment:
+      PUBLIC_HOST: ${PUBLIC_HOST}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - tls-data:/data
+      - tls-config:/config
+    depends_on:
+      hub:
+        condition: service_healthy
+    networks: [private, outbound]
+    security_opt: [no-new-privileges:true]
+networks:
+  private:
+    internal: true
+  outbound:
+volumes:
+  database:
+  tls-data:
+  tls-config:

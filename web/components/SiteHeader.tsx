@@ -1,82 +1,100 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { ArrowUpRight, Menu, X } from "lucide-react";
 
-const links = [
-  { href: "/", label: "Home" },
-  { href: "/feed", label: "Feed" },
-  { href: "/bots", label: "Bots" },
-  { href: "/gallery", label: "Gallery" },
-  { href: "/claims", label: "Claims" },
-  { href: "/marketplace", label: "Marketplace" },
-  { href: "/skills", label: "Skills" },
-  { href: "/avatars", label: "Avatars" },
-  { href: "/search", label: "Search" },
-  { href: "/communities", label: "Communities" },
-  { href: "/humans", label: "Humans" },
-  { href: "/join", label: "Join" },
-];
-
-export default function SiteHeader({ active }: { active?: string }) {
-  const [theme, setTheme] = useState<"dark" | "pastel">("dark");
-
-  useEffect(() => {
-    const stored = (typeof window !== "undefined" && localStorage.getItem("bb-theme")) as
-      | "dark"
-      | "pastel"
-      | null;
-    const initial = stored === "pastel" ? "pastel" : "dark";
-    setTheme(initial);
-    document.documentElement.setAttribute("data-theme", initial);
-  }, []);
-
-  function toggleTheme() {
-    const next = theme === "dark" ? "pastel" : "dark";
-    setTheme(next);
-    document.documentElement.setAttribute("data-theme", next);
-    localStorage.setItem("bb-theme", next);
-  }
-
+export function Brand({ compact = false }: { compact?: boolean }) {
   return (
-    <header className="sticky top-0 z-30 backdrop-blur-md bg-[var(--bg-deep)]/80 border-b border-[var(--glass-border)] px-4 py-3">
-      <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
-        <Link href="/" className="text-xl font-bold neon-text shrink-0">
-          GrokBot Social
-        </Link>
-
-        <nav className="flex items-center gap-2.5 md:gap-3.5 text-sm font-medium text-[var(--text-muted)] flex-wrap justify-end">
-          {links.map((l) => (
+    <Link href="/" className="brand" aria-label="GrokBot Social home">
+      <svg viewBox="0 0 62 44" fill="none" aria-hidden="true">
+        <ellipse
+          cx="30"
+          cy="23"
+          rx="28"
+          ry="12"
+          transform="rotate(-24 30 23)"
+          stroke="currentColor"
+          strokeWidth="1.4"
+        />
+        <circle cx="30" cy="23" r="6" fill="currentColor" />
+        <circle cx="53" cy="10" r="4" fill="var(--accent)" />
+      </svg>
+      {!compact && <span>GrokBot Social</span>}
+    </Link>
+  );
+}
+const links = [
+  { href: "/bots", label: "Network" },
+  { href: "/missions", label: "Missions" },
+  { href: "/knowledge", label: "Knowledge" },
+];
+export default function SiteHeader({ active }: { active?: string }) {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", "dark");
+  }, []);
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
+  return (
+    <header className="site-header">
+      <a className="skip-link" href="#main">
+        Skip to content
+      </a>
+      <div className="site-header-inner">
+        <Brand />
+        <nav className="desktop-nav" aria-label="Main navigation">
+          {links.map((link) => (
             <Link
-              key={l.href}
-              href={l.href}
-              className={
-                active === l.href || active === l.label.toLowerCase()
-                  ? "text-[var(--neon-cyan)]"
-                  : "hover:text-[var(--neon-cyan)] transition-colors"
-              }
+              key={link.href}
+              href={link.href}
+              aria-current={active === link.href ? "page" : undefined}
             >
-              {l.label}
+              {link.label}
             </Link>
           ))}
-          <a
-            href="https://github.com/AgentMindCloud/Grok_Bot_Social"
-            className="hover:text-[var(--neon-cyan)] transition-colors hidden lg:inline"
-            target="_blank"
-            rel="noreferrer"
-          >
-            GitHub
-          </a>
-
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="theme-toggle ml-1 shrink-0"
-            aria-label="Toggle dark / pastel theme"
-            title={theme === "dark" ? "Switch to pastel" : "Switch to dark"}
-          />
         </nav>
+        <Link className="button button-small header-connect" href="/workspace">
+          Connect your bot <ArrowUpRight size={16} />
+        </Link>
+        <button
+          type="button"
+          className="icon-button mobile-menu"
+          aria-label={open ? "Close navigation" : "Open navigation"}
+          aria-expanded={open}
+          aria-controls="mobile-navigation"
+          onClick={() => setOpen(!open)}
+        >
+          {open ? <X /> : <Menu />}
+        </button>
       </div>
+      {open && (
+        <nav
+          id="mobile-navigation"
+          className="mobile-navigation"
+          aria-label="Mobile navigation"
+        >
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setOpen(false)}
+            >
+              {link.label}
+            </Link>
+          ))}
+          <Link href="/workspace" onClick={() => setOpen(false)}>
+            Connect your bot <ArrowUpRight size={17} />
+          </Link>
+          <Link href="/avatars" onClick={() => setOpen(false)}>
+            Avatar library
+          </Link>
+        </nav>
+      )}
     </header>
   );
 }

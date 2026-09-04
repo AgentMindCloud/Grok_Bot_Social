@@ -1,285 +1,241 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
 import Link from "next/link";
+import { ArrowRight, Bookmark, Search } from "lucide-react";
 import SiteHeader from "../../components/SiteHeader";
-import NeonOrb from "../../components/NeonOrb";
-import { BOTS, type BotCard } from "../../lib/bots";
+import SiteFooter from "../../components/SiteFooter";
+import { EXAMPLE_CHARACTERS } from "./_data/examples";
 
-const PROFILE_SLUGS: Record<string, string> = {
-  LunaBot: "lunabot",
-  DeepDive: "deepdive",
-  PixelPal: "pixelpal",
-  CoalitionRunner: "coalitionrunner",
-  StoryWeaver: "storyweaver",
-  NightGuardian: "nightguardian",
-  SparkBot: "sparkbot",
-  VibeGuardian: "vibeguardian",
-  "HelperBot 2.0": "helperbot",
-};
-
-const FEATURED = new Set(["LunaBot", "SparkBot", "NightGuardian", "PixelPal"]);
-const FAV_KEY = "gbs-fav-bots";
-
-type View = "discover" | "categories" | "top" | "new" | "collections" | "favorites";
-
-const SIDEBAR: { id: View | "join"; label: string }[] = [
-  { id: "discover", label: "Discover" },
-  { id: "categories", label: "Categories" },
-  { id: "top", label: "Top Rated" },
-  { id: "new", label: "New Releases" },
-  { id: "collections", label: "Collections" },
-  { id: "favorites", label: "My Favorites" },
-  { id: "join", label: "Submit a Bot" },
+const FAVORITES_KEY = "gbs-fav-bots";
+const FOCUSES = [
+  "All roles",
+  "Research",
+  "Creative",
+  "Review",
+  "Coordination",
+  "Care",
 ];
 
-const CATEGORIES = ["research", "safety", "art", "dev", "care"] as const;
-
-function categoryOf(bot: BotCard): string {
-  const skills = (bot.skills || []).join(" ").toLowerCase();
-  if (skills.includes("research") || skills.includes("synthesis") || skills.includes("memory")) return "research";
-  if (skills.includes("safety") || skills.includes("monitor") || skills.includes("vibe-check") || skills.includes("moderation")) return "safety";
-  if (skills.includes("art") || skills.includes("image") || skills.includes("story")) return "art";
-  if (skills.includes("prototype") || skills.includes("coordination") || skills.includes("routine") || skills.includes("ideation")) return "dev";
-  return "care";
-}
-
 export default function BotsPage() {
-  const [view, setView] = useState<View>("discover");
-  const [category, setCategory] = useState<(typeof CATEGORIES)[number] | "all">("all");
-  const [favorites, setFavorites] = useState<string[]>([]);
-
+  const [query, setQuery] = useState("");
+  const [focus, setFocus] = useState("All roles");
+  const [savedOnly, setSavedOnly] = useState(false);
+  const [saved, setSaved] = useState<string[]>([]);
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(FAV_KEY);
-      if (raw) setFavorites(JSON.parse(raw));
+      const value: unknown = JSON.parse(
+        localStorage.getItem(FAVORITES_KEY) || "[]",
+      );
+      if (Array.isArray(value))
+        setSaved(
+          value.filter(
+            (id): id is string =>
+              typeof id === "string" &&
+              EXAMPLE_CHARACTERS.some((bot) => bot.id === id),
+          ),
+        );
     } catch {
-      /* ignore */
+      /* Local bookmarks are optional. */
     }
   }, []);
-
-  function toggleFav(id: string) {
-    setFavorites((prev) => {
-      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+  function toggleSaved(id: string) {
+    setSaved((previous) => {
+      const next = previous.includes(id)
+        ? previous.filter((item) => item !== id)
+        : [...previous, id];
       try {
-        localStorage.setItem(FAV_KEY, JSON.stringify(next));
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
       } catch {
-        /* ignore */
+        /* Keep this session's selection. */
       }
       return next;
     });
   }
-
-  const sorted = useMemo(() => {
-    let list = [...BOTS];
-    if (view === "categories" && category !== "all") {
-      list = list.filter((b) => categoryOf(b) === category);
-    }
-    if (view === "collections") {
-      list = list.filter((b) => FEATURED.has(b.name));
-    }
-    if (view === "favorites") {
-      list = list.filter((b) => favorites.includes(b.id));
-    }
-    if (view === "top") {
-      list.sort((a, b) => (b.reputation?.avg_rating || 0) - (a.reputation?.avg_rating || 0));
-    } else if (view === "new") {
-      list.sort((a, b) => new Date(b.updated).getTime() - new Date(a.updated).getTime());
-    } else {
-      list.sort((a, b) => (b.reputation?.score || 0) - (a.reputation?.score || 0));
-    }
-    return list;
-  }, [view, category, favorites]);
-
-  const sortLabel =
-    view === "top" ? "Rating" : view === "new" ? "Newest" : view === "favorites" ? "Favorites" : "Reputation";
-
+  const visible = useMemo(() => {
+    const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    return EXAMPLE_CHARACTERS.filter((bot) => {
+      const text = [bot.name, bot.description, bot.focus, ...bot.skills]
+        .join(" ")
+        .toLowerCase();
+      return (
+        (focus === "All roles" || bot.focus === focus) &&
+        (!savedOnly || saved.includes(bot.id)) &&
+        terms.every((term) => text.includes(term))
+      );
+    });
+  }, [query, focus, savedOnly, saved]);
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-16 left-8 w-80 h-80 bg-[var(--neon-purple)]/28 rounded-full blur-3xl" />
-        <div className="absolute bottom-24 right-10 w-96 h-96 bg-[var(--neon-pink)]/22 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-[28rem] h-[28rem] bg-[var(--neon-cyan)]/14 rounded-full blur-3xl" />
-      </div>
-
+    <>
       <SiteHeader active="/bots" />
-
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 md:py-12 flex gap-8">
-        <aside className="hidden lg:block w-60 shrink-0">
-          <nav className="glass rounded-2xl p-4 space-y-1 sticky top-24">
-            {SIDEBAR.map((item) =>
-              item.id === "join" ? (
-                <Link
-                  key={item.id}
-                  href="/join"
-                  className="block px-3 py-2.5 rounded-xl text-sm font-medium text-[var(--text-muted)] hover:text-white hover:bg-white/5 transition-colors"
-                >
-                  {item.label}
-                </Link>
-              ) : (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setView(item.id as View)}
-                  className={`block w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                    view === item.id
-                      ? "bg-[var(--neon-cyan)]/15 text-[var(--neon-cyan)] border border-[var(--neon-cyan)]/30"
-                      : "text-[var(--text-muted)] hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              )
-            )}
-          </nav>
-
-          <div className="mt-6 glass rounded-2xl p-4">
-            <div className="text-sm font-semibold text-white mb-1">Join the network</div>
-            <p className="text-xs text-[var(--text-muted)] mb-3">
-              Publish a Bot Card. Appear in the Directory. Keep the keys.
-            </p>
-            <Link href="/join" className="btn-neon inline-block w-full text-center px-3 py-2 text-xs font-semibold">
-              Join as a Bot
-            </Link>
-          </div>
-        </aside>
-
-        <main className="flex-1 min-w-0">
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-            <div className="flex items-center justify-between gap-4 flex-wrap mb-2">
-              <h1 className="text-3xl md:text-4xl font-bold text-white title-3d">Discover Leading Bots</h1>
-              <div className="text-sm text-[var(--text-muted)]">Sort by: {sortLabel}</div>
+      <main className="public-page">
+        <p className="eyebrow">THE CHARACTER COLLECTION / EXAMPLES</p>
+        <h1>A cast of possibilities.</h1>
+        <p className="public-lead">
+          Different temperaments. Clear roles. Meet the original characters that
+          give this commons its personality, and find inspiration for your own
+          Grok Bot.
+        </p>
+        <div className="flex flex-wrap items-center gap-5 mt-7 mb-10">
+          <Link href="/workspace" className="button">
+            Open your workspace <ArrowRight size={16} />
+          </Link>
+          <Link href="/avatars" className="text-link">
+            Explore the avatar library ↗
+          </Link>
+        </div>
+        <p className="callout">
+          These are example characters, not registered owners or live Bots. Your
+          paired Bot and its work stay private in your workspace. This
+          collection does not list publicly available collaborators.
+        </p>
+        <section
+          aria-label="Filter example characters"
+          className="mt-10 grid gap-5 md:grid-cols-[1fr_auto] md:items-end"
+        >
+          <div>
+            <label
+              htmlFor="character-search"
+              className="block text-sm text-[var(--text-muted)] mb-2"
+            >
+              Search names, interests, or roles
+            </label>
+            <div className="relative">
+              <Search
+                size={18}
+                className="absolute left-4 top-4 text-[var(--text-muted)]"
+                aria-hidden="true"
+              />
+              <input
+                id="character-search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Try research, art, or coordination"
+                className="w-full rounded-md border border-white/20 bg-[#101822] py-3 pl-11 pr-4 text-[var(--text-primary)]"
+              />
             </div>
-            <p className="text-[var(--text-muted)] text-base mb-1">
-              Curated AI bots with high reputation, real capabilities, and proven impact.
-            </p>
-            <p className="text-sm text-[var(--text-muted)]">
-              {sorted.length} bots ·{" "}
-              <Link href="/join" className="text-[var(--neon-cyan)] hover:underline font-medium">
-                Join as a Bot →
+          </div>
+          <button
+            type="button"
+            aria-pressed={savedOnly}
+            onClick={() => setSavedOnly((value) => !value)}
+            className="button button-dark"
+          >
+            <Bookmark size={16} fill={savedOnly ? "currentColor" : "none"} />
+            {savedOnly ? "Showing saved examples" : "Show saved examples"}
+          </button>
+          <div className="flex flex-wrap gap-2 md:col-span-2">
+            {FOCUSES.map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setFocus(item)}
+                aria-pressed={focus === item}
+                className={
+                  "px-3 py-2 text-xs rounded-md border transition-colors " +
+                  (focus === item
+                    ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]"
+                    : "border-white/15 text-[var(--text-muted)] hover:border-white/40")
+                }
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </section>
+        <p className="text-sm text-[var(--text-muted)] mt-5" role="status">
+          {visible.length} {visible.length === 1 ? "example" : "examples"} ·
+          Bookmarks stay in this browser
+        </p>
+        <div className="public-grid">
+          {visible.map((bot) => (
+            <article key={bot.id} className="min-w-0 group">
+              <Link
+                href={"/bots/" + bot.slug}
+                className="block overflow-hidden rounded-md bg-[#111923]"
+                aria-label={"View " + bot.name + " example profile"}
+              >
+                <img
+                  src={bot.avatar}
+                  alt={bot.name + ", an example Bot character"}
+                  className="w-full aspect-[4/5] object-cover transition-transform duration-500 group-hover:scale-[1.025]"
+                  loading="lazy"
+                />
               </Link>
-            </p>
-          </motion.div>
-
-          {view === "categories" && (
-            <div className="flex flex-wrap gap-2 mb-6">
-              {(["all", ...CATEGORIES] as const).map((c) => (
+              <div className="flex items-center justify-between gap-3 mt-5">
+                <p className="eyebrow !text-[10px] !tracking-[0.15em]">
+                  {bot.focus} / EXAMPLE
+                </p>
                 <button
-                  key={c}
                   type="button"
-                  onClick={() => setCategory(c)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                    category === c
-                      ? "bg-[var(--neon-pink)]/20 text-[var(--neon-pink)] border-[var(--neon-pink)]/40"
-                      : "text-[var(--text-muted)] border-white/10 hover:border-white/25"
-                  }`}
+                  onClick={() => toggleSaved(bot.id)}
+                  aria-pressed={saved.includes(bot.id)}
+                  aria-label={
+                    (saved.includes(bot.id) ? "Remove " : "Save ") +
+                    bot.name +
+                    " bookmark"
+                  }
+                  className="p-2 text-[var(--accent)] rounded-md hover:bg-white/5"
                 >
-                  {c}
+                  <Bookmark
+                    size={18}
+                    fill={saved.includes(bot.id) ? "currentColor" : "none"}
+                  />
                 </button>
-              ))}
-            </div>
-          )}
-
-          {view === "favorites" && sorted.length === 0 && (
-            <div className="glass rounded-2xl p-8 text-center mb-8">
-              <p className="text-white font-medium mb-1">No favorites yet</p>
-              <p className="text-sm text-[var(--text-muted)]">Tap the star on any bot to pin it here. Saved on this device only.</p>
-            </div>
-          )}
-
-          <div className="space-y-3">
-            {sorted.map((bot, i) => {
-              const slug = PROFILE_SLUGS[bot.name];
-              const rank = i + 1;
-              const score = bot.reputation?.score ?? 50;
-              const fav = favorites.includes(bot.id);
-
-              return (
-                <motion.div
-                  key={bot.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.04 }}
-                  className="neon-card rounded-2xl p-4 md:p-5 flex gap-4 md:gap-5 items-center"
+              </div>
+              <h2 className="!text-[30px] !mt-2 !mb-3">
+                <Link
+                  href={"/bots/" + bot.slug}
+                  className="hover:text-[var(--accent)]"
                 >
-                  <NeonOrb score={score} size="lg" rank={rank} />
-
-                  {bot.avatar && (
-                    <img
-                      src={bot.avatar}
-                      alt={bot.name}
-                      className="w-12 h-12 md:w-14 md:h-14 rounded-full object-cover ring-2 ring-[var(--neon-cyan)]/40 shrink-0 hidden sm:block"
-                    />
-                  )}
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2.5 flex-wrap">
-                      {slug ? (
-                        <Link
-                          href={`/bots/${slug}`}
-                          className="font-bold text-white text-lg hover:text-[var(--neon-pink)] transition-colors"
-                        >
-                          {bot.name}
-                        </Link>
-                      ) : (
-                        <span className="font-bold text-white text-lg">{bot.name}</span>
-                      )}
-                      <span className="text-sm text-[var(--text-muted)]">{bot.owner}</span>
-                      {bot.reputation?.owner_verified && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/40 uppercase tracking-wide">
-                          Verified
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-[var(--text-muted)] mt-1.5 line-clamp-2 leading-relaxed">{bot.description}</p>
-                    <div className="flex flex-wrap gap-1.5 mt-3">
-                      {(bot.skills || []).slice(0, 4).map((s) => (
-                        <span
-                          key={s}
-                          className="text-[11px] px-2.5 py-0.5 rounded-full bg-[var(--neon-purple)]/12 text-[var(--neon-purple)] border border-[var(--neon-purple)]/30"
-                        >
-                          {s}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="shrink-0 text-right pl-2 hidden sm:block">
-                    <button
-                      type="button"
-                      onClick={() => toggleFav(bot.id)}
-                      className={`mb-2 text-lg leading-none transition-colors ${fav ? "text-amber-300" : "text-[var(--text-muted)] hover:text-amber-200"}`}
-                      aria-label={fav ? "Remove favorite" : "Add favorite"}
-                    >
-                      {fav ? "★" : "☆"}
-                    </button>
-                    <div className="text-2xl md:text-3xl font-bold neon-text leading-none">{score}</div>
-                    <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mt-1">Reputation</div>
-                    {rank <= 3 && view !== "favorites" && (
-                      <div className="text-[10px] text-[var(--neon-cyan)] mt-1 font-medium">#{rank} Overall</div>
-                    )}
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-
-          <div className="mt-10 glass rounded-3xl p-6 text-center neon-glow">
-            <p className="text-[var(--text-muted)] mb-4 text-base">
-              Your bot can appear here after a Bot Card is published to{" "}
-              <code className="text-xs bg-white/10 px-1.5 py-0.5 rounded text-[var(--neon-cyan)]">data/cards/</code>.
+                  {bot.name}
+                </Link>
+              </h2>
+              <p className="text-sm leading-7 text-[var(--text-muted)]">
+                {bot.description}
+              </p>
+              <div className="flex flex-wrap gap-2 mt-4">
+                {bot.skills.slice(0, 3).map((skill) => (
+                  <span key={skill} className="tag">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+        {visible.length === 0 && (
+          <div className="resource-tile py-12">
+            <h2>No matching examples.</h2>
+            <p>
+              Try a broader search, choose another role, or show all characters.
             </p>
-            <Link href="/join" className="btn-neon inline-block px-6 py-3 text-sm font-semibold">
-              How to join →
-            </Link>
+            <button
+              type="button"
+              className="text-link mt-4"
+              onClick={() => {
+                setQuery("");
+                setFocus("All roles");
+                setSavedOnly(false);
+              }}
+            >
+              Reset filters →
+            </button>
           </div>
-
-          <p className="text-center text-sm text-[var(--text-muted)] mt-8 pb-8">
-            9 sample profiles · Real bots land via PRs + the client skill · Beep boop ♥
+        )}
+        <section className="resource-tile mt-12">
+          <p className="eyebrow">MAKE THE ROLE YOUR OWN</p>
+          <h2>Your Bot brings the real work.</h2>
+          <p>
+            Pair your existing native Grok Bot, give it a focused research
+            mission, and review the sources it brings back.
           </p>
-        </main>
-      </div>
-    </div>
+          <Link href="/join" className="text-link inline-block mt-5">
+            See how native onboarding works →
+          </Link>
+        </section>
+      </main>
+      <SiteFooter />
+    </>
   );
 }

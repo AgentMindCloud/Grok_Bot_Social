@@ -1,0 +1,94 @@
+name: Native hub and web
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: grokbot_test
+          POSTGRES_PASSWORD: ephemeral-ci-only
+          POSTGRES_DB: grokbot_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U grokbot_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: |
+            web/package-lock.json
+            hub/package-lock.json
+      - name: Install hub dependencies
+        working-directory: hub
+        run: npm ci
+      - name: Typecheck hub
+        working-directory: hub
+        run: npm run build
+      - name: Verify actual PostgreSQL transactions and adapter integration
+        working-directory: hub
+        run: npm test
+        env:
+          TEST_DATABASE_URL: postgresql://grokbot_test:ephemeral-ci-only@127.0.0.1:5432/grokbot_test
+      - name: Native adapter checks
+        run: node --test integrations/native-grok/client.test.mjs
+      - name: Install frontend dependencies
+        working-directory: web
+        run: npm ci
+      - name: Audit production dependencies
+        run: |
+          npm --prefix hub audit --omit=dev --audit-level=high
+          npm --prefix web audit --omit=dev --audit-level=high
+      - name: Build public frontend
+        working-directory: web
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+  deployment:
+    runs-on: ubuntu-latest
+    env:
+      PUBLIC_HOST: hub.example.com
+      POSTGRES_PASSWORD: ephemeral_ci_hex_0123456789abcdef0123456789
+      POSTGRES_ADMIN_PASSWORD: ephemeral_ci_admin_different_0123456789abcdef
+      GITHUB_CLIENT_ID: ci-startup-check-only
+      GITHUB_CLIENT_SECRET: ci-placeholder-no-account-access
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate deployment without printing resolved environment
+        run: docker compose -f deploy/compose.yml config --quiet
+      - name: Build production images
+        run: docker compose -f deploy/compose.yml build
+      - name: Validate Caddy ingress configuration
+        run: docker compose -f deploy/compose.yml run --rm --no-deps web caddy validate --config /etc/caddy/Caddyfile
+      - name: Verify production API startup and disabled developer login
+        run: |
+          docker compose -f deploy/compose.yml up -d --wait database hub
+          docker compose -f deploy/compose.yml exec -T hub node -e "const assert = require('node:assert/strict'); fetch('http://127.0.0.1:4311/api/session').then(r=>{assert.equal(r.status,200);return r.json()}).then(s=>{assert.equal(s.authenticated,false);assert.equal(s.localLoginEnabled,false);assert.equal(s.githubLoginEnabled,true);console.log('Production session defaults verified')}).catch(e=>{console.error(e);process.exit(1)})"
+      - name: Verify restricted database role
+        run: >-
+          docker compose -f deploy/compose.yml exec -T hub node --input-type=module -e
+          "import assert from 'node:assert/strict'; import pg from 'pg'; const db=new pg.Client({connectionString:process.env.DATABASE_URL}); await db.connect(); const {rows}=await db.query('SELECT rolsuper,rolcreatedb,rolcreaterole,rolreplication FROM pg_roles WHERE rolname=current_user'); for (const value of Object.values(rows[0])) assert.equal(value,false); await db.end(); console.log('Restricted application database role verified')"
+      - name: Verify static site and API through Caddy
+        run: |
+          docker compose -f deploy/compose.yml run -d --no-deps --name grokbot-social-ci-web -p 127.0.0.1:18080:8080 -e PUBLIC_HOST=:8080 web
+          node deploy/smoke.mjs
+      - name: Clean up disposable CI containers
+        if: always()
+        run: |
+          docker rm -f grokbot-social-ci-web || true
+          docker compose -f deploy/compose.yml down --volumes
