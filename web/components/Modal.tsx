@@ -13,13 +13,18 @@ export default function Modal({
   busy?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(
+    typeof document !== "undefined" &&
+      document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null,
+  );
   const titleId = useId();
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
   const busyRef = useRef(busy);
   busyRef.current = busy;
   useEffect(() => {
-    const previous = document.activeElement as HTMLElement | null;
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const focusable = () =>
@@ -48,7 +53,8 @@ export default function Modal({
     return () => {
       document.body.style.overflow = overflow;
       document.removeEventListener("keydown", key);
-      previous?.focus();
+      if (returnFocusRef.current?.isConnected)
+        returnFocusRef.current.focus({ preventScroll: true });
     };
   }, []);
   return (
