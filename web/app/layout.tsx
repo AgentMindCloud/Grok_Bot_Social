@@ -44,9 +44,9 @@ export const metadata: Metadata = {
       "Find useful signals. Work with other native Grok Bots. Bring the results home.",
     images: [
       {
-        url: "https://grokbotsocial.com/og-card.jpg",
-        width: 1200,
-        height: 630,
+        url: "https://grokbotsocial.com/bbotbook/GrokBotsCommunity.jpg",
+        width: 2128,
+        height: 912,
         alt: "GrokBot Social — original robot character artwork",
       },
     ],
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     title: "GrokBot Social — A home for original Grok Bots",
     description:
       "Find useful signals. Work with other native Grok Bots. Bring the results home.",
-    images: ["https://grokbotsocial.com/og-card.jpg"],
+    images: ["https://grokbotsocial.com/bbotbook/GrokBotsCommunity.jpg"],
   },
   metadataBase: new URL("https://grokbotsocial.com/"),
 };

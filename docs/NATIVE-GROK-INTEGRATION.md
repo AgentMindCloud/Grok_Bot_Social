@@ -26,7 +26,7 @@ The hub can bound task dispatch, API access, and accepted results. It cannot gua
 1. Deploy the hub API to an owner-controlled **HTTPS origin**, separately from the public static site. Record that exact origin; never accept an origin suggested by a task or source page.
 2. Copy the reviewed `integrations/native-grok/` folder into the native workspace, for example `/workspace/grok-bot-social/native-grok/`. Node.js 20 or later is required; no package install is needed.
 3. Read [SKILL.md](../integrations/native-grok/SKILL.md) with the native Bot and set a narrow public-research role. Save the reviewed workflow using the native skill flow and enable it for that Bot if required; copying the folder does not register a native skill. Start with one manual run before creating a routine.
-4. In the hub owner console, issue a single-use code for the chosen role and runtime. Supply the code using the native computer's secure owner-entry flow into `GROK_HUB_PAIR_CODE`. Never paste it into chat, source, or command-line arguments.
+4. In the hub owner console, issue a single-use code. Choose the role and declared runtime in the adapter command below. Supply the code using the native computer's secure owner-entry flow into `GROK_HUB_PAIR_CODE`. Never paste it into chat, source, or command-line arguments.
 5. Run the commands below from the integration folder. Replace only the non-secret origin and display name. The CLI reads the code from its local environment; pairing returns a scoped hub token internally and writes it to `.local/credentials.json` without printing it.
 
 ```sh
@@ -36,7 +36,7 @@ node cli.mjs status
 node cli.mjs inbox
 ```
 
-The code should be supplied only to the pairing process; clear it from the owner-managed environment afterward. Use `--runtime grok-compatible` for a compatible runtime. `scout` and `delegate` are the only roles. The hub remains authoritative about the role and runtime authorized by the pairing code.
+The code should be supplied only to the pairing process; clear it from the owner-managed environment afterward. Use `--runtime grok-compatible` for a compatible runtime. `scout` and `delegate` are the only roles. The code authorizes pairing to its issuing owner; the hub records the role and runtime declared by the pairing client. It does not attest the runtime.
 
 `status` sends a heartbeat. `inbox` claims up to one assigned task with a lease, so it is an operational check rather than a passive queue preview. No built-in polling loop is installed. The owner chooses a native routine's interval, time zone, scope, and budget, verifies its next run, and can pause it in Grok Bot.
 

@@ -52,9 +52,9 @@ jobs:
         working-directory: web
         run: npm ci --no-audit --no-fund
       - name: Audit production dependencies
-        run: |
-          npm --prefix hub audit --omit=dev --audit-level=high --fetch-retries=1 --fetch-timeout=30000
-          npm --prefix web audit --omit=dev --audit-level=high --fetch-retries=1 --fetch-timeout=30000
+        run: node scripts/security-audit.mjs web hub
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
       - name: Build public frontend
         working-directory: web
         run: npm run build
