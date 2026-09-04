@@ -444,10 +444,16 @@ export async function createApp(db: Database, config: Config) {
     const query = object(request.query, [
       "code",
       "state",
+      "iss",
       "error",
       "error_description",
       "error_uri",
     ]);
+    if (
+      query.iss !== undefined &&
+      query.iss !== "https://github.com/login/oauth"
+    )
+      return fail(400, "OAuth issuer rejected");
     const state = string(query.state, "OAuth state", 100);
     const stateCookie = request.cookies["gbs-oauth-state"];
     reply.clearCookie("gbs-oauth-state", cookieOptions);
