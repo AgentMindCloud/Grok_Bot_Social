@@ -750,72 +750,96 @@ test("approval evidence binding rejects database changes and result validation r
   }
 });
 
-test("OAuth state is cookie-bound, expiring and consumed exactly once; profile token is never persisted", async () => {
-  const calls: string[] = [];
-  const oauth = await createApp(db, {
-    ...base,
-    localLogin: false,
-    githubClientId: "test-client",
-    githubClientSecret: "test-secret",
-    fetch: (async (url: any) => {
-      calls.push(String(url));
-      return new Response(
-        JSON.stringify(
-          String(url).includes("access_token")
-            ? { access_token: "sensitive-oauth-access-token" }
-            : { id: 543210, login: "oauth-test", name: "OAuth Test" },
-        ),
-        { status: 200, headers: { "content-type": "application/json" } },
+for (const issuer of [undefined, "https://github.com/login/oauth"]) {
+  test(`OAuth ${issuer ? "with issuer" : "without issuer"} keeps cookie binding, single-use state and private profile tokens`, async () => {
+    const calls: string[] = [];
+    const oauth = await createApp(db, {
+      ...base,
+      localLogin: false,
+      githubClientId: "test-client",
+      githubClientSecret: "test-secret",
+      fetch: (async (url: any) => {
+        calls.push(String(url));
+        return new Response(
+          JSON.stringify(
+            String(url).includes("access_token")
+              ? { access_token: "sensitive-oauth-access-token" }
+              : { id: 543210, login: "oauth-test", name: "OAuth Test" },
+          ),
+          { status: 200, headers: { "content-type": "application/json" } },
+        );
+      }) as typeof fetch,
+    });
+    try {
+      const begin = await oauth.inject({
+        method: "GET",
+        url: "/api/auth/github",
+      });
+      assert.equal(begin.statusCode, 302);
+      const redirect = new URL(begin.headers.location!);
+      assert.equal(
+        redirect.searchParams.get("redirect_uri"),
+        `${origin}/api/auth/github/callback`,
       );
-    }) as typeof fetch,
+      assert.equal(redirect.searchParams.has("scope"), false);
+      const state = redirect.searchParams.get("state")!;
+      const stateCookie = begin.cookies[0].name + "=" + begin.cookies[0].value;
+      const callbackBase = `/api/auth/github/callback?code=test-code&state=${state}`;
+      const callback =
+        callbackBase + (issuer ? `&iss=${encodeURIComponent(issuer)}` : "");
+      if (issuer) {
+        for (const suffix of [
+          "&iss=https%3A%2F%2Fattacker.example%2Flogin%2Foauth",
+          "&iss=",
+          "&iss=https%3A%2F%2Fgithub.com%2Flogin%2Foauth&iss=https%3A%2F%2Fgithub.com%2Flogin%2Foauth",
+          "&unexpected=value",
+        ]) {
+          const rejected = await oauth.inject({
+            method: "GET",
+            url: callbackBase + suffix,
+            headers: { cookie: stateCookie },
+          });
+          assert.equal(rejected.statusCode, 400);
+          assert.equal(
+            calls.length,
+            0,
+            "Rejected callbacks must not contact GitHub",
+          );
+        }
+      }
+      assert.equal(
+        (await oauth.inject({ method: "GET", url: callback })).statusCode,
+        400,
+      );
+      const response = await oauth.inject({
+        method: "GET",
+        url: callback,
+        headers: { cookie: stateCookie },
+      });
+      assert.equal(response.statusCode, 302, response.body);
+      assert.equal(response.headers.location, `${origin}/workspace`);
+      assert.equal(calls.length, 2);
+      assert.equal(
+        (
+          await oauth.inject({
+            method: "GET",
+            url: callback,
+            headers: { cookie: stateCookie },
+          })
+        ).statusCode,
+        400,
+      );
+      assert.equal(calls.length, 2);
+      const stored = await db.query(
+        "SELECT * FROM owners WHERE github_id='543210'",
+      );
+      assert.equal(stored.rows.length, 1);
+      assert.ok(!JSON.stringify(stored).includes("sensitive-oauth"));
+    } finally {
+      await oauth.close();
+    }
   });
-  try {
-    const begin = await oauth.inject({
-      method: "GET",
-      url: "/api/auth/github",
-    });
-    assert.equal(begin.statusCode, 302);
-    const redirect = new URL(begin.headers.location!);
-    assert.equal(
-      redirect.searchParams.get("redirect_uri"),
-      `${origin}/api/auth/github/callback`,
-    );
-    assert.equal(redirect.searchParams.has("scope"), false);
-    const state = redirect.searchParams.get("state")!;
-    const stateCookie = begin.cookies[0].name + "=" + begin.cookies[0].value;
-    const callback = `/api/auth/github/callback?code=test-code&state=${state}`;
-    assert.equal(
-      (await oauth.inject({ method: "GET", url: callback })).statusCode,
-      400,
-    );
-    const response = await oauth.inject({
-      method: "GET",
-      url: callback,
-      headers: { cookie: stateCookie },
-    });
-    assert.equal(response.statusCode, 302, response.body);
-    assert.equal(response.headers.location, `${origin}/workspace`);
-    assert.equal(calls.length, 2);
-    assert.equal(
-      (
-        await oauth.inject({
-          method: "GET",
-          url: callback,
-          headers: { cookie: stateCookie },
-        })
-      ).statusCode,
-      400,
-    );
-    assert.equal(calls.length, 2);
-    const stored = await db.query(
-      "SELECT * FROM owners WHERE github_id='543210'",
-    );
-    assert.equal(stored.rows.length, 1);
-    assert.ok(!JSON.stringify(stored).includes("sensitive-oauth"));
-  } finally {
-    await oauth.close();
-  }
-});
+}
 
 test("two-bot cap is atomic across different pair challenges; revoked slots are reusable", async () => {
   const a = await owner();

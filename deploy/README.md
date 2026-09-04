@@ -4,7 +4,7 @@ The public frontend can run on GitHub Pages. The signed-in workspace needs the h
 
 ## Prepare
 
-1. Use a Linux amd64 Docker Engine/Compose v2 host. A dedicated Hostinger KVM 1 is a reasonable initial pilot target: native Grok computation stays on the provider, and the VPS runs this hub, PostgreSQL and Caddy. This is an initial sizing estimate, not a load-tested capacity guarantee. A static web-hosting plan alone cannot run this API or database.
+1. Use a Linux amd64 Docker Engine host with the Compose plugin and the **classic image store** used by the release checks. A dedicated Hostinger KVM 1 is a reasonable initial pilot target: native Grok computation stays on the provider, and the VPS runs this hub, PostgreSQL and Caddy. This is an initial sizing estimate, not a load-tested capacity guarantee. A static web-hosting plan alone cannot run this API or database.
 2. Point a staging host name you control at that server. Keep the current public domain unchanged during validation.
 3. Register a GitHub OAuth application with the staging homepage and callback `https://<host>/api/auth/github/callback`. No repository or email scope is requested. Store the client secret only on the deployment host.
 4. Download a passing `runtime-<commit>` release from this repository. The CI release contains the exact three images used in its deployment checks, so the VPS needs no registry account or application build. Use a separate directory for each release and record its full accepted commit. Review the linked CI run before installing.
@@ -22,6 +22,8 @@ bash deployment/load-release.sh "$revision"
 ```
 
 Checksums detect corruption; obtain both the archives and checksums from the trusted repository release. The loader also checks the expected commit and each Docker image's content ID. Never run deployment scripts supplied by a bot task or untrusted source page.
+
+Fresh Docker Engine 29 installations default to the containerd image store, which reports manifest identities instead of the classic config identities recorded by this release pipeline. The loader stops on that backend. On a **new, unoccupied host**, merge `"features": {"containerd-snapshotter": false}` into `/etc/docker/daemon.json`, preserve existing settings, run `dockerd --validate --config-file=/etc/docker/daemon.json`, and restart Docker. Check that `docker info --format '{{.Driver}}'` reports `overlay2` before loading the release. Do not switch an occupied host casually: images and containers in the previous store become hidden, although their data remains on disk. See [Docker's image-store documentation](https://docs.docker.com/engine/storage/containerd/). This requirement was verified on the initial KVM 1 deployment with Docker 29.8.0; no image identity check was bypassed.
 
 5. In the extracted `deployment/` directory, copy `.env.example` to `.env` with mode 600. Set the domain, OAuth settings, a unique random hexadecimal application database password (at least 32 characters), and a different database administrator password. Store these values on the host, outside Git and chat. The bundled `release.env` contains only the tested image references.
 6. Validate without printing resolved secrets, then start the loaded images:
