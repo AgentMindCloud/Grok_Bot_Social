@@ -79,6 +79,34 @@ export function validateResult(input) {
   return input;
 }
 
+export function validateContextEvidence(value, missionId) {
+  // Omission supports an older hub, but the CLI explicitly reports unavailable context.
+  if (value === undefined) return;
+  if (!Array.isArray(value) || value.length > 10 || Buffer.byteLength(JSON.stringify(value), 'utf8') > 750000) fail('Task context must contain at most 10 bounded evidence items.');
+  const identifiers = new Set();
+  for (const evidence of value) {
+    keys(evidence, ['id', 'missionId', 'botId', 'title', 'summary', 'sources', 'visibility', 'provenance', 'createdAt'], 'Context evidence');
+    validateIdentifier(evidence.id, 'Context evidence ID');
+    if (identifiers.has(evidence.id)) fail('Task context contains duplicate evidence IDs.');
+    identifiers.add(evidence.id);
+    if (evidence.missionId !== null) validateIdentifier(evidence.missionId, 'Context mission ID');
+    if (evidence.botId !== null) validateIdentifier(evidence.botId, 'Context Bot ID');
+    if (!['private', 'circle'].includes(evidence.visibility) || !['own-mission-result', 'circle-published'].includes(evidence.provenance)) fail('Task context has invalid visibility or provenance.');
+    if (evidence.provenance === 'own-mission-result' && evidence.missionId !== missionId) fail('Private-owner context must belong to the assigned mission.');
+    if (evidence.provenance === 'circle-published' && evidence.visibility !== 'circle') fail('Shared context must be explicitly published to the circle.');
+    string(evidence.title, 1, 200, 'Context title');
+    string(evidence.summary, 1, 12000, 'Context summary');
+    if (typeof evidence.createdAt !== 'string' || evidence.createdAt.length > 50 || !/^\d{4}-\d{2}-\d{2}T/.test(evidence.createdAt) || !Number.isFinite(Date.parse(evidence.createdAt))) fail('Context evidence needs a valid creation timestamp.');
+    if (!Array.isArray(evidence.sources) || evidence.sources.length < 1 || evidence.sources.length > 20) fail('Context evidence needs 1–20 public source links.');
+    for (const source of evidence.sources) {
+      keys(source, ['url', 'title', 'accessedAt'], 'Context source');
+      publicSourceUrl(source.url);
+      if (source.title !== undefined) string(source.title, 1, 300, 'Context source title');
+      if (source.accessedAt !== undefined && (typeof source.accessedAt !== 'string' || source.accessedAt.length > 50 || !/^\d{4}-\d{2}-\d{2}T/.test(source.accessedAt) || !Number.isFinite(Date.parse(source.accessedAt)))) fail('Context source accessedAt must be a valid ISO timestamp.');
+    }
+  }
+}
+
 export async function loadCredentials(file, allowLocalHttp = false) {
   let stat;
   try { stat = await lstat(file); } catch (error) {
