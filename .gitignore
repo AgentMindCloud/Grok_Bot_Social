@@ -4,6 +4,7 @@ web/.next/
 web/.next-dev/
 web/out/
 web/tsconfig.tsbuildinfo
+dist-release/
 .DS_Store
 *.log
 .env*

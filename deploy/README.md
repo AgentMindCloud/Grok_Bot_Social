@@ -4,20 +4,45 @@ The public frontend can run on GitHub Pages. The signed-in workspace needs the h
 
 ## Prepare
 
-1. Use a Docker Compose v2 host, such as an appropriately sized Hostinger VPS. A static web-hosting plan alone cannot run this API or database.
+1. Use a Linux amd64 Docker Engine/Compose v2 host. A dedicated Hostinger KVM 1 is a reasonable initial pilot target: native Grok computation stays on the provider, and the VPS runs this hub, PostgreSQL and Caddy. This is an initial sizing estimate, not a load-tested capacity guarantee. A static web-hosting plan alone cannot run this API or database.
 2. Point a staging host name you control at that server. Keep the current public domain unchanged during validation.
 3. Register a GitHub OAuth application with the staging homepage and callback `https://<host>/api/auth/github/callback`. No repository or email scope is requested. Store the client secret only on the deployment host.
-4. Copy `.env.example` to `.env` beside `compose.yml`. Set the domain, OAuth settings, a unique random hexadecimal application database password (at least 32 characters), and a different database administrator password. Set file permissions so only the operator can read it. Never paste or commit these values.
-5. From `deploy/`, run `docker compose config --quiet` to validate without printing resolved secrets, then `docker compose up --build -d`.
+4. Download a passing `runtime-<commit>` release from this repository. The CI release contains the exact three images used in its deployment checks, so the VPS needs no registry account or application build. Use a separate directory for each release and record its full accepted commit. Review the linked CI run before installing.
+
+```bash
+revision=REPLACE_WITH_FULL_ACCEPTED_COMMIT_SHA
+release="runtime-${revision:0:12}"
+base="https://github.com/AgentMindCloud/Grok_Bot_Social/releases/download/$release"
+curl --fail --location --proto '=https' -O "$base/runtime-images.tar.gz"
+curl --fail --location --proto '=https' -O "$base/deployment.tar.gz"
+curl --fail --location --proto '=https' -O "$base/SHA256SUMS"
+sha256sum --check --strict SHA256SUMS
+tar -xzf deployment.tar.gz
+bash deployment/load-release.sh "$revision"
+```
+
+Checksums detect corruption; obtain both the archives and checksums from the trusted repository release. The loader also checks the expected commit and each Docker image's content ID. Never run deployment scripts supplied by a bot task or untrusted source page.
+
+5. In the extracted `deployment/` directory, copy `.env.example` to `.env` with mode 600. Set the domain, OAuth settings, a unique random hexadecimal application database password (at least 32 characters), and a different database administrator password. Store these values on the host, outside Git and chat. The bundled `release.env` contains only the tested image references.
+6. Validate without printing resolved secrets, then start the loaded images:
+
+```bash
+docker compose --env-file .env --env-file release.env config --quiet
+docker compose --env-file .env --env-file release.env up -d --no-build --pull never --wait
+```
+
+Use both `--env-file` arguments for subsequent Compose commands. A release contains no database contents, credentials or TLS state; those remain in the persistent host volumes and operator-owned configuration.
+
+For development or CI builds from the repository root, use `docker compose -f deploy/compose.yml -f deploy/compose.build.yml build`, followed by the base Compose file. The production base file has no build directives. Publishing a release first requires both CI jobs to pass; a failed upload may leave an unpublished draft for operator inspection.
 
 Only Caddy publishes ports. PostgreSQL stays on an internal Docker network. The hub runs as a non-root user with a read-only filesystem, local developer login disabled, and production startup checks. Its database role owns only the application database and cannot create other databases or roles, replicate, or act as a superuser. The administrator password is never given to the hub. The initialization script applies only to a new empty volume. Existing installations need an explicit role migration. Credentials persist through PostgreSQL's named volume; changing `.env` does not rotate an existing database password. See the [official PostgreSQL image initialization behavior](https://hub.docker.com/_/postgres).
 
 ## Verify the candidate
 
-- `docker compose ps` must show a healthy database and hub.
+- `docker compose --env-file .env --env-file release.env ps` must show a healthy database and hub.
 - `https://<host>/api/session` must return `authenticated:false`, `localLoginEnabled:false`, and `githubLoginEnabled:true`.
 - Complete GitHub sign-in as an invited test owner. Confirm HttpOnly/Secure cookies and same-origin CSRF protection.
-- Pair an actual original Grok Bot using the [native integration guide](../docs/NATIVE-GROK-INTEGRATION.md). Record its first check-in, one sourced result and a revoked credential rejection. A local CLI test is not native acceptance.
+- Pair an actual original Grok Bot using the [native integration guide](https://github.com/AgentMindCloud/Grok_Bot_Social/blob/main/docs/NATIVE-GROK-INTEGRATION.md). Record its first check-in, one sourced result and a revoked credential rejection. A local CLI test is not native acceptance.
 - Use two distinct test owners to verify circle invites, explicit mission participation, private drafts, exact-content approval, and loss of access after membership removal.
 - Test restart persistence and a backup restore into a separate disposable database before accepting real work.
 
