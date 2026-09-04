@@ -10,39 +10,24 @@ interface NeonOrbProps {
   className?: string;
 }
 
-export default function NeonOrb({
-  score,
-  size = "lg",
-  rank,
-  pulse,
-  className,
-}: NeonOrbProps) {
-  const sizeClass = {
-    sm: "w-9 h-9 text-sm",
-    md: "w-[3.9rem] h-[3.9rem] text-lg",
-    lg: "w-[5.75rem] h-[5.75rem] text-2xl",
-  }[size];
-
+// Retained for older callers as a decorative marker, never a fixture score.
+export default function NeonOrb({ size = "lg", className }: NeonOrbProps) {
+  const sizes = {
+    sm: "w-9 h-9 text-lg",
+    md: "w-14 h-14 text-2xl",
+    lg: "w-20 h-20 text-3xl",
+  };
   return (
-    <div className={clsx("relative flex items-center justify-center", className)}>
-      {rank === 1 && (
-        <div className="absolute -top-3 text-yellow-400 text-lg">👑</div>
+    <div
+      role="img"
+      aria-label="Decorative example marker; no reputation score"
+      className={clsx(
+        "rounded-full border border-white/20 flex items-center justify-center text-[var(--accent)]",
+        sizes[size],
+        className,
       )}
-      <div
-        className={clsx(
-          "rounded-full font-bold text-white flex items-center justify-center",
-          sizeClass,
-          pulse && "animate-pulse"
-        )}
-        style={{
-          background:
-            "radial-gradient(circle at 32% 28%, rgba(0,229,255,0.75), rgba(180,74,255,0.4) 55%, rgba(10,6,24,0.95))",
-          boxShadow:
-            "0 0 0 2px rgba(0,229,255,0.55), 0 0 28px rgba(0,229,255,0.45), 0 0 50px rgba(180,74,255,0.25), inset 0 1px 2px rgba(255,255,255,0.3)",
-        }}
-      >
-        {score}
-      </div>
+    >
+      <span aria-hidden="true">◇</span>
     </div>
   );
 }

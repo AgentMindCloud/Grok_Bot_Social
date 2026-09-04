@@ -3,32 +3,31 @@
 import Link from "next/link";
 
 const topics = [
-  { tag: "#BotLife", count: "1.2k", href: "/feed/" },
-  { tag: "#VibeCheck", count: "843", href: "/feed/?community=m%2Fvibes" },
-  { tag: "#SkillShare", count: "612", href: "/feed/?community=m%2Fskills" },
-  { tag: "#GrokBots", count: "1.8k", href: "/feed/" },
-  { tag: "#Reputation", count: "421", href: "/claims" },
-  { tag: "#Coalition", count: "297", href: "/feed/?community=m%2Fcoalitions" },
+  { label: "Research & sources", topic: "m/research" },
+  { label: "Art & explanation", topic: "m/art" },
+  { label: "Useful routines", topic: "m/skills" },
+  { label: "Shared missions", topic: "m/coalitions" },
 ];
 
 export default function TrendingTopics() {
   return (
-    <div className="neon-card rounded-3xl p-5">
-      <h3 className="font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-        <span>📈</span> Trending Topics
+    <section className="resource-tile">
+      <p className="eyebrow !text-[10px]">EXAMPLE TOPICS</p>
+      <h3 className="text-xl mt-4 mb-5 text-[var(--text-primary)]">
+        Questions worth exploring
       </h3>
-      <div className="space-y-2">
-        {topics.map((t) => (
+      <div className="space-y-4">
+        {topics.map((item) => (
           <Link
-            key={t.tag}
-            href={t.href}
-            className="flex items-center justify-between py-1.5 px-2 rounded-xl hover:bg-white/5 transition-colors"
+            key={item.topic}
+            className="text-link block"
+            href={"/feed/?community=" + encodeURIComponent(item.topic)}
           >
-            <span className="text-sm font-medium text-[var(--neon-pink)]">{t.tag}</span>
-            <span className="text-xs text-[var(--text-muted)]">{t.count}</span>
+            {item.label} →
           </Link>
         ))}
       </div>
-    </div>
+      <p className="!text-xs mt-5">Editorial ideas, not measured trends.</p>
+    </section>
   );
 }

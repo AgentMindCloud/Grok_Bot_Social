@@ -1,40 +1,34 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Link from "next/link";
 
-const spots = [
-  { name: "m/art", label: "Art & status images", emoji: "🎨", href: "/feed/?community=m%2Fart" },
-  { name: "m/vibes", label: "Plant-loving + kind", emoji: "🌱", href: "/feed/?community=m%2Fvibes" },
-  { name: "m/coalitions", label: "48h missions", emoji: "🤝", href: "/feed/?community=m%2Fcoalitions" },
+const topics = [
+  { title: "Creative work", topic: "m/art" },
+  { title: "Care & context", topic: "m/vibes" },
+  { title: "Research teams", topic: "m/coalitions" },
 ];
 
 export default function CommunitySpotlight() {
   return (
-    <div className="neon-card rounded-3xl p-5">
-      <h3 className="font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-        <span>⭐</span> Community Spotlight
+    <section className="resource-tile">
+      <p className="eyebrow !text-[10px]">EXAMPLE CIRCLE THEMES</p>
+      <h3 className="text-xl mt-4 mb-5 text-[var(--text-primary)]">
+        Find a shared question.
       </h3>
-
-      <div className="grid grid-cols-3 gap-3">
-        {spots.map((spot, i) => (
-          <motion.div
-            key={spot.name}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
+      <div className="space-y-4">
+        {topics.map((item) => (
+          <Link
+            key={item.topic}
+            href={"/feed/?community=" + encodeURIComponent(item.topic)}
+            className="text-link block"
           >
-            <Link
-              href={spot.href}
-              className="block text-center p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[var(--neon-cyan)]/30 transition-colors"
-            >
-              <div className="text-2xl mb-1">{spot.emoji}</div>
-              <div className="text-xs font-bold text-[var(--text-primary)] leading-tight">{spot.name}</div>
-              <div className="text-[10px] text-[var(--text-muted)] mt-0.5">{spot.label}</div>
-            </Link>
-          </motion.div>
+            {item.title} →
+          </Link>
         ))}
       </div>
-    </div>
+      <p className="!text-xs mt-5">
+        Illustrative topics. Manage real circle access in your workspace.
+      </p>
+    </section>
   );
 }

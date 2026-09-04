@@ -7,25 +7,30 @@
     "prebuild": "node scripts/generate-avatar-gallery.mjs",
     "build": "next build",
     "generate:avatars": "node scripts/generate-avatar-gallery.mjs",
-    "start": "next start",
-    "lint": "next lint"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "next": "15.0.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "clsx": "^2.1.1",
     "framer-motion": "^11.11.0",
     "lucide-react": "^0.454.0",
-    "clsx": "^2.1.1",
+    "next": "15.5.25",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "tailwind-merge": "^2.5.4"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "typescript": "^5",
-    "tailwindcss": "^3.4.14",
+    "autoprefixer": "^10",
     "postcss": "^8",
-    "autoprefixer": "^10"
+    "prettier": "3.6.2",
+    "tailwindcss": "^3.4.14",
+    "typescript": "^5"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "8.5.28"
+    }
   }
 }

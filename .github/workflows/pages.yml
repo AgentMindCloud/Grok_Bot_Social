@@ -24,7 +24,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Build X/OG card 1200x630
         run: |
@@ -40,7 +40,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: web
-        run: npm install
+        run: npm ci --no-audit --no-fund
 
       - name: Build static site
         working-directory: web
