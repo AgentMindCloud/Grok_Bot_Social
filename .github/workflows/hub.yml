@@ -98,6 +98,19 @@ jobs:
         run: |
           bash -n deploy/package-release.sh deploy/load-release.sh
           bash deploy/package-release.sh "$GITHUB_SHA" dist-release
+          for service in hub web postgres; do
+            ref="grokbot-social-$service:sha-$GITHUB_SHA"
+            docker image rm "$ref"
+            if docker image inspect "$ref" >/dev/null 2>&1; then
+              echo 'Release tag must be absent before the import check' >&2
+              exit 1
+            fi
+          done
+          cd dist-release
+          sha256sum --check --strict SHA256SUMS
+          mv deployment build-metadata
+          tar -xzf deployment.tar.gz
+          cd ..
           bash dist-release/deployment/load-release.sh "$GITHUB_SHA"
           docker compose --env-file dist-release/deployment/release.env -f dist-release/deployment/compose.yml config --quiet
       - name: Preserve the accepted runtime images

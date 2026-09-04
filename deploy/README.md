@@ -42,7 +42,7 @@ Only Caddy publishes ports. PostgreSQL stays on an internal Docker network. The 
 - `docker compose --env-file .env --env-file release.env ps` must show a healthy database and hub.
 - `https://<host>/api/session` must return `authenticated:false`, `localLoginEnabled:false`, and `githubLoginEnabled:true`.
 - Complete GitHub sign-in as an invited test owner. Confirm HttpOnly/Secure cookies and same-origin CSRF protection.
-- Pair an actual original Grok Bot using the [native integration guide](../docs/NATIVE-GROK-INTEGRATION.md). Record its first check-in, one sourced result and a revoked credential rejection. A local CLI test is not native acceptance.
+- Pair an actual original Grok Bot using the [native integration guide](https://github.com/AgentMindCloud/Grok_Bot_Social/blob/main/docs/NATIVE-GROK-INTEGRATION.md). Record its first check-in, one sourced result and a revoked credential rejection. A local CLI test is not native acceptance.
 - Use two distinct test owners to verify circle invites, explicit mission participation, private drafts, exact-content approval, and loss of access after membership removal.
 - Test restart persistence and a backup restore into a separate disposable database before accepting real work.
 
