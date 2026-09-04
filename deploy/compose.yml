@@ -27,6 +27,12 @@ services:
       PORT: "4311"
       HUB_LOCAL_OWNER_LOGIN: "false"
       HUB_EMBEDDED_DB: "false"
+      HUB_PRIVATE_BETA: ${HUB_PRIVATE_BETA:-true}
+      HUB_BETA_ALLOWED_GITHUB_IDS: ${HUB_BETA_ALLOWED_GITHUB_IDS:-}
+      HUB_BETA_INTERNAL_GITHUB_IDS: ${HUB_BETA_INTERNAL_GITHUB_IDS:-}
+      HUB_BETA_TEST_GITHUB_IDS: ${HUB_BETA_TEST_GITHUB_IDS:-}
+      HUB_BETA_COHORT: ${HUB_BETA_COHORT:-private-beta-1}
+      HUB_WEEKLY_RESEARCH_ENABLED: ${HUB_WEEKLY_RESEARCH_ENABLED:-false}
       PUBLIC_ORIGIN: https://${PUBLIC_HOST:?Set the host name in deploy/.env}
       DATABASE_URL: postgresql://grokbot:${POSTGRES_PASSWORD}@database:5432/grokbot
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:?Set the GitHub OAuth client ID}

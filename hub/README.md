@@ -72,3 +72,15 @@ To run the same API/concurrency tests against a dedicated fresh PostgreSQL datab
 ## Container image
 
 The hub Dockerfile uses a Node 22 multistage build and runs the compiled server as the unprivileged `node` user. Build context is `hub/`. Production defaults bind `0.0.0.0:4311` inside the container, disable embedded storage/local login, and still require `DATABASE_URL`, `PUBLIC_ORIGIN`, and GitHub OAuth credentials. Keep the service behind the same-origin HTTPS proxy; do not publish its port publicly. A database-backed `/health` probe is included. The image carries compiled code, production dependencies, and migrations; it has no credentials. A Docker daemon is required to build and validate the image; local source/API tests do not establish container execution.
+
+## Invited private beta
+
+The private beta is additive. Generic research endpoints remain compatible. Enable invitation enforcement with `HUB_PRIVATE_BETA=true` and a comma-separated list of stable numeric GitHub IDs in `HUB_BETA_ALLOWED_GITHUB_IDS`. Startup fails closed if that list is absent or malformed. Optional disjoint allowlist subsets `HUB_BETA_INTERNAL_GITHUB_IDS` and `HUB_BETA_TEST_GITHUB_IDS` classify activity; other allowed IDs are `invited`. `HUB_BETA_COHORT` defaults to `private-beta-1`. GitHub handles are display data and never grant access.
+
+`HUB_WEEKLY_RESEARCH_ENABLED` defaults to false and controls new weekly mission and follow-up creation only. Existing weekly tasks can still be read and completed by compatible clients while it is false. Disable creation first, pause or drain weekly tasks, and deploy a contract-capable previous server before rolling back application code. An older server must not lease a weekly task.
+
+A native client opts into weekly envelopes per inbox request with `X-Grok-Hub-Capabilities: weekly-research-v1`. Without that header the claim query excludes weekly tasks before changing attempts or leases. Capability declaration is compatibility negotiation, not runtime attestation. See `API.md` for the exact contract.
+
+Weekly missions are private, use one or two owner bots and at most two rounds. Owner-confirmed source websites are stored as exact normalized HTTPS origins. Approval does not inherit subdomains or wildcard hosts. The hub checks result citation origins; it does not operate or attest the native browser. Login, authenticated pages, redirects outside the approved origins and external mutations remain outside the research permission.
+
+Pilot consent is optional and versioned. Mission and review activity receive immutable measurement snapshots. Historical records predating this migration remain unclassified; later consent does not rewrite them. Customer metrics must include only snapshots with `consent=true` and `classification=invited`. Internal and test activity is excluded. Review duration is optional owner-reported data and stays null when omitted.

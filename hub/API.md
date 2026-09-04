@@ -103,3 +103,28 @@ Leased tasks include `contextEvidence` (at most ten items and 750,000 serialized
 Circle responses also include `members:[{ownerId,handle,displayName,role}]`, listing active members only. This list uses the same current-member authorization and transaction as circle evidence; there are no credential, GitHub ID, or session fields. Circle owners can use these owner IDs with the removal endpoint.
 
 Source URLs require DNS hostnames; IP literals and trailing-dot hostnames are rejected to match the native adapter. Legacy context records with incompatible sources are omitted from inbox context without modifying stored evidence or approvals.
+
+## Invited private beta and weekly decisions
+
+When `privateBetaEnabled` is true, `/api/session` also reports `weeklyResearchEnabled`. A GitHub profile outside the stable numeric allowlist is redirected to `/workspace/?access=invitation-required` without creating an owner or session. Removing an ID denies every existing owner session, pairing and bot route; the removed owner can still clear the browser cookie through logout.
+
+All owner mutations below require the existing exact-Origin and CSRF controls. Pages use an opaque scope-bound keyset cursor with `limit` default 20 and maximum 100:
+
+| Method   | Path                                                | Input / result                                                                 |
+| -------- | --------------------------------------------------- | ------------------------------------------------------------------------------ |
+| GET      | `/api/workspace/summary`                            | Lightweight owner/bots/circles, feature flags, optional enrollment and counts  |
+| GET      | `/api/missions?status=&cursor=&limit=`              | `Page<Mission>` for owner missions                                             |
+| GET      | `/api/evidence?missionId=&circleId=&cursor=&limit=` | `Page<Evidence>`; own or currently permitted published evidence                |
+| GET      | `/api/evidence/:id`                                 | `{evidence}` if currently permitted                                            |
+| GET      | `/api/approvals?status=&cursor=&limit=`             | `Page<Approval>`                                                               |
+| GET      | `/api/decisions?missionId=&cursor=&limit=`          | `Page<OwnerReview>` with immutable revisions                                   |
+| GET      | `/api/decisions/:id/export?format=`                 | `json` or `markdown`; current-permission export attachment                     |
+| GET/POST | `/api/pilot/enrollment`                             | Optional consent and assistance; classification/cohort are operator controlled |
+
+Create a weekly mission through `POST /api/missions` with `WeeklyMissionRequest` from `src/contracts.ts`. `visibility` must be private; `maxRounds` defaults to two and is at most two. `weeklyInput` contains offer (1000), buyer (1000), zero-to-three products (name 100, public URL 2048), one-to-twenty unique normalized seed URLs, and `approvedOrigins`. The origins must exactly equal the sorted union of normalized product and seed URL origins; this binds the owner's displayed confirmation. Optional `priorReviewId` and `priorReviewVersion` must identify the same immutable owner review. The idempotency key is `[A-Za-z0-9_-]`, maximum 128. Response is `{mission,replayed}`.
+
+Weekly inbox requests must send `X-Grok-Hub-Capabilities: weekly-research-v1`. A compatible task adds `weeklyContext` from `src/contracts.ts`. The generated brief requires these six headings: `Changes`, `Uncertainty`, `Owner relevance`, `Counterarguments`, `Proposed next experiment`, and `Previous-decision update`. The ordinary research-result shape remains unchanged. Every submitted citation must have an exact origin in `approvedOrigins`.
+
+Create an immutable terminal-mission review through `POST /api/missions/:id/reviews` with `ReviewInput`. The initial expected version is zero; stale versions return 409. Exact idempotent retries return the original record and altered reuse returns 409. `nextReviewAt` omitted defaults to seven days; explicit null means none. `reviewDurationSeconds` is optional owner-reported 1..86400 and defaults to null. Evidence IDs are limited to 20, must belong to that mission and must be currently permitted. Reads and exports recheck permission and content hash.
+
+Create a linked weekly follow-up with `POST /api/missions/:id/followups`, using `WeeklyMissionRequest` plus `sourceReviewVersion`. The source must be terminal and owned by the caller; its latest review is pinned as prior context. It creates a new mission and never reopens or mutates the source. `test`, `watch`, and `stop` are owner decisions only: they do not authorize an experiment, external action or automatic cancellation.

@@ -5,6 +5,8 @@ import type { Database, Queryable, Row } from "./db.js";
 import type { Config } from "./config.js";
 import type { Source } from "./contracts.js";
 import { failMission, reconcileMissions } from "./lifecycle.js";
+import { requireEligible } from "./beta-access.js";
+import { betaApi, weeklyCapability, validateWeeklySources } from "./beta.js";
 import {
   ApiError,
   choice,
@@ -39,6 +41,7 @@ const botView = (r: Row) => ({
   createdAt: iso(r.created_at),
 });
 const missionView = (r: Row) => ({
+  kind: r.kind ?? "research",
   id: r.id,
   ownerId: r.owner_id,
   title: r.title,
@@ -200,6 +203,12 @@ function sources(value: unknown): Source[] {
 
 export async function createApp(db: Database, config: Config) {
   if (
+    config.privateBeta &&
+    (!config.betaAllowedGithubIds?.length ||
+      config.betaAllowedGithubIds.some((v) => !/^[1-9][0-9]{0,19}$/.test(v)))
+  )
+    throw new Error("Private beta requires valid numeric GitHub allowlist");
+  if (
     config.localLogin &&
     (config.production ||
       !loopback(config.host) ||
@@ -266,6 +275,7 @@ export async function createApp(db: Database, config: Config) {
   async function owner(
     request: FastifyRequest,
     mutation = false,
+    allowRemoved = false,
   ): Promise<Row> {
     const token = request.cookies[cookieName];
     if (!token) return fail(401, "Owner login required");
@@ -275,6 +285,7 @@ export async function createApp(db: Database, config: Config) {
     );
     const found = result.rows[0];
     if (!found) return fail(401, "Owner login required");
+    if (!allowRemoved) requireEligible(config, found.github_id);
     if (mutation) {
       checkOrigin(request);
       const csrf = request.headers["x-csrf-token"];
@@ -287,22 +298,26 @@ export async function createApp(db: Database, config: Config) {
     const auth = request.headers.authorization;
     if (!auth?.startsWith("Bearer gbs_") || auth.length > 200)
       return fail(401, "Bot token required");
-    const result = await db.query("SELECT * FROM bots WHERE token_hash=$1", [
-      hash(auth.slice(7)),
-    ]);
+    const result = await db.query(
+      "SELECT b.*,o.github_id FROM bots b JOIN owners o ON o.id=b.owner_id WHERE b.token_hash=$1",
+      [hash(auth.slice(7))],
+    );
     const found = result.rows[0];
     if (!found || found.status === "revoked")
       return fail(401, "Bot token invalid or revoked");
+    requireEligible(config, found.github_id);
     if (found.status !== "active") return fail(409, "Bot is paused");
     return found;
   }
   async function lockedBot(tx: Queryable, botId: string): Promise<Row> {
-    const result = await tx.query("SELECT * FROM bots WHERE id=$1 FOR UPDATE", [
-      botId,
-    ]);
+    const result = await tx.query(
+      "SELECT b.*,o.github_id FROM bots b JOIN owners o ON o.id=b.owner_id WHERE b.id=$1 FOR UPDATE OF b",
+      [botId],
+    );
     const found = result.rows[0];
     if (!found || found.status === "revoked")
       return fail(401, "Bot token invalid or revoked");
+    requireEligible(config, found.github_id);
     if (found.status !== "active") return fail(409, "Bot is paused");
     return found;
   }
@@ -311,6 +326,7 @@ export async function createApp(db: Database, config: Config) {
     current: FastifyRequest,
     found: Row,
   ) {
+    requireEligible(config, found.github_id);
     const token = secret();
     const csrf = secret();
     await db.transaction(async (tx) => {
@@ -334,6 +350,8 @@ export async function createApp(db: Database, config: Config) {
     });
     return {
       authenticated: true,
+      privateBetaEnabled: !!config.privateBeta,
+      weeklyResearchEnabled: !!config.weeklyResearchEnabled,
       owner: ownerView(found),
       csrfToken: csrf,
       localLoginEnabled: config.localLogin,
@@ -364,6 +382,18 @@ export async function createApp(db: Database, config: Config) {
       .code(code)
       .send({ error: code === 500 ? "Internal server error" : error.message });
   });
+  const beta = betaApi(db, config, {
+    owner,
+    reconcile,
+    circleFor,
+    missionView,
+    evidenceView,
+    evidenceHash,
+    ownerView,
+    botView,
+    approvalView,
+  });
+  beta.register(app);
   app.get("/health", async () => {
     await db.query("SELECT 1");
     return { ok: true, service: "grokbot-social-hub", database: db.kind };
@@ -373,6 +403,8 @@ export async function createApp(db: Database, config: Config) {
       const found = await owner(request);
       return {
         authenticated: true,
+        privateBetaEnabled: !!config.privateBeta,
+        weeklyResearchEnabled: !!config.weeklyResearchEnabled,
         owner: ownerView(found),
         csrfToken: found.csrf_token,
         localLoginEnabled: config.localLogin,
@@ -381,9 +413,12 @@ export async function createApp(db: Database, config: Config) {
         ),
       };
     } catch (error) {
-      if (error instanceof ApiError && error.statusCode === 401)
+      if (error instanceof ApiError && [401, 403].includes(error.statusCode))
         return {
           authenticated: false,
+          accessDenied: error.statusCode === 403,
+          privateBetaEnabled: !!config.privateBeta,
+          weeklyResearchEnabled: !!config.weeklyResearchEnabled,
           localLoginEnabled: config.localLogin,
           githubLoginEnabled: !!(
             config.githubClientId && config.githubClientSecret
@@ -409,9 +444,30 @@ export async function createApp(db: Database, config: Config) {
     return login(reply, request, found);
   });
   app.post("/api/auth/logout", async (request, reply) => {
-    await owner(request, true);
+    checkOrigin(request);
+    // Removing access must not strand the browser with an uncleared cookie.
+    // Still enforce CSRF for eligible live sessions.
+    try {
+      await owner(request, true);
+    } catch (error) {
+      if (!(error instanceof ApiError)) throw error;
+      if (error.statusCode !== 401) {
+        const found = await owner(request, false, true);
+        try {
+          requireEligible(config, found.github_id);
+          throw error;
+        } catch (eligibility) {
+          if (
+            !(eligibility instanceof ApiError) ||
+            eligibility.message !==
+              "This GitHub account is not invited to the private beta"
+          )
+            throw eligibility;
+        }
+      }
+    }
     await db.query("DELETE FROM sessions WHERE id_hash=$1", [
-      hash(request.cookies[cookieName]!),
+      hash(request.cookies[cookieName] ?? ""),
     ]);
     reply.clearCookie(cookieName, cookieOptions);
     return { ok: true };
@@ -506,6 +562,15 @@ export async function createApp(db: Database, config: Config) {
       !profile.login
     )
       return fail(502, "GitHub profile unavailable");
+    try {
+      requireEligible(config, String(profile.id));
+    } catch (error) {
+      if (error instanceof ApiError && error.statusCode === 403)
+        return reply.redirect(
+          `${config.origin}/workspace/?access=invitation-required`,
+        );
+      throw error;
+    }
     const found = await db.transaction((tx) =>
       ensureOwner(
         tx,
@@ -594,9 +659,11 @@ export async function createApp(db: Database, config: Config) {
       );
       if (!pairing.rows[0])
         return fail(400, "Pairing code invalid, expired or already used");
-      await tx.query("SELECT id FROM owners WHERE id=$1 FOR UPDATE", [
-        pairing.rows[0].owner_id,
-      ]);
+      const pairingOwner = await tx.query(
+        "SELECT id,github_id FROM owners WHERE id=$1 FOR UPDATE",
+        [pairing.rows[0].owner_id],
+      );
+      requireEligible(config, pairingOwner.rows[0]?.github_id);
       const count = await tx.query(
         "SELECT count(*)::integer AS total FROM bots WHERE owner_id=$1 AND status<>'revoked'",
         [pairing.rows[0].owner_id],
@@ -682,6 +749,8 @@ export async function createApp(db: Database, config: Config) {
   });
 
   app.post("/api/missions", async (request) => {
+    if ((request.body as Row | undefined)?.kind === "weekly-decision")
+      return beta.createWeekly(request);
     const found = await owner(request, true);
     const body = object(request.body, [
       "title",
@@ -728,6 +797,13 @@ export async function createApp(db: Database, config: Config) {
             "INSERT INTO tasks(id,mission_id,bot_id,round,status) VALUES($1,$2,$3,$4,'queued')",
             [id(), mission.rows[0].id, botId, round],
           );
+      await tx.query(
+        "INSERT INTO mission_measurement_snapshots(mission_id,snapshot) VALUES($1,$2)",
+        [
+          mission.rows[0].id,
+          JSON.stringify(await beta.measurement(tx, found, "unknown")),
+        ],
+      );
       await event(tx, found.id, "mission.created", `Created mission: ${title}`);
       return { mission: missionView({ ...mission.rows[0], bot_ids: botIds }) };
     });
@@ -818,6 +894,7 @@ export async function createApp(db: Database, config: Config) {
     const found = await owner(request);
     await reconcile();
     return db.transaction(async (tx) => {
+      await beta.lockMemberships(tx, found.id);
       const mission = (
         await tx.query(
           "SELECT m.*,ARRAY(SELECT DISTINCT bot_id FROM tasks WHERE mission_id=m.id) AS bot_ids FROM missions m WHERE id=$1",
@@ -839,6 +916,9 @@ export async function createApp(db: Database, config: Config) {
         [mission.id, found.id],
       );
       return {
+        ...(config.privateBeta
+          ? await beta.detail(tx, found.id, mission, tasks.rows)
+          : {}),
         mission: missionView(mission),
         tasks: tasks.rows.map((r) => ({
           id: r.id,
@@ -854,15 +934,17 @@ export async function createApp(db: Database, config: Config) {
   });
   app.get("/api/bot/inbox", async (request) => {
     const authenticated = await bot(request);
+    const supportsWeekly = weeklyCapability(request);
     await reconcile();
     return db.transaction(async (tx) => {
       const active = await lockedBot(tx, authenticated.id);
       const candidate = await tx.query(
-        "SELECT t.id,t.mission_id,t.round,m.title,m.brief FROM tasks t JOIN missions m ON m.id=t.mission_id WHERE t.bot_id=$1 AND t.status='queued' AND t.attempts<$2 AND m.status IN ('queued','running') AND m.created_at>now()-interval '24 hours' AND (m.visibility='private' OR EXISTS(SELECT 1 FROM circle_members cm WHERE cm.circle_id=m.circle_id AND cm.owner_id=$3 AND cm.active=true)) AND NOT EXISTS (SELECT 1 FROM tasks earlier WHERE earlier.mission_id=t.mission_id AND earlier.round<t.round AND earlier.status<>'completed') AND NOT EXISTS (SELECT 1 FROM tasks running WHERE running.bot_id=$1 AND running.status='leased') ORDER BY m.created_at,t.round,t.id LIMIT 1",
-        [active.id, config.maxAttempts, active.owner_id],
+        "SELECT t.id,t.mission_id,t.round,m.title,m.brief FROM tasks t JOIN missions m ON m.id=t.mission_id WHERE t.bot_id=$1 AND t.status='queued' AND t.attempts<$2 AND m.status IN ('queued','running') AND m.created_at>now()-interval '24 hours' AND (m.kind='research' OR $4::boolean) AND (m.visibility='private' OR EXISTS(SELECT 1 FROM circle_members cm WHERE cm.circle_id=m.circle_id AND cm.owner_id=$3 AND cm.active=true)) AND NOT EXISTS (SELECT 1 FROM tasks earlier WHERE earlier.mission_id=t.mission_id AND earlier.round<t.round AND earlier.status<>'completed') AND NOT EXISTS (SELECT 1 FROM tasks running WHERE running.bot_id=$1 AND running.status='leased') ORDER BY m.created_at,t.round,t.id LIMIT 1",
+        [active.id, config.maxAttempts, active.owner_id, supportsWeekly],
       );
       if (!candidate.rows[0]) return { bot: botView(active), tasks: [] };
       const task = candidate.rows[0];
+      await beta.lockMemberships(tx, active.owner_id);
       const scope = (
         await tx.query(
           "SELECT visibility,circle_id FROM missions WHERE id=$1",
@@ -884,6 +966,13 @@ export async function createApp(db: Database, config: Config) {
       );
       if (!claimable.rows.length) return { bot: botView(active), tasks: [] };
       const attemptId = id();
+      const weeklyContext = await beta.context(
+        tx,
+        active.owner_id,
+        task.mission_id,
+      );
+      if (weeklyContext && !supportsWeekly)
+        return { bot: botView(active), tasks: [] };
       const leaseExpiresAt = new Date(Date.now() + config.leaseSeconds * 1000);
       await tx.query(
         "UPDATE tasks SET status='leased',attempts=attempts+1,attempt_id=$2,lease_expires_at=$3 WHERE id=$1",
@@ -910,6 +999,8 @@ export async function createApp(db: Database, config: Config) {
         let contextSources: Source[];
         try {
           contextSources = sources(row.sources);
+          if (weeklyContext)
+            validateWeeklySources({ input: weeklyContext }, contextSources);
         } catch (error) {
           // Stored records may predate the current adapter source policy.
           // Omit incompatible context rather than returning a poisoned lease.
@@ -951,6 +1042,7 @@ export async function createApp(db: Database, config: Config) {
             attemptId,
             leaseExpiresAt: leaseExpiresAt.toISOString(),
             contextEvidence,
+            ...(weeklyContext ? { weeklyContext } : {}),
           },
         ],
       };
@@ -999,6 +1091,13 @@ export async function createApp(db: Database, config: Config) {
         )
       ).rows[0];
       if (!assigned) return fail(404, "Task not found");
+      const weekly = (
+        await tx.query(
+          "SELECT * FROM weekly_mission_inputs WHERE mission_id=$1",
+          [assigned.mission_id],
+        )
+      ).rows[0];
+      validateWeeklySources(weekly, refs);
       if (assigned.visibility === "circle")
         await circleFor(tx, active.owner_id, assigned.circle_id);
       await tx.query("SELECT id FROM missions WHERE id=$1 FOR UPDATE", [
@@ -1084,6 +1183,15 @@ export async function createApp(db: Database, config: Config) {
           [missionId, found.id],
         );
         if (!mission.rows[0]) return fail(404, "Mission not found");
+        const weekly = (
+          await tx.query(
+            "SELECT * FROM weekly_mission_inputs WHERE mission_id=$1",
+            [missionId],
+          )
+        ).rows[0];
+        if (weekly && visibility !== "private")
+          return fail(400, "Weekly mission evidence stays private");
+        validateWeeklySources(weekly, [{ url: sourceUrl }]);
       }
       const circleId =
         visibility === "circle"

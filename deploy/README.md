@@ -50,6 +50,14 @@ Only Caddy publishes ports. PostgreSQL stays on an internal Docker network. The 
 
 ## Backup, rollback and rollout
 
+### Invitation-only private beta
+
+For the staging beta, configure `HUB_PRIVATE_BETA=true`, the stable numeric IDs in `HUB_BETA_ALLOWED_GITHUB_IDS`, optional internal/test classification ID lists, and `HUB_BETA_COHORT`. An invitation is not consent to optional pilot measurement. The allowlist applies to owner sessions, pairing and Bot operations; removing an ID takes effect after all serving processes load the configuration.
+
+Keep `HUB_WEEKLY_RESEARCH_ENABLED=false` until the approved native clients, registered skill and existing routines support the weekly research contract and have explicit local enablement. This flag controls new weekly missions; it is not an instruction to discard existing assignments. Preserve generic research and the current trusted staging origin during the upgrade.
+
+GitHub Pages publication is manual while staging is reviewed. A merged runtime release is not production promotion. Retain a foundation release with both invitation enforcement and weekly-contract handling for rollback; the pre-beta runtime is not a safe active-beta rollback target. See [private beta controls](../docs/PRIVATE-BETA.md).
+
 Before an upgrade, retain the currently deployed Git commit and image IDs and make an encrypted database backup. PostgreSQL backups must be stored outside the Docker host; Docker volumes are not backups. Set a retention and restore-test schedule with the operator. Do not use `docker compose down --volumes` against retained data.
 
 Migrations are forward-applied at API startup under an advisory lock. Review each new migration before deploy; restoring an older application does not undo schema changes. If rollback needs a database restore, stop incoming writes and restore into a new database first.
