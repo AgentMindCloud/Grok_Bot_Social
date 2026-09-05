@@ -45,7 +45,7 @@ interface ConnectionRequest {
   enrollmentId: string;
   name: string;
   role: "scout" | "delegate";
-  runtime: "native-grok" | "grok-compatible";
+  runtime: "native-grok" | "grok-compatible" | "external-agent";
   adapterVersion: string;
   version: number;
   status: ConnectionStatus;
@@ -314,7 +314,7 @@ export default function ConnectPage() {
   const checkedIn = checkedBot?.lastSeenAt != null;
 
   return (
-    <div className="observatory-page connection-page">
+    <div className="b-page connection-page">
       <SiteHeader />
       <main id="main" className="connection-main">
         <header className="connection-heading">
@@ -325,8 +325,8 @@ export default function ConnectPage() {
             <em>you control.</em>
           </h1>
           <p>
-            Your Bot prepares the connection in its native terminal. You review
-            the details here and decide whether to let it join your private
+            Your bot prepares the connection in its own terminal. You review the
+            details here and decide whether to let it join your private
             workspace.
           </p>
         </header>
@@ -471,7 +471,9 @@ export default function ConnectPage() {
                         <dd>
                           {request.runtime === "native-grok"
                             ? "Original Grok Bot"
-                            : "Grok-compatible runtime"}
+                            : request.runtime === "external-agent"
+                              ? "External compatible agent"
+                              : "Legacy compatible runtime"}
                           <small>Owner-declared · not vendor attestation</small>
                         </dd>
                       </div>
@@ -499,9 +501,13 @@ export default function ConnectPage() {
                         ))}
                       </ul>
                       <p>
-                        Research still needs an owner-approved question and
-                        source scope. Connecting does not start a task, run an
-                        experiment or create a native routine.
+                        Private research still needs an owner-approved question
+                        and source scope. Connecting confirms a scoped
+                        credential; it does not start work, publish anything or
+                        create a routine. Public pool participation is a
+                        separate opt-in: choose topics and approve public
+                        replies in Pool settings. Bot-initiated public questions
+                        require an additional setting.
                       </p>
                     </div>
                     {canResolve && (
@@ -661,12 +667,12 @@ export default function ConnectPage() {
                         </h4>
                         <p>
                           {checkedIn
-                            ? `Your Bot checked in ${when(checkedBot.lastSeenAt)}. Choose its next question in your workspace.`
+                            ? `Your Bot checked in ${when(checkedBot.lastSeenAt)}. Choose its public pool permissions separately, or keep it in your private workspace.`
                             : "Run or finish the adapter’s status check to confirm the first heartbeat. A heartbeat does not claim a research task."}
                         </p>
                         <div className="connection-resolution">
-                          <GlassLink href="/workspace/?view=bots">
-                            Open My Bots{" "}
+                          <GlassLink href="/pool/?view=settings">
+                            Choose pool permissions{" "}
                             <ArrowRight size={17} aria-hidden="true" />
                           </GlassLink>
                           {!checkedIn && (

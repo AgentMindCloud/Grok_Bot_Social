@@ -1,63 +1,49 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, Menu, X } from "lucide-react";
-import { GlassLink } from "./GlassControl";
-import "@/app/header-fallback.css";
-
+import { useRef } from "react";
+import { ArrowUpRight, Menu } from "lucide-react";
 export function Brand({ compact = false }: { compact?: boolean }) {
   return (
-    <Link href="/" className="brand" aria-label="GrokBot Social home">
-      <svg viewBox="0 0 62 44" fill="none" aria-hidden="true">
-        <ellipse
-          cx="30"
-          cy="23"
-          rx="28"
-          ry="12"
-          transform="rotate(-24 30 23)"
+    <Link href="/" className="b-brand" aria-label="Bottocks.fun home">
+      <svg viewBox="0 0 52 42" aria-hidden="true">
+        <path
+          d="M26 32C17 43 3 37 3 24C3 11 18 9 26 17C34 9 49 11 49 24C49 37 35 43 26 32Z"
+          fill="#FF5792"
           stroke="currentColor"
-          strokeWidth="1.2"
+          strokeWidth="3.5"
         />
-        <circle cx="30" cy="23" r="4" fill="var(--accent)" />
-        <circle cx="53" cy="10" r="2" fill="currentColor" />
+        <path
+          d="M26 17V29M20 4H32M26 4V12"
+          stroke="currentColor"
+          strokeWidth="3.5"
+          strokeLinecap="round"
+        />
+        <circle cx="15" cy="23" r="2.5" />
+        <circle cx="37" cy="23" r="2.5" />
       </svg>
-      {!compact && <span>GrokBot Social</span>}
+      {!compact && (
+        <span>
+          bottocks<span className="b-brand-fun">.fun</span>
+        </span>
+      )}
     </Link>
   );
 }
 const links = [
+  { href: "/pool/", label: "The pool" },
   { href: "/#how-it-works", label: "How it works" },
-  { href: "/library/", label: "Library" },
-  { href: "/#trust", label: "Trust & permissions" },
-  { href: "/about/", label: "About" },
+  { href: "/avatar-lab/", label: "Avatar lab" },
 ];
 export default function SiteHeader({ active }: { active?: string }) {
-  const [open, setOpen] = useState(false);
-  const [enhanced, setEnhanced] = useState(false);
-  const toggle = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
-    setEnhanced(true);
-    document.documentElement.setAttribute("data-theme", "dark");
-  }, []);
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setOpen(false);
-        toggle.current?.focus();
-      }
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [open]);
+  const menu = useRef<HTMLDetailsElement>(null);
   return (
-    <header className="site-header obs-header">
+    <header className="b-header">
       <a className="skip-link" href="#main">
         Skip to content
       </a>
-      <div className="site-header-inner">
+      <div className="b-header-inner">
         <Brand />
-        <nav className="desktop-nav" aria-label="Main navigation">
+        <nav className="b-desktop-nav" aria-label="Main navigation">
           {links.map((link) => (
             <Link
               key={link.href}
@@ -68,66 +54,39 @@ export default function SiteHeader({ active }: { active?: string }) {
             </Link>
           ))}
         </nav>
-        <GlassLink
-          className="header-connect"
-          variant="quiet"
-          href="/workspace/"
+        <Link className="b-btn b-btn-small b-header-join" href="/join/">
+          Join free <ArrowUpRight size={17} />
+        </Link>
+        <details
+          className="b-mobile-menu"
+          ref={menu}
+          onKeyDown={(event) => {
+            if (event.key === "Escape" && menu.current) {
+              menu.current.open = false;
+              menu.current.querySelector("summary")?.focus();
+            }
+          }}
         >
-          Open workspace <ArrowUpRight size={15} />
-        </GlassLink>
-        {enhanced && (
-          <button
-            ref={toggle}
-            type="button"
-            className="icon-button mobile-menu"
-            aria-label={open ? "Close navigation" : "Open navigation"}
-            aria-expanded={open}
-            aria-controls="mobile-navigation"
-            onClick={() => setOpen(!open)}
-          >
-            {open ? <X /> : <Menu />}
-          </button>
-        )}
-      </div>
-      <noscript>
-        <details className="obs-native-navigation">
-          <summary>Explore GrokBot Social</summary>
+          <summary aria-label="Navigation menu">
+            <Menu size={24} />
+          </summary>
           <nav aria-label="Mobile navigation">
             {links.map((link) => (
-              <a
+              <Link
                 key={link.href}
                 href={link.href}
-                aria-current={active === link.href ? "page" : undefined}
+                onClick={() => {
+                  if (menu.current) menu.current.open = false;
+                }}
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
-            <a href="/workspace/">
-              Open workspace <ArrowUpRight size={17} aria-hidden="true" />
-            </a>
+            <Link href="/join/">Join free ↗</Link>
+            <Link href="/workspace/">My workspace</Link>
           </nav>
         </details>
-      </noscript>
-      {open && (
-        <nav
-          id="mobile-navigation"
-          className="mobile-navigation"
-          aria-label="Mobile navigation"
-        >
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setOpen(false)}
-            >
-              {link.label}
-            </Link>
-          ))}
-          <Link href="/workspace/" onClick={() => setOpen(false)}>
-            Open workspace <ArrowUpRight size={17} />
-          </Link>
-        </nav>
-      )}
+      </div>
     </header>
   );
 }

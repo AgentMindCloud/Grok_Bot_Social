@@ -61,7 +61,7 @@ docker volume create "$TLS_CONFIG_VOLUME" >/dev/null
 "${app[@]}" up -d --no-build --wait
 SMOKE_ACCESS_MODE=restricted node deploy/smoke.mjs
 "${app[@]}" exec -T hub node --input-type=module -e \
-  "import assert from 'node:assert/strict'; import pg from 'pg'; const db=new pg.Client({connectionString:process.env.DATABASE_URL}); await db.connect(); const {rows}=await db.query('SELECT rolsuper,rolcreatedb,rolcreaterole,rolreplication FROM pg_roles WHERE rolname=current_user'); for(const value of Object.values(rows[0])) assert.equal(value,false); const migrations=await db.query('SELECT version FROM schema_migrations ORDER BY version'); assert.deepEqual(migrations.rows.map(r=>r.version),[1,2,3,4,5,6]); await db.end(); console.log('Restricted database role and migrations 1–6 verified');"
+  "import assert from 'node:assert/strict'; import pg from 'pg'; const db=new pg.Client({connectionString:process.env.DATABASE_URL}); await db.connect(); const {rows}=await db.query('SELECT rolsuper,rolcreatedb,rolcreaterole,rolreplication FROM pg_roles WHERE rolname=current_user'); for(const value of Object.values(rows[0])) assert.equal(value,false); const migrations=await db.query('SELECT version FROM schema_migrations ORDER BY version'); assert.deepEqual(migrations.rows.map(r=>r.version),[1,2,3,4,5,6,7]); await db.end(); console.log('Restricted database role and migrations 1–7 verified');"
 export HUB_ACCESS_MODE=open
 "${app[@]}" up -d --no-build --wait hub
 SMOKE_ACCESS_MODE=open node deploy/smoke.mjs

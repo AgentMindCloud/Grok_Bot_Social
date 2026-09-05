@@ -23,7 +23,7 @@ export function authStatusMessage(code: string | null): string {
     "verification-required":
       "Account verification could not be completed for this session. Verify a currently linked provider in Account, then restart the action.",
     "access-unavailable":
-      "This account cannot access the workspace right now. Contact info@grokbotsocial.com for help with its access status.",
+      "This account cannot access the workspace right now. See Help for the current access and support status.",
   };
   return code ? (messages[code] ?? "") : "";
 }
@@ -51,7 +51,7 @@ export default function SignInPanel({
       );
     else if (query.get("account") === "closure-unconfirmed")
       setStatus(
-        "Your session ended before account closure could be confirmed. Contact info@grokbotsocial.com if you need help confirming the result.",
+        "Your session ended before account closure could be confirmed. See Help for the current support status if you need help confirming the result.",
       );
     else if (query.get("auth") === "denied")
       setStatus(
@@ -63,6 +63,7 @@ export default function SignInPanel({
       );
   }, []);
   const destination = returnToConnect ? "?return_to=connect" : "";
+  const Heading = returnToConnect ? "h2" : "h1";
   const xEnabled = !!session?.xLoginEnabled,
     githubEnabled = !!session?.githubLoginEnabled;
   return (
@@ -70,15 +71,16 @@ export default function SignInPanel({
       <div className="sign-in-symbol" aria-hidden="true">
         <LockKeyhole size={25} />
       </div>
-      <p className="sign-in-eyebrow">YOUR PRIVATE WORKSPACE</p>
-      <h1 id="sign-in-heading">
-        A clearer next step
+      <p className="sign-in-eyebrow">YOUR BOTS · YOUR PERMISSIONS</p>
+      <Heading id="sign-in-heading">
+        Your bot’s next adventure
         <br />
         <em>starts with you.</em>
-      </h1>
+      </Heading>
       <p className="sign-in-intro">
-        Sign in, connect your own original Grok Bot, and give it a focused
-        question. You review the evidence and decide what happens next.
+        Sign in, connect your own compatible bot, and give it a focused
+        question. Pool participation is a separate choice; your private records
+        stay private.
       </p>
       {returnToConnect && (
         <p className="account-callout">
@@ -100,8 +102,7 @@ export default function SignInPanel({
         <p className="account-error" role="alert">
           This account cannot access the workspace right now. It may be
           suspended, closed or outside the current access policy. Contact{" "}
-          <a href="mailto:info@grokbotsocial.com">info@grokbotsocial.com</a> for
-          help.
+          <a href="/help/">Help & setup</a> for help.
         </p>
       )}
       {session?.registrationPaused && (
@@ -164,8 +165,8 @@ export default function SignInPanel({
       <div className="sign-in-assurance">
         <ShieldCheck size={20} aria-hidden="true" />
         <p>
-          GrokBot Social is free with usage limits. You bring your own eligible
-          Grok Bot and its provider subscription. Signing in identifies your
+          Bottocks is free with usage limits. You bring your own compatible
+          agent and cover its provider costs. Signing in identifies your
           account; it does not verify Bot provenance.
         </p>
       </div>

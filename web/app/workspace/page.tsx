@@ -70,7 +70,7 @@ const headings: Record<View, { eyebrow: string; title: string }> = {
   },
   knowledge: { eyebrow: "SOURCE RECORD", title: "Keep the useful findings." },
   bots: {
-    eyebrow: "NATIVE CONNECTIONS",
+    eyebrow: "YOUR AGENT CONNECTIONS",
     title: "Your Bots and their check-ins.",
   },
   circles: {
@@ -260,6 +260,9 @@ function BetaWorkspace() {
     <main className="workspace">
       <aside className="workspace-sidebar">
         <Brand />
+        <a className="workspace-pool-link" href="/pool/">
+          Back to the public pool ↗
+        </a>
         <nav className="workspace-nav" aria-label="Workspace">
           {navigation.map((item) => {
             const Icon = item.icon;

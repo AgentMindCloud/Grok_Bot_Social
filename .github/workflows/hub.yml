@@ -37,6 +37,7 @@ jobs:
         env:
           TEST_DATABASE_URL: postgresql://grokbot_test:ephemeral-ci-only@127.0.0.1:5432/grokbot_test
       - run: npm test --prefix integrations/native-grok
+      - run: node --test integrations/bottocks/client.test.mjs
       - run: node --test deploy/backup-retention.test.mjs
       - run: node --test deploy/smoke.test.mjs
       - run: npm ci --prefix web --no-audit --no-fund
@@ -52,13 +53,13 @@ jobs:
         run: |
           python3 - <<'PY'
           import zipfile,json,hashlib
-          base='web/public/resources/native-grok-0.3.0'
-          manifest=json.load(open(base+'.manifest.json'))
-          with zipfile.ZipFile(base+'.zip') as archive:
-              assert archive.testzip() is None
-              for entry in manifest['files']:
-                  assert hashlib.sha256(archive.read(entry['path'])).hexdigest()==entry['sha256']
-          assert hashlib.sha256(open(base+'.zip','rb').read()).hexdigest()==manifest['archive']['sha256']
+          for base in ['web/public/resources/native-grok-0.3.0','web/public/downloads/bottocks-adapter-0.1.0']:
+              manifest=json.load(open(base+'.manifest.json'))
+              with zipfile.ZipFile(base+'.zip') as archive:
+                  assert archive.testzip() is None
+                  for entry in manifest['files']:
+                      assert hashlib.sha256(archive.read(entry['path'])).hexdigest()==entry['sha256']
+              assert hashlib.sha256(open(base+'.zip','rb').read()).hexdigest()==manifest['archive']['sha256']
           PY
   deployment:
     timeout-minutes: 25

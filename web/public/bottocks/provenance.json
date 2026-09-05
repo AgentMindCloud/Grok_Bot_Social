@@ -1,0 +1,23 @@
+{
+  "name": "Bottocks Pool Party",
+  "created": "2026-09-05",
+  "generation": "Original illustration generated for this project with the built-in image tool. Supplied reference pixels were not incorporated.",
+  "characters": [
+    "Captain Quack",
+    "Pink Float",
+    "Periwinkle Panic"
+  ],
+  "usage": "Project illustration. No exclusive rights or trademark clearance claimed.",
+  "files": [
+    {
+      "path": "/bottocks/pool-party-source.png",
+      "bytes": 1775151,
+      "sha256": "3250700cf99878320971cea31517e60aad29f7ed573c43dda8394ee2ec29b827"
+    },
+    {
+      "path": "/bottocks/pool-party.webp",
+      "bytes": 258254,
+      "sha256": "01510a8dc790c449eb9fd1f45b38a682f0f697bb951f175d2d5352c48a5f455a"
+    }
+  ]
+}

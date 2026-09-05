@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { database, migrate, type Database } from "../src/db.js";
 import { ClosureJournal } from "../src/closure-journal.js";
+import { createApp } from "../src/server.js";
 import { replayClosureJournal } from "../src/account-lifecycle.js";
 import {
   assertRestoreTarget,
@@ -40,6 +41,7 @@ test("restore refuses production DB names and unsafe admission configuration", (
     HUB_RESTORE_QUARANTINE: "true",
     HUB_REGISTRATION_PAUSED: "true",
     HUB_ADMISSIONS_ENABLED: "false",
+    HUB_POOL_ENABLED: "false",
   };
   assert.throws(
     () => assertRestoreTarget("postgresql://test:test@localhost/grokbot", env),
@@ -52,6 +54,14 @@ test("restore refuses production DB names and unsafe admission configuration", (
         {},
       ),
     /quarantine/,
+  );
+  assert.throws(
+    () =>
+      assertRestoreTarget(
+        "postgresql://test:test@localhost/grokbot_restore_test",
+        { ...env, HUB_POOL_ENABLED: "true" },
+      ),
+    /pool disabled/,
   );
   assert.equal(
     assertRestoreTarget(
@@ -89,6 +99,25 @@ test("restore quarantine invalidates stale sessions/identities/Bots until protec
     "INSERT INTO circle_members(circle_id,owner_id,role) VALUES($1,$2,'owner')",
     [circle, owner],
   );
+  const question = randomUUID(),
+    lease = randomUUID(),
+    reply = randomUUID();
+  await db.query(
+    "INSERT INTO pool_participation(bot_id,enabled,topics,allow_questions) VALUES($1,true,'[\"curious\"]',true)",
+    [bot],
+  );
+  await db.query(
+    "INSERT INTO pool_questions(id,owner_id,bot_id,author_name,avatar_slug,title,body,topic,idempotency_key,request_hash) VALUES($1,$2,$3,'Old public Bot','bumble','Old public question','Restored public text','curious','old-q','old-hash')",
+    [question, owner, bot],
+  );
+  await db.query(
+    "INSERT INTO pool_leases(id,question_id,owner_id,bot_id,attempt_id,token_generation,status,expires_at) VALUES($1,$2,$3,$4,'old-attempt',1,'leased',now()+interval '5 minutes')",
+    [lease, question, owner, bot],
+  );
+  await db.query(
+    "INSERT INTO pool_replies(id,question_id,owner_id,bot_id,lease_id,attempt_id,author_name,avatar_slug,body,idempotency_key,request_hash) VALUES($1,$2,$3,$4,$5,'old-attempt','Old public Bot','bumble','Restored reply','old-r','old-hash')",
+    [reply, question, owner, bot, lease],
+  );
   const result = await quarantineRestoredDatabase(
     db,
     new ClosureJournal(directory),
@@ -96,6 +125,59 @@ test("restore quarantine invalidates stale sessions/identities/Bots until protec
   );
   assert.equal(result.publicExposureAllowed, false);
   assert.equal(result.identityReconciliationRequired, true);
+  assert.equal(result.cancelledPoolLeases, 1);
+  assert.equal(result.hiddenPoolQuestions, 1);
+  assert.equal(result.hiddenPoolReplies, 1);
+  // Even an accidental public-pool flag change cannot republish old posts.
+  const preview = await createApp(db, {
+    origin: "http://127.0.0.1:3000",
+    production: false,
+    localLogin: false,
+    localOwner: "restore-check",
+    host: "127.0.0.1",
+    port: 8787,
+    sessionHours: 24,
+    pairingMinutes: 10,
+    leaseSeconds: 300,
+    maxAttempts: 3,
+    fetch,
+    poolEnabled: true,
+  });
+  try {
+    assert.equal(
+      (await preview.inject({ url: "/api/pool/questions" })).json().items
+        .length,
+      0,
+    );
+    assert.equal(
+      (await preview.inject({ url: `/api/pool/questions/${question}` }))
+        .statusCode,
+      404,
+    );
+  } finally {
+    await preview.close();
+  }
+  assert.equal(
+    (
+      await db.query("SELECT enabled FROM pool_participation WHERE bot_id=$1", [
+        bot,
+      ])
+    ).rows[0].enabled,
+    false,
+  );
+  assert.equal(
+    (
+      await db.query("SELECT status FROM pool_questions WHERE id=$1", [
+        question,
+      ])
+    ).rows[0].status,
+    "hidden",
+  );
+  assert.equal(
+    (await db.query("SELECT hidden FROM pool_replies WHERE id=$1", [reply]))
+      .rows[0].hidden,
+    true,
+  );
   assert.equal(
     Number((await db.query("SELECT count(*) FROM sessions")).rows[0].count),
     0,

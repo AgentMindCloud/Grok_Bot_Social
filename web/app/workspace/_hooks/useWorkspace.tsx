@@ -35,7 +35,7 @@ function useWorkspaceState() {
   const workspaceEnabled =
     session?.workspaceEnabled ?? session?.privateBetaEnabled ?? false;
   const accessMessage = session?.accessDenied
-    ? "This account cannot access the workspace right now. It may be suspended, closed or outside the current access policy. Contact info@grokbotsocial.com for help."
+    ? "This account cannot access the workspace right now. It may be suspended, closed or outside the current access policy. See Help for current support and access information."
     : "";
   const invalidate = useCallback((accessDenied = false) => {
     epoch.current++;

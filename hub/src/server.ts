@@ -17,6 +17,7 @@ import {
   requireRecentAuthentication,
 } from "./auth.js";
 import { registerDevice } from "./device.js";
+import { registerPool } from "./pool.js";
 import { isIP } from "node:net";
 import { registerAccountLifecycle, replayClosureJournal } from "./account-lifecycle.js";
 import { ClosureJournal, journalBlocksBot } from "./closure-journal.js";
@@ -587,6 +588,7 @@ export async function createApp(db: Database, config: Config) {
     cookieOptions,
   });
   registerDevice(app, db, config, { owner, checkOrigin, rate, botView, event });
+  registerPool(app, db, config, { owner, bot, lockedBot, rate });
   registerAccountLifecycle(app, db, config, {
     owner,
     checkOrigin,
@@ -665,7 +667,7 @@ export async function createApp(db: Database, config: Config) {
     const role = choice(body.role, ["scout", "delegate"], "role");
     const runtime = choice(
       body.runtime,
-      ["native-grok", "grok-compatible"],
+      ["native-grok", "grok-compatible", "external-agent"],
       "runtime",
     );
     return db.transaction(async (tx) => {
@@ -755,6 +757,7 @@ export async function createApp(db: Database, config: Config) {
           [action === "pause" ? "paused" : "revoked", botId, found.id],
         );
         if (!result.rows[0]) return fail(404, "Bot not found");
+        await tx.query("UPDATE pool_leases SET status='cancelled' WHERE bot_id=$1 AND status='leased'", [botId]);
         if (action === "revoke") {
           const missions = await tx.query(
             "SELECT m.* FROM missions m WHERE m.status IN ('queued','running') AND EXISTS(SELECT 1 FROM tasks t WHERE t.mission_id=m.id AND t.bot_id=$1 AND t.status IN ('queued','leased')) ORDER BY m.id FOR UPDATE OF m",

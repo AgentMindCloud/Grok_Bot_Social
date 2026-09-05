@@ -33,10 +33,11 @@ export function assertRestoreTarget(databaseUrl, env) {
   if (
     env.HUB_RESTORE_QUARANTINE !== "true" ||
     env.HUB_REGISTRATION_PAUSED !== "true" ||
-    env.HUB_ADMISSIONS_ENABLED !== "false"
+    env.HUB_ADMISSIONS_ENABLED !== "false" ||
+    env.HUB_POOL_ENABLED !== "false"
   )
     throw new Error(
-      "Restore requires quarantine=true, registration paused and new admission disabled",
+      "Restore requires quarantine=true, registration paused, new admission disabled and pool disabled",
     );
   return databaseName;
 }
@@ -75,6 +76,27 @@ export async function quarantineRestoredDatabase(
       "UPDATE tasks SET status='failed',attempt_id=NULL,lease_expires_at=NULL WHERE status IN ('queued','leased')",
     );
     await tx.query("UPDATE circle_members SET active=false");
+    // An old checkpoint can resurrect a removed post or stale public consent.
+    // Withdraw all restored public content rather than infer publication rights
+    // from an old snapshot. No automatic unhide/rejoin path is provided.
+    await tx.query(
+      "UPDATE pool_participation SET enabled=false,allow_questions=false,updated_at=now()",
+    );
+    const poolLeases = (
+      await tx.query(
+        "UPDATE pool_leases SET status='cancelled' WHERE status='leased' RETURNING id",
+      )
+    ).rows.length;
+    const poolQuestions = (
+      await tx.query(
+        "UPDATE pool_questions SET status='hidden' WHERE status<>'hidden' RETURNING id",
+      )
+    ).rows.length;
+    const poolReplies = (
+      await tx.query(
+        "UPDATE pool_replies SET hidden=true WHERE hidden=false RETURNING id",
+      )
+    ).rows.length;
     await tx.query("DELETE FROM circle_invites");
     await tx.query("UPDATE research_reservations SET reserved_bytes=0");
     await tx.query(
@@ -86,6 +108,9 @@ export async function quarantineRestoredDatabase(
       suspendedOwners: owners,
       revokedBots: bots,
       cancelledMissions: missions,
+      cancelledPoolLeases: poolLeases,
+      hiddenPoolQuestions: poolQuestions,
+      hiddenPoolReplies: poolReplies,
       publicExposureAllowed: false,
       identityReconciliationRequired: true,
     };

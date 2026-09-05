@@ -1041,7 +1041,7 @@ test("migration upgrades schema-two records without inventing measurement histor
           "SELECT version FROM schema_migrations ORDER BY version",
         )
       ).rows.map((row) => row.version),
-      [1, 2, 3, 4, 5, 6],
+      [1, 2, 3, 4, 5, 6, 7],
     );
     const identity = (await old.query("SELECT owner_id,provider,provider_user_id FROM provider_identities WHERE owner_id='old-owner'")).rows[0];
     assert.deepEqual(identity, { owner_id: "old-owner", provider: "github", provider_user_id: "42" });

@@ -49,7 +49,7 @@ export function validatePairInput(input) {
   string(input.code, 6, 128, 'Pairing code');
   string(input.name, 1, 80, 'Bot name');
   if (!['scout', 'delegate'].includes(input.role)) fail('Role must be scout or delegate.');
-  if (!['native-grok', 'grok-compatible'].includes(input.runtime)) fail('Runtime must be native-grok or grok-compatible.');
+  if (!['native-grok', 'grok-compatible', 'external-agent'].includes(input.runtime)) fail('Choose a supported adapter runtime.');
   return input;
 }
 
@@ -204,7 +204,9 @@ export async function storeConnectionState(file, value) {
 }
 
 export class HubClient {
-  constructor({ hubUrl, token, allowLocalHttp = false, fetchImpl = globalThis.fetch, sleep = ms => new Promise(resolve => setTimeout(resolve, ms)), now = Date.now }) {
+  constructor({ hubUrl, token, allowLocalHttp = false, fetchImpl = globalThis.fetch, sleep = ms => new Promise(resolve => setTimeout(resolve, ms)), now = Date.now, adapterVersion = 'native-grok-adapter/0.3.0' }) {
+    if (!['native-grok-adapter/0.3.0', 'bottocks-adapter/0.1.0'].includes(adapterVersion)) fail('Unsupported adapter version.');
+    this.adapterVersion = adapterVersion;
     this.hubUrl = normalizeHubUrl(hubUrl, allowLocalHttp);
     this.token = token === undefined ? undefined : validateToken(token);
     this.fetchImpl = fetchImpl;
@@ -263,7 +265,7 @@ export class HubClient {
   }
 
   pair(input) { return this.request('/api/bot/pair', { method: 'POST', body: validatePairInput(input), authenticated: false }); }
-  heartbeat({ weeklyResearch = false } = {}) { return this.request('/api/bot/heartbeat', { method: 'POST', body: { version: 'native-grok-adapter/0.3.0', capabilities: ['source-backed-research', ...(weeklyResearch === true ? ['weekly-research-v1'] : [])] } }); }
+  heartbeat({ weeklyResearch = false } = {}) { return this.request('/api/bot/heartbeat', { method: 'POST', body: { version: this.adapterVersion, capabilities: ['source-backed-research', ...(this.adapterVersion.startsWith('bottocks-') ? ['public-pool-v1'] : []), ...(weeklyResearch === true ? ['weekly-research-v1'] : [])] } }); }
   inbox({ weeklyResearch = false } = {}) { return this.request('/api/bot/inbox', { weeklyResearch }); }
   submit(taskId, input) { return this.request(`/api/bot/tasks/${validateIdentifier(taskId, 'Task ID')}/result`, { method: 'POST', body: validateResult(input) }); }
 }

@@ -12,7 +12,7 @@ interface DeviceServices {
   botView(row: Row): unknown;
   event(tx: Queryable, ownerId: string, type: string, message: string): Promise<void>;
 }
-const VERSION = "native-grok-adapter/0.3.0";
+const VERSIONS = ["native-grok-adapter/0.3.0", "bottocks-adapter/0.1.0"];
 const iso = (v: unknown) => new Date(v as string).toISOString();
 const codeHash = (v: unknown) => {
   const code = string(v, "Verification code", 12).toUpperCase().replaceAll("-", "");
@@ -37,6 +37,8 @@ async function activeOwner(tx: Queryable, ownerId: string) {
 async function drained(tx: Queryable, botId: string) {
   const leases = await tx.query("SELECT id FROM tasks WHERE bot_id=$1 AND status='leased' AND lease_expires_at>now() LIMIT 1", [botId]);
   if (leases.rows.length) return fail(409, "Wait for the current task lease to finish before reconnecting this Bot");
+  if ((await tx.query("SELECT id FROM pool_leases WHERE bot_id=$1 AND status='leased' AND expires_at>now() LIMIT 1", [botId])).rows.length)
+    return fail(409, "Wait for the current public answer lease to finish before reconnecting this Bot");
 }
 
 export function registerDevice(app: FastifyInstance, db: Database, config: Config, services: DeviceServices) {
@@ -57,14 +59,14 @@ export function registerDevice(app: FastifyInstance, db: Database, config: Confi
     if (!/^[a-f0-9]{64}$/.test(tokenHash)) return fail(400, "Invalid candidate token hash");
     const name = string(input.name, "Bot name", 80);
     const role = choice(input.role, ["scout", "delegate"] as const, "role");
-    const runtime = choice(input.runtime, ["native-grok", "grok-compatible"] as const, "runtime");
-    if (input.adapterVersion !== VERSION) return fail(400, "Update to native-grok-adapter/0.3.0 before connecting");
+    const runtime = choice(input.runtime, ["native-grok", "grok-compatible", "external-agent"] as const, "runtime");
+    if (!VERSIONS.includes(input.adapterVersion as string)) return fail(400, "Use native-grok-adapter/0.3.0 or bottocks-adapter/0.1.0 before connecting");
     const enrollmentId = randomUUID(), deviceSecret = secret();
     const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     const rawCode = Array.from(randomBytes(8), v => alphabet[v % alphabet.length]).join("");
     const userCode = `${rawCode.slice(0, 4)}-${rawCode.slice(4)}`;
     const expiresAt = new Date(Date.now() + 600_000);
-    const result = await db.query("INSERT INTO device_enrollments(id,device_secret_hash,user_code_hash,candidate_token_hash,name,role,runtime,adapter_version,expires_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT(candidate_token_hash) DO NOTHING RETURNING id", [enrollmentId, hash(deviceSecret), hash(rawCode), tokenHash, name, role, runtime, VERSION, expiresAt]);
+    const result = await db.query("INSERT INTO device_enrollments(id,device_secret_hash,user_code_hash,candidate_token_hash,name,role,runtime,adapter_version,expires_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT(candidate_token_hash) DO NOTHING RETURNING id", [enrollmentId, hash(deviceSecret), hash(rawCode), tokenHash, name, role, runtime, input.adapterVersion, expiresAt]);
     if (!result.rows.length) return fail(409, "This candidate was already submitted; resume the saved connection request or create a new candidate");
     return { enrollmentId, deviceSecret, userCode, verificationUrl: `${config.origin}/connect/`, expiresAt: expiresAt.toISOString(), interval: 5, version: 1 };
   });

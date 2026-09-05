@@ -211,8 +211,8 @@ export default function WeeklyMissionForm({
         <p className="decision-private-note">
           <LockKeyhole size={15} aria-hidden="true" />
           <span>
-            Private research with one or two original Grok Bots. Your question
-            becomes two bounded research rounds.
+            Private research with one or two eligible connected bots. Your
+            question becomes two bounded research rounds.
           </span>
         </p>
         <ol className="question-stage-list" aria-label="Question setup">

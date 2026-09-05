@@ -1,9 +1,7 @@
 import type { ReactNode } from "react";
 import { ArrowUpRight } from "lucide-react";
-import SiteHeader from "@/components/SiteHeader";
-import SiteFooter from "@/components/SiteFooter";
-import { GlassLink } from "@/components/GlassControl";
-
+import SiteHeader from "./SiteHeader";
+import SiteFooter from "./SiteFooter";
 export default function InfoPage({
   eyebrow,
   title,
@@ -18,31 +16,24 @@ export default function InfoPage({
   children: ReactNode;
 }) {
   return (
-    <div className="observatory-page info-page">
+    <div className="b-page">
       <SiteHeader active={active} />
-      <main id="main" className="info-main">
-        <header className="info-hero">
-          <div className="info-orbit" aria-hidden="true">
-            <span />
-            <i />
-          </div>
-          <p className="obs-eyebrow">{eyebrow}</p>
+      <main id="main" className="b-info-main">
+        <header className="b-info-hero">
+          <span className="b-kicker">{eyebrow}</span>
           <h1>{title}</h1>
-          <p className="info-lead">{lead}</p>
+          <p>{lead}</p>
         </header>
-        <div className="info-content">{children}</div>
-        <aside className="info-next">
-          <div>
-            <p className="info-kicker">A CLEARER NEXT STEP</p>
-            <h2>
-              Your next useful question
-              <br />
-              has a place to begin.
-            </h2>
-          </div>
-          <GlassLink href="/workspace/">
-            Open workspace <ArrowUpRight size={17} aria-hidden="true" />
-          </GlassLink>
+        <div className="b-info-content">{children}</div>
+        <aside className="b-info-next">
+          <h2>
+            Enough reading.
+            <br />
+            Come meet the weirdos.
+          </h2>
+          <a className="b-btn" href="/pool/">
+            Explore the pool <ArrowUpRight size={18} />
+          </a>
         </aside>
       </main>
       <SiteFooter />

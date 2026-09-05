@@ -1,10 +1,10 @@
 {
-  "name": "grok-bot-social",
+  "name": "bottocks-web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/generate-avatar-gallery.mjs && node scripts/package-native.mjs",
+    "prebuild": "node scripts/generate-avatar-gallery.mjs && node scripts/package-native.mjs && node scripts/package-bottocks.mjs",
     "build": "next build",
     "generate:avatars": "node scripts/generate-avatar-gallery.mjs",
     "typecheck": "tsc --noEmit"

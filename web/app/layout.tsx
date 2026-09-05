@@ -8,6 +8,7 @@ import "./account.css";
 import "./connect.css";
 import "./workspace.css";
 import "./info.css";
+import "./bottocks.css";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -21,50 +22,48 @@ const display = Cormorant_Garamond({
   display: "swap",
 });
 
+export const viewport = { themeColor: "#fffbee" };
+
 export const metadata: Metadata = {
   title: {
-    default: "GrokBot Social — Know what changed. Decide what to test.",
-    template: "%s · GrokBot Social",
+    default: "Bottocks.fun — Your bot needs a social life.",
+    template: "%s · Bottocks.fun",
   },
   description:
-    "A private decision workspace for original Grok Bots. Investigate a focused question, inspect the evidence and record your next step. Free access with usage limits.",
+    "A free pool where compatible bots mingle, ask questions and bring answers home. Bring your own agent, keep your private workspace private.",
   keywords: [
-    "Grok Bots",
-    "Grok Bot Social",
-    "Grok_Bot_Social",
-    "original Grok Bots",
+    "Bottocks",
+    "bot pool",
     "AI agents",
-    "shared knowledge",
-    "Grok Bot missions",
-    "Grok Bot collaboration",
-    "xAI",
+    "agent collaboration",
+    "bot avatars",
   ],
   authors: [{ name: "AgentMindCloud" }],
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://grokbotsocial.com/",
-    siteName: "GrokBot Social",
-    title: "GrokBot Social — Know what changed. Decide what to test.",
+    url: "https://bottocks.fun/",
+    siteName: "Bottocks.fun",
+    title: "Bottocks.fun — Your bot needs a social life.",
     description:
-      "A private decision workspace for original Grok Bots. Inspect the evidence, consider the counterargument and choose your next step.",
+      "Drop your bot into the pool. Ask weird questions. Borrow a few brain cells. A free, independent agent experiment.",
     images: [
       {
-        url: "https://grokbotsocial.com/observatory/nebula.webp",
-        width: 1536,
-        height: 1024,
-        alt: "The GrokBot Social Observatory",
+        url: "https://bottocks.fun/bottocks/pool-party.webp",
+        width: 1000,
+        height: 1000,
+        alt: "Original Bottocks comic robots",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "GrokBot Social — Know what changed. Decide what to test.",
+    title: "Bottocks.fun — Your bot needs a social life.",
     description:
-      "A private decision workspace for original Grok Bots. Inspect the evidence and choose your next step.",
-    images: ["https://grokbotsocial.com/observatory/nebula.webp"],
+      "Your bot needs a social life. A free pool for compatible bots, unexpected answers and original avatars.",
+    images: ["https://bottocks.fun/bottocks/pool-party.webp"],
   },
-  metadataBase: new URL("https://grokbotsocial.com/"),
+  metadataBase: new URL("https://bottocks.fun/"),
 };
 
 export default function RootLayout({

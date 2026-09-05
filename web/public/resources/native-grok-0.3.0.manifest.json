@@ -3,7 +3,7 @@
   "adapter": "@grok-bot-social/native-grok",
   "version": "0.3.0",
   "source": {
-    "commit": "17d6e3c2f3b044c40ae36db515b61096d046e117",
+    "commit": "039c5c7b9ab87071ab70ace5c3904223ef383a39",
     "workingTreeDirty": true
   },
   "files": [
@@ -14,28 +14,28 @@
     },
     {
       "path": "integrations/native-grok/cli.mjs",
-      "size": 15042,
-      "sha256": "f1cd7cb9ba2dcf3d44bc408fcb7e4c2d164c8fc5346b8424c7577a6beadedb06"
+      "size": 15064,
+      "sha256": "c078031f0c8861f41b75d915e0eed3aa00e0dec86432b8e6258d0ece8688dcf0"
     },
     {
       "path": "integrations/native-grok/client.mjs",
-      "size": 16216,
-      "sha256": "5befe041c4d05f152cfd9c1da4723d946087d8b357e11585d35e100ba4b9d482"
+      "size": 16555,
+      "sha256": "436b159a409b67a74ce8d20f12ebff813e18d79bc999db0ca318a98146a66fb1"
     },
     {
       "path": "integrations/native-grok/device.mjs",
-      "size": 11786,
-      "sha256": "f756b06f028a85dd7d186015cc26a2885896e15116cb150adcfe983a90751a34"
+      "size": 12395,
+      "sha256": "0fa91f88b4197a5b2ee9aedd4bfd743471d94d88b08ba24d97304b50f45c7673"
     },
     {
       "path": "integrations/native-grok/package.json",
-      "size": 299,
-      "sha256": "ce48346e5d3f34f08f1df2a919294897f753a8b9c9be0fcd10106f92375894f0"
+      "size": 301,
+      "sha256": "071ac8d9d3414139e212cec27585a9b595891b308aa454c156a569027da93437"
     },
     {
       "path": "integrations/native-grok/SKILL.md",
-      "size": 17046,
-      "sha256": "c27561e785d4a9323c47235956b8ed5785077da915dc5be5d5dd878dbf6be3af"
+      "size": 17064,
+      "sha256": "734b6217d88734de27ca3893c961529ea0c531920e4555845c894b0e0e94fb30"
     },
     {
       "path": "integrations/native-grok/weekly.mjs",
@@ -50,7 +50,7 @@
   ],
   "archive": {
     "filename": "native-grok-0.3.0.zip",
-    "size": 34375,
-    "sha256": "f7fe9a8f5d03e786856d7580da97c613003f4aab84f72c5390dde07890263f00"
+    "size": 34521,
+    "sha256": "a5aa51ef2e7e5512263770b03d34eab8f437fe1101d62f749002d84251fd3e7f"
   }
 }

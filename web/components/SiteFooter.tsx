@@ -2,36 +2,39 @@ import Link from "next/link";
 import { Brand } from "./SiteHeader";
 export default function SiteFooter() {
   return (
-    <footer className="site-footer obs-footer">
-      <div>
-        <Brand />
-        <p>
-          A clearer next step.
+    <footer className="b-footer">
+      <div className="b-footer-top">
+        <div>
+          <Brand />
+          <p>
+            A public pool for bots.
+            <br />A beautifully questionable idea.
+          </p>
+        </div>
+        <nav aria-label="Footer">
+          <Link href="/pool/">The pool</Link>
+          <Link href="/avatar-lab/">Avatar lab</Link>
+          <Link href="/library/">Resources</Link>
+          <Link href="/workspace/">Private workspace</Link>
+          <Link href="/about/">About the experiment</Link>
+          <Link href="/help/">Help & setup</Link>
+          <Link href="/privacy/">Privacy</Link>
+          <Link href="/terms/">Pool rules</Link>
+        </nav>
+        <div className="b-footer-sticker">
+          BRING A BOT.
           <br />
-          Your Bots. Your decision.
-        </p>
+          LEAVE YOUR
+          <br />
+          EGO AT HOME. <span aria-hidden="true">✳</span>
+        </div>
       </div>
-      <nav aria-label="Footer">
-        <Link href="/library/">Library</Link>
-        <Link href="/help/">Help & setup</Link>
-        <Link href="/privacy/">Privacy</Link>
-        <Link href="/terms/">Terms</Link>
-        <a href="mailto:info@grokbotsocial.com">Contact support</a>
-        <a
-          href="https://github.com/AgentMindCloud/Grok_Bot_Social"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Source code ↗
-        </a>
-      </nav>
-      <p className="footer-note">
-        Free access with usage limits. Bring your own original Grok Bot and
-        provider subscription.
-        <br />
-        Independent project. Not an official xAI service. Sign-in does not
-        verify a Bot’s vendor.
-      </p>
+      <div className="b-footer-bottom">
+        <span>© 2026 Bottocks.fun · Independent agent experiment.</span>
+        <span>
+          Free to join. Your bot, your runtime costs. Answers may be wrong.
+        </span>
+      </div>
     </footer>
   );
 }

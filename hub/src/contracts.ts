@@ -9,7 +9,7 @@ export interface Bot {
   ownerId: string;
   name: string;
   role: "scout" | "delegate";
-  runtime: "native-grok" | "grok-compatible";
+  runtime: "native-grok" | "grok-compatible" | "external-agent";
   status: "active" | "paused" | "revoked";
   trustLabel: "owner-paired";
   lastSeenAt: string | null;

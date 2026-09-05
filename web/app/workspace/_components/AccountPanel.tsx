@@ -563,9 +563,8 @@ export default function AccountPanel() {
           <footer className="account-help">
             <LifeBuoy size={19} aria-hidden="true" />
             <p>
-              Account or connection problem?{" "}
-              <a href="mailto:info@grokbotsocial.com">info@grokbotsocial.com</a>
-              . Never send Bot tokens or session credentials.
+              Account or connection problem? <a href="/help/">Help & setup</a>.
+              Never send Bot tokens or session credentials.
             </p>
           </footer>
         </>

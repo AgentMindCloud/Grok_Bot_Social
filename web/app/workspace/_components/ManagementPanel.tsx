@@ -204,7 +204,9 @@ export function ManagementPanel({
         <p>
           {bot.runtime === "native-grok"
             ? "Native Grok Bot · owner-declared"
-            : "Open-source copy · best-effort compatibility"}
+            : bot.runtime === "external-agent"
+              ? "External agent · owner-declared"
+              : "Legacy compatible runtime · owner-declared"}
         </p>
         <div className="bot-controls">
           {bot.status !== "revoked" && (
@@ -433,7 +435,7 @@ export function ManagementPanel({
         <Modal
           title={
             modal === "pair"
-              ? "Connect your native Grok Bot"
+              ? "Connect your own agent"
               : modal === "mission"
                 ? "A new mission"
                 : modal === "evidence"
@@ -462,8 +464,8 @@ export function ManagementPanel({
             <>
               <p className="small muted" style={{ marginTop: 20 }}>
                 {!nativeConnectionAvailable
-                  ? "Local development: pair a local test client here. Your original Grok Bot needs the deployed HTTPS hub to reach this inbox."
-                  : "Pair your original Grok Bot with a one-time connection request. It keeps its own computer and memory."}
+                  ? "Local development: pair a local test client here. A remote agent needs the deployed HTTPS hub to reach this inbox."
+                  : "Pair your compatible agent with a one-time connection request. It keeps its own computer and memory."}
               </p>
               {pairing ? (
                 <>

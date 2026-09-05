@@ -15,6 +15,8 @@ async function readState(path, allowLocalHttp) {
   let state;
   try { state = JSON.parse(await readFile(path, 'utf8')); } catch { fail('Connection recovery state is unreadable.'); }
   if (!state || typeof state !== 'object' || state.version !== 1 || !['candidate', 'requested', 'stored'].includes(state.phase)) fail('Connection recovery state has an unsupported version.');
+  state.adapterVersion ??= VERSION;
+  if (![VERSION, 'bottocks-adapter/0.1.0'].includes(state.adapterVersion)) fail('Connection recovery adapter is unsupported.');
   state.hubUrl = normalizeHubUrl(state.hubUrl, allowLocalHttp);
   if (!/^gbs_[A-Za-z0-9_-]{43}$/.test(state.candidateToken)) fail('Connection recovery credential is invalid.');
   validatePairInput({ code: 'unused-code', name: state.name, role: state.role, runtime: state.runtime });
@@ -32,7 +34,7 @@ function validateRequest(request, hubUrl) {
   if (request.verificationUrl !== `${hubUrl}/connect/`) fail('The verification address did not match the approved hub.');
 }
 function validatePoll(value, state) {
-  if (!value || typeof value !== 'object' || value.enrollmentId !== state.request.enrollmentId || value.version !== 1 || value.name !== state.name || value.role !== state.role || value.runtime !== state.runtime || value.adapterVersion !== VERSION || value.expiresAt !== state.request.expiresAt || !['pending', 'approved', 'completed', 'expired', 'denied', 'cancelled'].includes(value.status)) fail('Connection details changed unexpectedly. Start a new reviewed connection.');
+  if (!value || typeof value !== 'object' || value.enrollmentId !== state.request.enrollmentId || value.version !== 1 || value.name !== state.name || value.role !== state.role || value.runtime !== state.runtime || value.adapterVersion !== state.adapterVersion || value.expiresAt !== state.request.expiresAt || !['pending', 'approved', 'completed', 'expired', 'denied', 'cancelled'].includes(value.status)) fail('Connection details changed unexpectedly. Start a new reviewed connection.');
   if (['approved', 'completed'].includes(value.status)) {
     validateIdentifier(value.botId, 'Approved Bot ID');
     if (state.previous && (value.reconnectBotId !== state.previous.botId || value.botId !== state.previous.botId)) fail('Choose Reconnect for this exact existing Bot in the browser.');
@@ -40,7 +42,8 @@ function validatePoll(value, state) {
 }
 
 // One exclusive local operation, at most ten minutes, with no task leasing.
-export async function connectDevice({ stateDirectory, hubUrl: requestedUrl, name, role = 'scout', runtime = 'native-grok', allowLocalHttp = false, reconnect = false, io = {}, secrets = [] }) {
+export async function connectDevice({ stateDirectory, hubUrl: requestedUrl, name, role = 'scout', runtime = 'native-grok', allowLocalHttp = false, reconnect = false, io = {}, secrets = [], adapterVersion = VERSION }) {
+  if (![VERSION, 'bottocks-adapter/0.1.0'].includes(adapterVersion)) fail('Unsupported adapter version.');
   if (typeof name === 'string') name = name.trim();
   const stateFile = join(stateDirectory, 'credentials.json');
   const recoveryFile = join(stateDirectory, 'device-connection.json');
@@ -54,6 +57,7 @@ export async function connectDevice({ stateDirectory, hubUrl: requestedUrl, name
       secrets.push(state.candidateToken, state.request?.deviceSecret, state.previous?.token);
       if (requestedUrl && normalizeHubUrl(requestedUrl, allowLocalHttp) !== state.hubUrl) fail('Resume the saved connection on its approved origin before changing hubs.');
       if ((name && name !== state.name) || role !== state.role || runtime !== state.runtime) fail('Resume with the original connection name, role and runtime.');
+      if (state.adapterVersion !== adapterVersion) fail('Resume with the original adapter before changing versions.');
     } else {
       const hubUrl = normalizeHubUrl(requestedUrl, allowLocalHttp);
       validatePairInput({ code: 'unused-code', name, role, runtime });
@@ -61,13 +65,13 @@ export async function connectDevice({ stateDirectory, hubUrl: requestedUrl, name
       if (previous && !reconnect) fail('This directory is connected. Use connect --reconnect to rotate credentials for the same existing Bot.');
       const candidateToken = `gbs_${randomBytes(32).toString('base64url')}`;
       secrets.push(candidateToken, previous?.token);
-      state = { version: 1, phase: 'candidate', hubUrl, candidateToken, name, role, runtime, previous };
+      state = { version: 1, phase: 'candidate', hubUrl, candidateToken, name, role, runtime, previous, adapterVersion };
       // Candidate must be durably present before a request can be approved remotely.
       await save(recoveryFile, state);
     }
-    const client = new HubClient({ hubUrl: state.hubUrl, allowLocalHttp, fetchImpl: io.fetchImpl, sleep, now });
+    const client = new HubClient({ hubUrl: state.hubUrl, allowLocalHttp, fetchImpl: io.fetchImpl, sleep, now, adapterVersion });
     if (!state.request) {
-      const request = await client.request('/api/bot/device/start', { method: 'POST', authenticated: false, body: { tokenHash: sha256(state.candidateToken), name: state.name, role: state.role, runtime: state.runtime, adapterVersion: VERSION } });
+      const request = await client.request('/api/bot/device/start', { method: 'POST', authenticated: false, body: { tokenHash: sha256(state.candidateToken), name: state.name, role: state.role, runtime: state.runtime, adapterVersion } });
       secrets.push(request.deviceSecret);
       validateRequest(request, state.hubUrl);
       if (Date.parse(request.expiresAt) > now() + 610_000 || Date.parse(request.expiresAt) <= now()) fail('Connection request expiry is outside the allowed window.');
@@ -118,7 +122,7 @@ export async function connectDevice({ stateDirectory, hubUrl: requestedUrl, name
       await unlink(recoveryFile).catch(() => {});
       return { connected: true, bot: { id: state.botId, name: state.name, role: state.role, runtime: state.runtime, status: 'paused' }, checkInConfirmed: false, notice: 'Credentials were reconnected. Resume this paused Bot in your workspace, then run status to confirm its check-in.', runtimeAttestation: 'owner-declared', researchStarted: false, routineCreated: false };
     }
-    const authenticated = new HubClient({ hubUrl: state.hubUrl, token: state.candidateToken, allowLocalHttp, fetchImpl: io.fetchImpl, sleep, now });
+    const authenticated = new HubClient({ hubUrl: state.hubUrl, token: state.candidateToken, allowLocalHttp, fetchImpl: io.fetchImpl, sleep, now, adapterVersion });
     const heartbeat = await authenticated.heartbeat();
     if (heartbeat.ok !== true || heartbeat.bot?.id !== state.botId || !timestamp(heartbeat.serverTime)) fail('Credential activation succeeded but check-in is unconfirmed. Resume with the same command.');
     await unlink(recoveryFile).catch(() => {});

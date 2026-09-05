@@ -96,6 +96,7 @@ export async function migrate(db: Database): Promise<void> {
       "004_account_identities.sql",
       "005_device_enrollment.sql",
       "006_public_limits.sql",
+      "007_public_pool.sql",
     ];
     for (const [index, file] of migrations.entries()) {
       const version = index + 1;

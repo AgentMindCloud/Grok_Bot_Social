@@ -10,3 +10,4 @@ dist-release/
 .env*
 !.env.example
 !hub/.env.example
+!deploy/.env.bottocks.example
