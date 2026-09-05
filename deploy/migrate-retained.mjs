@@ -70,4 +70,7 @@ async function main() {
     console.log(JSON.stringify({migrated:true,before,after,journal}));
   } finally { await db.close(); }
 }
-if(process.argv[1]==='-' || (process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href)) main().catch(()=>{console.error('Retained migration failed; preserve its protected evidence and keep writers stopped.');process.exitCode=1;});
+const entryUrl = process.argv[1] === '-'
+  ? pathToFileURL(resolve('[eval1]')).href
+  : process.argv[1] ? pathToFileURL(resolve(process.argv[1])).href : null;
+if(import.meta.url===entryUrl) main().catch(()=>{console.error('Retained migration failed; preserve its protected evidence and keep writers stopped.');process.exitCode=1;});

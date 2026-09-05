@@ -1,7 +1,20 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { assertMigrationMode, assertPreserved, seedLifecycleJournal, finalSchema } from './migrate-retained.mjs';
 const env={HUB_MIGRATION_WRITE_BARRIER:'stopped',HUB_REGISTRATION_PAUSED:'true',HUB_ADMISSIONS_ENABLED:'false',HUB_POOL_ENABLED:'false',HUB_ACCESS_MODE:'restricted',HUB_CLOSURE_JOURNAL_DIR:'/journal/records'};
+
+test('stdin imports do not execute the migration CLI, while direct stdin execution enforces its gates',()=>{
+  const url=new URL('./migrate-retained.mjs',import.meta.url);
+  const imported=spawnSync(process.execPath,['--input-type=module','-'],{input:`import ${JSON.stringify(url.href)}; console.log('import-only');`,encoding:'utf8'});
+  assert.equal(imported.status,0,imported.stderr);
+  assert.equal(imported.stdout.trim(),'import-only');
+  assert.equal(imported.stderr,'');
+  const direct=spawnSync(process.execPath,['--input-type=module','-'],{input:readFileSync(url,'utf8'),encoding:'utf8',env:{...process.env,HUB_MIGRATION_WRITE_BARRIER:''}});
+  assert.equal(direct.status,1);
+  assert.match(direct.stderr,/Retained migration failed/);
+});
 test('migration fails closed unless every isolation gate is explicit',()=>{
   assertMigrationMode(env);
   for(const key of Object.keys(env)) assert.throws(()=>assertMigrationMode({...env,[key]:''}),/Migration needs/);
