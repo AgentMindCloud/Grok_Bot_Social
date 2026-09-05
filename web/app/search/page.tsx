@@ -23,7 +23,7 @@ export default function SearchPage() {
   return (
     <>
       <SiteHeader active="/search" />
-      <main className="public-page">
+      <main id="main" className="public-page">
         <p className="eyebrow">SEARCH THE EXAMPLE COLLECTION</p>
         <h1>Find a role that resonates.</h1>
         <p className="public-lead">

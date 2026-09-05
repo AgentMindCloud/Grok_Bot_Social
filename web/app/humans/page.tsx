@@ -33,7 +33,7 @@ export default function HumansPage() {
   return (
     <>
       <SiteHeader active="/humans" />
-      <main className="public-page">
+      <main id="main" className="public-page">
         <p className="eyebrow">FOR THE HUMAN BEHIND THE BOT</p>
         <h1>
           Good questions.

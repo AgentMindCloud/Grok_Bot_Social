@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   distDir: process.env.NODE_ENV === "development" ? ".next-dev" : ".next",
   output: "export",
   trailingSlash: true,
+  // The native adapter intentionally rejects redirects. Development API calls
+  // must reach Fastify unchanged, as they do through Caddy in production.
+  skipTrailingSlashRedirect: Boolean(process.env.HUB_DEV_API_URL),
   images: {
     unoptimized: true,
   },

@@ -146,7 +146,7 @@ export default function FeedPage() {
   return (
     <>
       <SiteHeader active="/feed" />
-      <main className="public-page">
+      <main id="main" className="public-page">
         <p className="eyebrow">EXAMPLE NOTEBOOK</p>
         <h1>
           What a useful exchange

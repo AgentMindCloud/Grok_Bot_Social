@@ -24,23 +24,36 @@ export default function Modal({
   closeRef.current = onClose;
   const busyRef = useRef(busy);
   busyRef.current = busy;
+  const focusable = () =>
+    Array.from(
+      ref.current?.querySelectorAll<HTMLElement>(
+        'button,a[href],input,textarea,select,summary,[tabindex]',
+      ) || [],
+    ).filter((element) =>
+      element.tabIndex >= 0 &&
+      !element.matches(":disabled") &&
+      !element.closest("[hidden],[inert]") &&
+      element.getClientRects().length > 0 &&
+      getComputedStyle(element).visibility !== "hidden" &&
+      getComputedStyle(element).visibility !== "collapse",
+    );
   useEffect(() => {
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    const focusable = () =>
-      Array.from(
-        ref.current?.querySelectorAll<HTMLElement>(
-          'button:not([disabled]),a[href],input:not([disabled]),textarea,select,[tabindex="0"]',
-        ) || [],
-      );
-    focusable()[0]?.focus();
+    (focusable()[0] || ref.current)?.focus();
     const key = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !busyRef.current) closeRef.current();
+      if (event.key === "Escape") {
+        event.preventDefault();
+        if (!busyRef.current) closeRef.current();
+      }
       if (event.key === "Tab") {
         const nodes = focusable();
         const first = nodes[0],
           last = nodes[nodes.length - 1];
-        if (event.shiftKey && document.activeElement === first) {
+        if (!first || !nodes.includes(document.activeElement as HTMLElement)) {
+          event.preventDefault();
+          (event.shiftKey ? last || ref.current : first || ref.current)?.focus();
+        } else if (event.shiftKey && document.activeElement === first) {
           event.preventDefault();
           last?.focus();
         } else if (!event.shiftKey && document.activeElement === last) {
@@ -57,6 +70,14 @@ export default function Modal({
         returnFocusRef.current.focus({ preventScroll: true });
     };
   }, []);
+  useEffect(() => {
+    if (
+      busy &&
+      (!ref.current?.contains(document.activeElement) ||
+        document.activeElement?.matches(":disabled"))
+    )
+      (focusable()[0] || ref.current)?.focus();
+  }, [busy]);
   return (
     <div
       className="modal-backdrop"
@@ -68,6 +89,7 @@ export default function Modal({
         ref={ref}
         className="modal"
         role="dialog"
+        tabIndex={-1}
         aria-modal="true"
         aria-labelledby={titleId}
       >

@@ -1,49 +1,445 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, FileText, History, Pause, RefreshCw } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  FileText,
+  History,
+  Pause,
+  RefreshCw,
+} from "lucide-react";
 import Modal from "@/components/Modal";
 import { readableError, when, type Evidence } from "@/lib/hub-api";
 import type { MissionDetail } from "../../../../hub/src/contracts";
 import { useWorkspace } from "../_hooks/useWorkspace";
 import { usePages, useResource } from "../_hooks/useResource";
-import { Empty, EvidenceNote, InlineError, LoadMore, Loading } from "./WorkspacePrimitives";
-import { DecisionCard, decisionLabel, ReviewForm, ReviewHistory } from "./DecisionViews";
+import {
+  Empty,
+  EvidenceNote,
+  InlineError,
+  LoadMore,
+  Loading,
+} from "./WorkspacePrimitives";
+import {
+  DecisionCard,
+  decisionLabel,
+  ReviewForm,
+  ReviewHistory,
+} from "./DecisionViews";
 
-export default function MissionDetailView({ id, onBack, onMission, onFollowup }: { id: string; onBack: () => void; onMission: (id: string) => void; onFollowup: (source: MissionDetail) => void }) {
+export default function MissionDetailView({
+  id,
+  onBack,
+  onMission,
+  onFollowup,
+}: {
+  id: string;
+  onBack: () => void;
+  onMission: (id: string) => void;
+  onFollowup: (source: MissionDetail) => void;
+}) {
   const { summary, mutate, setNotice } = useWorkspace();
-  const resource = useResource<MissionDetail>(`/api/missions/${encodeURIComponent(id)}`, true);
-  const evidence = usePages<Evidence>(`/api/evidence?missionId=${encodeURIComponent(id)}`, true);
-  const [reviewing, setReviewing] = useState(false), [history, setHistory] = useState(false), [cancelling, setCancelling] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState("");
+  const resource = useResource<MissionDetail>(
+    `/api/missions/${encodeURIComponent(id)}`,
+    true,
+  );
+  const evidence = usePages<Evidence>(
+    `/api/evidence?missionId=${encodeURIComponent(id)}`,
+    true,
+  );
+  const [reviewing, setReviewing] = useState(false),
+    [history, setHistory] = useState(false),
+    [cancelling, setCancelling] = useState(false),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState("");
   const detail = resource.data;
   const previousCompleted = useRef<number | null>(null);
   useEffect(() => {
     const completed = detail?.progress.completed;
-    if (completed !== undefined && previousCompleted.current !== null && completed !== previousCompleted.current) evidence.reload();
+    if (
+      completed !== undefined &&
+      previousCompleted.current !== null &&
+      completed !== previousCompleted.current
+    )
+      evidence.reload();
     if (completed !== undefined) previousCompleted.current = completed;
   }, [detail?.progress.completed, evidence.reload]);
-  if (!detail) return <><button className="quiet-button" onClick={onBack}><ArrowLeft size={15} /> Back</button><InlineError error={resource.error} retry={resource.reload} />{resource.loading && <Loading text="Loading mission and permitted work…" />}</>;
+  if (!detail)
+    return (
+      <>
+        <button className="quiet-button" onClick={onBack}>
+          <ArrowLeft size={15} /> Back
+        </button>
+        <InlineError error={resource.error} retry={resource.reload} />
+        {resource.loading && (
+          <Loading text="Loading mission and permitted work…" />
+        )}
+      </>
+    );
   const owner = detail.mission.ownerId === summary?.owner.id;
-  const terminal = ["completed", "failed", "cancelled"].includes(detail.mission.status);
+  const terminal = ["completed", "failed", "cancelled"].includes(
+    detail.mission.status,
+  );
   const prior = detail.weeklyInput?.priorReview;
-  return <>
-    <div className="panel-title"><button className="quiet-button" onClick={onBack}><ArrowLeft size={15} /> Back</button><button className="quiet-button" disabled={resource.loading} onClick={() => { setError(""); resource.reload(); evidence.reload(); }}><RefreshCw size={15} /> Refresh</button></div>
-    <InlineError error={resource.error || error} retry={() => { setError(""); resource.reload(); evidence.reload(); }} />
-    <section className="panel mission-heading"><div className="evidence-meta"><span className="tag muted">{detail.mission.visibility}</span><span className="tag">{detail.mission.status === "completed" ? "Results delivered" : detail.mission.status}</span><span>{detail.mission.kind === "weekly-decision" ? "Weekly decision" : "Research mission"}</span></div><h2>{detail.mission.title}</h2>
-      {detail.weeklyInput ? <><p className="muted">{detail.weeklyInput.offer}</p><p className="small muted">Buyer: {detail.weeklyInput.buyer}</p><details><summary>Approved research scope</summary><ul className="source-list">{detail.weeklyInput.approvedOrigins.map(origin => <li key={origin}>{origin}</li>)}</ul><p className="small muted">Other websites require a new owner-approved scope. No external messages, payments or publication are authorized.</p></details></> : <p className="detail-brief">{detail.mission.brief}</p>}
-      <details><summary>Full mission brief</summary><p className="detail-brief">{detail.mission.brief}</p></details><div className="evidence-meta"><span>Up to {detail.mission.maxRounds} rounds</span><span>Deadline {when(detail.deadlineAt)}</span></div>{detail.parentMissionId && <button className="quiet-button" onClick={() => onMission(detail.parentMissionId!)}>Open previous mission <ArrowRight size={14} /></button>}
-      {owner && !terminal && <button className="quiet-button" onClick={() => setCancelling(true)}><Pause size={14} /> Cancel mission</button>}
-    </section>
-    <section className="panel"><div className="panel-title"><h2>Assignment progress</h2><span className="small muted">{detail.progress.scope === "whole-mission" ? "Whole mission" : "Your assignments only"}</span></div><div className="progress-summary"><strong>{detail.progress.completed} / {detail.progress.total}</strong><span>results accepted</span><span>{detail.progress.queued} queued · {detail.progress.leased} leased · {detail.progress.failed} ended without a result</span></div><p className="small muted">A lease reserves an assignment. It does not verify that the native Bot is currently working. Native routines control check-ins.</p>
-      <ul className="task-progress">{detail.tasks.map(task => { const bot = summary?.bots.find(item => item.id === task.botId); const label = task.status === "queued" ? task.attempts > 0 ? "Retrying · waiting for check-in" : "Waiting for check-in" : task.status === "leased" ? "Leased · activity unconfirmed" : task.status === "completed" ? "Result accepted" : "Assignment failed"; return <li key={task.id}><div><strong>{bot?.name || "Participating Bot"}</strong><span>Round {task.round} · {task.attempts ? `Attempt ${task.attempts}` : "Not yet leased"}</span></div><div><span className={"tag " + (["leased", "queued"].includes(task.status) ? "pending" : "muted")}>{label}</span>{task.leaseExpiresAt && <span>Lease expires {when(task.leaseExpiresAt)}</span>}</div></li>; })}</ul>
-    </section>
-    {owner && terminal && <section className="paper-panel decision-prompt"><div className="eyebrow">YOUR DECISION</div><h2>{detail.latestReview ? "Keep a clear record of what comes next." : "What will you do with this evidence?"}</h2><p>Choose test, watch or stop pursuing. Results delivered is an execution status; only your review records whether they helped.</p><div className="decision-actions"><button className="button" onClick={() => setReviewing(true)}>{detail.latestReview ? "Revise decision" : "Record decision"}<ArrowRight size={16} /></button>{detail.latestReview && <button className="quiet-button" onClick={() => setHistory(value => !value)}><History size={15} /> {history ? "Hide history" : "Decision history"}</button>}</div></section>}
-    {owner && !terminal && <p className="native-note">The mission must finish or be cancelled before you record its decision. Existing findings remain available after cancellation.</p>}
-    {prior && <section className="panel"><h2>Since the previous decision</h2><div className="decision-comparison"><article><h3>Previous · version {prior.version}</h3><span className="tag muted">{decisionLabel[prior.decision]}</span><p>{prior.rationale}</p>{prior.unavailableEvidenceCount > 0 && <p className="small muted">{prior.unavailableEvidenceCount} earlier citation(s) are no longer available.</p>}</article><article><h3>This mission</h3>{detail.latestReview ? <><span className="tag">{decisionLabel[detail.latestReview.decision]}</span><p>{detail.latestReview.rationale}</p></> : <p className="muted">No owner decision recorded yet. Compare the findings below before choosing your next step.</p>}</article></div><p className="small muted">These are the recorded words and versions, not an automatically verified explanation of what changed.</p></section>}
-    {detail.latestReview && !history && <DecisionCard review={detail.latestReview} />}
-    {history && owner && <ReviewHistory missionId={id} />}
-    {owner && detail.latestReview && terminal && <section className="panel"><h3>Continue with a new question</h3><p className="small muted">A follow-up starts as an editable draft. It is only created after you approve its sites and submit it.</p><button className="button button-dark" disabled={!summary?.weeklyResearchEnabled} onClick={() => onFollowup(detail)}>Prepare follow-up <ArrowRight size={15} /></button>{!summary?.weeklyResearchEnabled && <p className="small muted">Weekly mission creation is not enabled for this deployment. Your history and exports remain available.</p>}{detail.followups.map(link => <p key={link.missionId}><button className="quiet-button" onClick={() => onMission(link.missionId)}>Follow-up created {when(link.createdAt)} <ArrowRight size={14} /></button></p>)}</section>}
-    <section><div className="panel-title"><h2>Findings you can access</h2><span className="tag muted">Private until explicitly shared</span></div><p className="small muted">Research summaries are displayed as submitted text. Headings and agreement between Bots do not certify a claim. Reopen the sources before consequential decisions.</p><InlineError error={evidence.error} retry={evidence.reload} />{evidence.loading && !evidence.items.length ? <Loading text="Loading permitted evidence…" /> : !evidence.items.length && !evidence.error ? <Empty title={terminal ? "No findings are visible to you." : "Waiting for a finding you can access."} text="This view includes your findings and currently approved peer findings. Other participants may have private work that is not visible here." icon={FileText} /> : evidence.items.map(item => <EvidenceNote key={item.id} item={item} />)}<LoadMore more={evidence.more} count={evidence.items.length} loading={evidence.loading} onLoad={evidence.loadMore} /></section>
-    {reviewing && <ReviewForm detail={detail} evidence={evidence.items} reload={resource.reload} onClose={() => setReviewing(false)} onSaved={() => { setReviewing(false); setNotice("Decision saved as a new immutable version."); resource.reload(); }} />}
-    {cancelling && <Modal title="Cancel this mission?" busy={busy} onClose={() => setCancelling(false)}><p>End “{detail.mission.title}”? Existing findings and decision history remain. No further results will be accepted.</p><p className="native-note">This cannot stop a running native turn. Manage native routines separately if you want to stop future check-ins.</p><div className="modal-actions"><button className="button button-dark" disabled={busy} onClick={() => setCancelling(false)}>Keep mission</button><button className="button button-danger" disabled={busy} onClick={async () => { setBusy(true); setError(""); try { await mutate(`/api/missions/${id}/cancel`); setCancelling(false); setNotice("Mission cancelled. Existing findings and decision history remain available."); } catch (failure) { setError(readableError(failure)); setCancelling(false); } finally { setBusy(false); } }}>{busy ? "Cancelling…" : "Cancel mission"}</button></div></Modal>}
-  </>;
+  return (
+    <>
+      <div className="panel-title">
+        <button className="quiet-button" onClick={onBack}>
+          <ArrowLeft size={15} /> Back
+        </button>
+        <button
+          className="quiet-button"
+          disabled={resource.loading}
+          onClick={() => {
+            setError("");
+            resource.reload();
+            evidence.reload();
+          }}
+        >
+          <RefreshCw size={15} /> Refresh
+        </button>
+      </div>
+      <InlineError
+        error={resource.error || error}
+        retry={() => {
+          setError("");
+          resource.reload();
+          evidence.reload();
+        }}
+      />
+      <section className="panel mission-heading">
+        <div className="evidence-meta">
+          <span className="tag muted">{detail.mission.visibility}</span>
+          <span className="tag">
+            {detail.mission.status === "completed"
+              ? "Results delivered"
+              : detail.mission.status}
+          </span>
+          <span>
+            {detail.mission.kind === "weekly-decision"
+              ? "Weekly decision"
+              : "Research mission"}
+          </span>
+        </div>
+        <h2>{detail.mission.title}</h2>
+        {detail.weeklyInput ? (
+          <>
+            <p className="muted">{detail.weeklyInput.offer}</p>
+            <p className="small muted">Buyer: {detail.weeklyInput.buyer}</p>
+            <details>
+              <summary>Approved research scope</summary>
+              <ul className="source-list">
+                {detail.weeklyInput.approvedOrigins.map((origin) => (
+                  <li key={origin}>{origin}</li>
+                ))}
+              </ul>
+              <p className="small muted">
+                Other websites require a new owner-approved scope. No external
+                messages, payments or publication are authorized.
+              </p>
+            </details>
+          </>
+        ) : (
+          <p className="detail-brief">{detail.mission.brief}</p>
+        )}
+        <details>
+          <summary>Full mission brief</summary>
+          <p className="detail-brief">{detail.mission.brief}</p>
+        </details>
+        <div className="evidence-meta">
+          <span>Up to {detail.mission.maxRounds} rounds</span>
+          <span>Deadline {when(detail.deadlineAt)}</span>
+        </div>
+        {detail.parentMissionId && (
+          <button
+            className="quiet-button"
+            onClick={() => onMission(detail.parentMissionId!)}
+          >
+            Open previous mission <ArrowRight size={14} />
+          </button>
+        )}
+        {owner && !terminal && (
+          <button className="quiet-button" onClick={() => setCancelling(true)}>
+            <Pause size={14} /> Cancel mission
+          </button>
+        )}
+      </section>
+      <section className="panel">
+        <div className="panel-title">
+          <h2>Assignment progress</h2>
+          <span className="small muted">
+            {detail.progress.scope === "whole-mission"
+              ? "Whole mission"
+              : "Your assignments only"}
+          </span>
+        </div>
+        <div className="progress-summary">
+          <strong>
+            {detail.progress.completed} / {detail.progress.total}
+          </strong>
+          <span>results accepted</span>
+          <span>
+            {detail.progress.queued} queued · {detail.progress.leased} leased ·{" "}
+            {detail.progress.failed} ended without a result
+          </span>
+        </div>
+        <p className="small muted">
+          A lease reserves an assignment. It does not verify that the native Bot
+          is currently working. Native routines control check-ins.
+        </p>
+        <ul className="task-progress">
+          {detail.tasks.map((task) => {
+            const bot = summary?.bots.find((item) => item.id === task.botId);
+            const label =
+              task.status === "queued"
+                ? task.attempts > 0
+                  ? "Retrying · waiting for check-in"
+                  : "Waiting for check-in"
+                : task.status === "leased"
+                  ? "Leased · activity unconfirmed"
+                  : task.status === "completed"
+                    ? "Result accepted"
+                    : "Assignment failed";
+            return (
+              <li key={task.id}>
+                <div>
+                  <strong>{bot?.name || "Participating Bot"}</strong>
+                  <span>
+                    Round {task.round} ·{" "}
+                    {task.attempts
+                      ? `Attempt ${task.attempts}`
+                      : "Not yet leased"}
+                  </span>
+                </div>
+                <div>
+                  <span
+                    className={
+                      "tag " +
+                      (["leased", "queued"].includes(task.status)
+                        ? "pending"
+                        : "muted")
+                    }
+                  >
+                    {label}
+                  </span>
+                  {task.leaseExpiresAt && (
+                    <span>Lease expires {when(task.leaseExpiresAt)}</span>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+      {owner && terminal && (
+        <section className="paper-panel decision-prompt">
+          <div className="eyebrow">YOUR DECISION</div>
+          <h2>
+            {detail.latestReview
+              ? "Keep a clear record of what comes next."
+              : "What will you do with this evidence?"}
+          </h2>
+          <p>
+            Choose test, watch or stop pursuing. Results delivered is an
+            execution status; only your review records whether they helped.
+          </p>
+          <div className="decision-actions">
+            <button className="button" onClick={() => setReviewing(true)}>
+              {detail.latestReview ? "Revise decision" : "Record decision"}
+              <ArrowRight size={16} />
+            </button>
+            {detail.latestReview && (
+              <button
+                className="quiet-button"
+                onClick={() => setHistory((value) => !value)}
+              >
+                <History size={15} />{" "}
+                {history ? "Hide history" : "Decision history"}
+              </button>
+            )}
+          </div>
+        </section>
+      )}
+      {owner && !terminal && (
+        <p className="native-note">
+          The mission must finish or be cancelled before you record its
+          decision. Existing findings remain available after cancellation.
+        </p>
+      )}
+      {prior && (
+        <section className="panel">
+          <h2>Since the previous decision</h2>
+          <div className="decision-comparison">
+            <article>
+              <h3>Previous · version {prior.version}</h3>
+              <span className="tag muted">{decisionLabel[prior.decision]}</span>
+              <p>{prior.rationale}</p>
+              {prior.unavailableEvidenceCount > 0 && (
+                <p className="small muted">
+                  {prior.unavailableEvidenceCount} earlier citation(s) are no
+                  longer available.
+                </p>
+              )}
+            </article>
+            <article>
+              <h3>This mission</h3>
+              {detail.latestReview ? (
+                <>
+                  <span className="tag">
+                    {decisionLabel[detail.latestReview.decision]}
+                  </span>
+                  <p>{detail.latestReview.rationale}</p>
+                </>
+              ) : (
+                <p className="muted">
+                  No owner decision recorded yet. Compare the findings below
+                  before choosing your next step.
+                </p>
+              )}
+            </article>
+          </div>
+          <p className="small muted">
+            These are the recorded words and versions, not an automatically
+            verified explanation of what changed.
+          </p>
+        </section>
+      )}
+      {detail.latestReview && !history && (
+        <DecisionCard review={detail.latestReview} />
+      )}
+      {history && owner && <ReviewHistory missionId={id} />}
+      {owner && detail.latestReview && terminal && (
+        <section className="panel">
+          <h3>Continue with a new question</h3>
+          <p className="small muted">
+            A follow-up starts as an editable draft. It is only created after
+            you approve its sites and submit it.
+          </p>
+          <button
+            className="button button-dark"
+            disabled={!summary?.weeklyResearchEnabled}
+            onClick={() => onFollowup(detail)}
+          >
+            Prepare follow-up <ArrowRight size={15} />
+          </button>
+          {!summary?.weeklyResearchEnabled && (
+            <p className="small muted">
+              Weekly mission creation is not enabled for this deployment. Your
+              history and exports remain available.
+            </p>
+          )}
+          {detail.followups.map((link) => (
+            <p key={link.missionId}>
+              <button
+                className="quiet-button"
+                onClick={() => onMission(link.missionId)}
+              >
+                Follow-up created {when(link.createdAt)}{" "}
+                <ArrowRight size={14} />
+              </button>
+            </p>
+          ))}
+        </section>
+      )}
+      <section>
+        <div className="panel-title">
+          <h2>Findings you can access</h2>
+          <span className="tag muted">
+            {detail.mission.kind === "weekly-decision"
+              ? "Private · never shared"
+              : "Exact approval required for sharing"}
+          </span>
+        </div>
+        <p className="small muted">
+          Research summaries are displayed as submitted text. Headings and
+          agreement between Bots do not certify a claim. Reopen the sources
+          before consequential decisions.
+        </p>
+        <InlineError error={evidence.error} retry={evidence.reload} />
+        {evidence.loading && !evidence.items.length ? (
+          <Loading text="Loading permitted evidence…" />
+        ) : !evidence.items.length && !evidence.error ? (
+          <Empty
+            title={
+              terminal
+                ? "No findings are visible to you."
+                : "Waiting for a finding you can access."
+            }
+            text="This view includes your findings and currently approved peer findings. Other participants may have private work that is not visible here."
+            icon={FileText}
+          />
+        ) : (
+          evidence.items.map((item) => (
+            <EvidenceNote key={item.id} item={item} />
+          ))
+        )}
+        <LoadMore
+          more={evidence.more}
+          count={evidence.items.length}
+          loading={evidence.loading}
+          onLoad={evidence.loadMore}
+        />
+      </section>
+      {reviewing && (
+        <ReviewForm
+          detail={detail}
+          evidence={evidence.items}
+          reload={resource.reload}
+          onClose={() => setReviewing(false)}
+          onSaved={() => {
+            setReviewing(false);
+            setNotice("Decision saved as a new immutable version.");
+            resource.reload();
+          }}
+        />
+      )}
+      {cancelling && (
+        <Modal
+          title="Cancel this mission?"
+          busy={busy}
+          onClose={() => setCancelling(false)}
+        >
+          <p>
+            End “{detail.mission.title}”? Existing findings and decision history
+            remain. No further results will be accepted.
+          </p>
+          <p className="native-note">
+            This cannot stop a running native turn. Manage native routines
+            separately if you want to stop future check-ins.
+          </p>
+          <div className="modal-actions">
+            <button
+              className="button button-dark"
+              disabled={busy}
+              onClick={() => setCancelling(false)}
+            >
+              Keep mission
+            </button>
+            <button
+              className="button button-danger"
+              disabled={busy}
+              onClick={async () => {
+                setBusy(true);
+                setError("");
+                try {
+                  await mutate(`/api/missions/${id}/cancel`);
+                  setCancelling(false);
+                  setNotice(
+                    "Mission cancelled. Existing findings and decision history remain available.",
+                  );
+                } catch (failure) {
+                  setError(readableError(failure));
+                  setCancelling(false);
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              {busy ? "Cancelling…" : "Cancel mission"}
+            </button>
+          </div>
+        </Modal>
+      )}
+    </>
+  );
 }

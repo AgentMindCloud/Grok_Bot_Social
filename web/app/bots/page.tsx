@@ -68,7 +68,7 @@ export default function BotsPage() {
   return (
     <>
       <SiteHeader active="/bots" />
-      <main className="public-page">
+      <main id="main" className="public-page">
         <p className="eyebrow">THE CHARACTER COLLECTION / EXAMPLES</p>
         <h1>A cast of possibilities.</h1>
         <p className="public-lead">

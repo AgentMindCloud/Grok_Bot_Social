@@ -1,70 +1,784 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ArrowRight, BookOpen, Check, FileText, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  Check,
+  FileText,
+  ShieldCheck,
+} from "lucide-react";
 import Modal from "@/components/Modal";
-import { readableError, when, type Approval, type Evidence, type Mission } from "@/lib/hub-api";
-import type { Assistance, OwnerReview, WorkspaceActionSummary } from "../../../../hub/src/contracts";
+import {
+  readableError,
+  when,
+  type Approval,
+  type Evidence,
+  type Mission,
+} from "@/lib/hub-api";
+import type {
+  Assistance,
+  OwnerReview,
+  WorkspaceActionSummary,
+} from "../../../../hub/src/contracts";
 import { useWorkspace } from "../_hooks/useWorkspace";
 import { usePages, useResource } from "../_hooks/useResource";
-import { Empty, EvidenceNote, InlineError, LoadMore, Loading, MissionRows } from "./WorkspacePrimitives";
+import {
+  Empty,
+  EvidenceNote,
+  InlineError,
+  LoadMore,
+  Loading,
+  MissionRows,
+} from "./WorkspacePrimitives";
 import { decisionLabel } from "./DecisionViews";
 
-export function MissionListView({ onMission }: { onMission: (id: string) => void }) {
+export function MissionListView({
+  onMission,
+}: {
+  onMission: (id: string) => void;
+}) {
   const [status, setStatus] = useState("");
-  const list = usePages<Mission>("/api/missions" + (status ? "?status=" + status : ""));
-  return <><div className="panel-title"><p className="muted">Bounded questions and the work returned to you.</p><label className="compact-field">Mission status<select value={status} onChange={event => setStatus(event.target.value)}><option value="">All statuses</option><option value="queued">Queued</option><option value="running">In progress</option><option value="completed">Results delivered</option><option value="failed">Failed</option><option value="cancelled">Cancelled</option></select></label></div><InlineError error={list.error} retry={list.reload} />{list.loading && !list.items.length ? <Loading text="Loading mission history…" /> : list.items.length ? <section className="panel"><MissionRows items={list.items} onSelect={item => onMission(item.id)} /></section> : !list.error && <Empty title="No missions in this view." text="Start with one question and the sources that could help answer it, or choose another status." icon={FileText} />}<LoadMore more={list.more} count={list.items.length} loading={list.loading} onLoad={list.loadMore} /></>;
+  const list = usePages<Mission>(
+    "/api/missions" + (status ? "?status=" + status : ""),
+  );
+  return (
+    <>
+      <div className="panel-title">
+        <p className="muted">Bounded questions and the work returned to you.</p>
+        <label className="compact-field">
+          Mission status
+          <select
+            value={status}
+            onChange={(event) => setStatus(event.target.value)}
+          >
+            <option value="">All statuses</option>
+            <option value="queued">Queued</option>
+            <option value="running">In progress</option>
+            <option value="completed">Results delivered</option>
+            <option value="failed">Failed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </label>
+      </div>
+      <InlineError error={list.error} retry={list.reload} />
+      {list.loading && !list.items.length ? (
+        <Loading text="Loading mission history…" />
+      ) : list.items.length ? (
+        <section className="panel">
+          <MissionRows
+            items={list.items}
+            onSelect={(item) => onMission(item.id)}
+          />
+        </section>
+      ) : (
+        !list.error && (
+          <Empty
+            title="No missions in this view."
+            text="Start with one question and the sources that could help answer it, or choose another status."
+            icon={FileText}
+          />
+        )
+      )}
+      <LoadMore
+        more={list.more}
+        count={list.items.length}
+        loading={list.loading}
+        onLoad={list.loadMore}
+      />
+    </>
+  );
 }
 export function KnowledgeView({ onAdd }: { onAdd: () => void }) {
   const list = usePages<Evidence>("/api/evidence");
-  return <><div className="panel-title"><p className="muted">Your findings and their original sources. Shared peer work stays in its permitted mission or circle view.</p><button type="button" className="button button-dark button-small" onClick={onAdd}>Add a finding</button></div><InlineError error={list.error} retry={list.reload} />{list.loading && !list.items.length ? <Loading text="Loading your knowledge…" /> : list.items.length ? list.items.map(item => <EvidenceNote item={item} key={item.id} />) : !list.error && <Empty title="Keep the useful things." text="A mission’s private results will appear here. You can also save a sourced note yourself." icon={BookOpen} action="Add a finding" onAction={onAdd} />}<LoadMore more={list.more} count={list.items.length} loading={list.loading} onLoad={list.loadMore} /></>;
+  return (
+    <>
+      <div className="panel-title">
+        <p className="muted">
+          Your findings and their original sources. Shared peer work stays in
+          its permitted mission or circle view.
+        </p>
+        <button
+          type="button"
+          className="button button-dark button-small"
+          onClick={onAdd}
+        >
+          Add a finding
+        </button>
+      </div>
+      <InlineError error={list.error} retry={list.reload} />
+      {list.loading && !list.items.length ? (
+        <Loading text="Loading your knowledge…" />
+      ) : list.items.length ? (
+        list.items.map((item) => <EvidenceNote item={item} key={item.id} />)
+      ) : (
+        !list.error && (
+          <Empty
+            title="Keep the useful things."
+            text="A mission’s private results will appear here. You can also save a sourced note yourself."
+            icon={BookOpen}
+            action="Add a finding"
+            onAction={onAdd}
+          />
+        )
+      )}
+      <LoadMore
+        more={list.more}
+        count={list.items.length}
+        loading={list.loading}
+        onLoad={list.loadMore}
+      />
+    </>
+  );
 }
-function ApprovalDialog({ approval, onClose }: { approval: Approval; onClose: () => void }) {
+function ApprovalDialog({
+  approval,
+  onClose,
+}: {
+  approval: Approval;
+  onClose: () => void;
+}) {
   const { summary, mutate } = useWorkspace();
-  const result = useResource<{ evidence: Evidence }>(`/api/evidence/${encodeURIComponent(approval.evidenceId)}`);
-  const [busy, setBusy] = useState(false), [error, setError] = useState("");
-  const resolve = async (decision: "approve" | "reject") => { setBusy(true); setError(""); try { await mutate(`/api/approvals/${approval.id}/resolve`, { decision, version: approval.version }); onClose(); } catch (failure) { setError(readableError(failure)); } finally { setBusy(false); } };
-  return <Modal title="Review this exact contribution" onClose={onClose} busy={busy}><InlineError error={result.error || error} retry={result.reload} />{result.loading && !result.data ? <Loading text="Loading the contribution…" /> : result.data && <><EvidenceNote item={result.data.evidence} /><p className="native-note">Destination: {summary?.circles.find(circle => circle.id === approval.circleId)?.name || "Circle no longer available"}. Members can read and retain a copy. Sharing this finding does not authorize any experiment or publish your decision history.</p><div className="modal-actions"><button className="button button-dark" disabled={busy} onClick={() => void resolve("reject")}>Keep private</button><button className="button" disabled={busy || !summary?.circles.some(circle => circle.id === approval.circleId)} onClick={() => void resolve("approve")}><ShieldCheck size={16} />Approve sharing</button></div></>}</Modal>;
+  const result = useResource<{ evidence: Evidence }>(
+    `/api/evidence/${encodeURIComponent(approval.evidenceId)}`,
+  );
+  const [busy, setBusy] = useState(false),
+    [error, setError] = useState("");
+  const resolve = async (decision: "approve" | "reject") => {
+    setBusy(true);
+    setError("");
+    try {
+      await mutate(`/api/approvals/${approval.id}/resolve`, {
+        decision,
+        version: approval.version,
+      });
+      onClose();
+    } catch (failure) {
+      setError(readableError(failure));
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Modal title="Review this exact contribution" onClose={onClose} busy={busy}>
+      <InlineError error={result.error || error} retry={result.reload} />
+      {result.loading && !result.data ? (
+        <Loading text="Loading the contribution…" />
+      ) : (
+        result.data && (
+          <>
+            <EvidenceNote item={result.data.evidence} />
+            <p className="native-note">
+              Destination:{" "}
+              {summary?.circles.find(
+                (circle) => circle.id === approval.circleId,
+              )?.name || "Circle no longer available"}
+              . Members can read and retain a copy. Sharing this finding does
+              not authorize any experiment or publish your decision history.
+            </p>
+            <div className="modal-actions">
+              <button
+                className="button button-dark"
+                disabled={busy}
+                onClick={() => void resolve("reject")}
+              >
+                Keep private
+              </button>
+              <button
+                className="button"
+                disabled={
+                  busy ||
+                  !summary?.circles.some(
+                    (circle) => circle.id === approval.circleId,
+                  )
+                }
+                onClick={() => void resolve("approve")}
+              >
+                <ShieldCheck size={16} />
+                Approve sharing
+              </button>
+            </div>
+          </>
+        )
+      )}
+    </Modal>
+  );
 }
 export function SharingApprovalsView() {
-  const [status, setStatus] = useState("pending"), [selected, setSelected] = useState<Approval | null>(null);
+  const [status, setStatus] = useState("pending"),
+    [selected, setSelected] = useState<Approval | null>(null);
   const list = usePages<Approval>(`/api/approvals?status=${status}`);
-  return <><div className="panel-title"><p className="muted">Explicit permission to share evidence. Owner decisions are kept separately.</p><label className="compact-field">Approval status<select value={status} onChange={event => setStatus(event.target.value)}><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select></label></div><InlineError error={list.error} retry={list.reload} />{list.loading && !list.items.length ? <Loading text="Loading sharing requests…" /> : list.items.map(item => <section className="panel" key={item.id}><div className="panel-title"><h3>Evidence sharing request</h3><span className="tag muted">{item.status}</span></div><p className="small muted">Requested {when(item.createdAt)} · Version {item.version}</p>{item.status === "pending" && <button className="button button-dark" onClick={() => setSelected(item)}>Read the exact contribution <ArrowRight size={15} /></button>}</section>)}{!list.loading && !list.items.length && !list.error && <Empty title="No sharing requests in this view." text="Private research stays private until its owner approves the exact finding and destination." icon={ShieldCheck} />}<LoadMore more={list.more} count={list.items.length} loading={list.loading} onLoad={list.loadMore} />{selected && <ApprovalDialog approval={selected} onClose={() => setSelected(null)} />}</>;
+  return (
+    <>
+      <div className="panel-title">
+        <p className="muted">
+          Explicit permission to share evidence. Owner decisions are kept
+          separately.
+        </p>
+        <label className="compact-field">
+          Approval status
+          <select
+            value={status}
+            onChange={(event) => setStatus(event.target.value)}
+          >
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </label>
+      </div>
+      <InlineError error={list.error} retry={list.reload} />
+      {list.loading && !list.items.length ? (
+        <Loading text="Loading sharing requests…" />
+      ) : (
+        list.items.map((item) => (
+          <section className="panel" key={item.id}>
+            <div className="panel-title">
+              <h3>Evidence sharing request</h3>
+              <span className="tag muted">{item.status}</span>
+            </div>
+            <p className="small muted">
+              Requested {when(item.createdAt)} · Version {item.version}
+            </p>
+            {item.status === "pending" && (
+              <button
+                className="button button-dark"
+                onClick={() => setSelected(item)}
+              >
+                Read the exact contribution <ArrowRight size={15} />
+              </button>
+            )}
+          </section>
+        ))
+      )}
+      {!list.loading && !list.items.length && !list.error && (
+        <Empty
+          title="No sharing requests in this view."
+          text="Private research stays private until its owner approves the exact finding and destination."
+          icon={ShieldCheck}
+        />
+      )}
+      <LoadMore
+        more={list.more}
+        count={list.items.length}
+        loading={list.loading}
+        onLoad={list.loadMore}
+      />
+      {selected && (
+        <ApprovalDialog approval={selected} onClose={() => setSelected(null)} />
+      )}
+    </>
+  );
 }
 export function PilotConsent() {
-  const { summary, mutate } = useWorkspace(); const enrollment = summary?.pilotEnrollment;
-  const [open, setOpen] = useState(false), [assistance, setAssistance] = useState<Assistance>(enrollment?.assistance || "unknown"), [busy, setBusy] = useState(false), [error, setError] = useState("");
-  return <section className="panel pilot-consent"><h3>Optional pilot measurement</h3><p className="small muted">{enrollment?.consent ? "You opted in to measuring this pilot’s usefulness. You can withdraw below." : "You can use the workspace without opting in to pilot measurement."} Internal and test accounts are kept separate from customer outcomes.</p><button className="quiet-button" onClick={() => setOpen(value => !value)}>{open ? "Hide preferences" : "Review preferences"}</button>{open && <><p className="small muted">Consent records your cohort, assistance status and permission to include your usage in pilot outcome measurement. It does not publish your research, authorize contact or create a native routine.</p>{enrollment && <p className="small muted">Current classification: {enrollment.classification} · Updated {when(enrollment.updatedAt)}</p>}<label className="field">Setup assistance<select value={assistance} onChange={event => setAssistance(event.target.value as Assistance)}><option value="unknown">Not recorded</option><option value="assisted">Assisted</option><option value="unassisted">Unassisted</option></select></label><InlineError error={error} /><div className="decision-actions">{[true, false].map(consent => <button key={String(consent)} className={"button " + (consent ? "button-dark" : "quiet-button")} disabled={busy} onClick={async () => { setBusy(true); setError(""); try { await mutate("/api/pilot/enrollment", { consent, assistance }); } catch (failure) { setError(readableError(failure)); } finally { setBusy(false); } }}>{consent ? enrollment?.consent ? "Save opt-in preferences" : "Opt in to pilot measurement" : "Keep me out of pilot measurement"}</button>)}</div></>}</section>;
+  const { summary, mutate } = useWorkspace();
+  const enrollment = summary?.pilotEnrollment;
+  const [open, setOpen] = useState(false),
+    [assistance, setAssistance] = useState<Assistance>(
+      enrollment?.assistance || "unknown",
+    ),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState("");
+  return (
+    <section className="panel pilot-consent">
+      <h3>Optional pilot measurement</h3>
+      <p className="small muted">
+        {enrollment?.consent
+          ? "You opted in to measuring this pilot’s usefulness. You can withdraw below."
+          : "You can use the workspace without opting in to pilot measurement."}{" "}
+        Internal and test accounts are kept separate from customer outcomes.
+      </p>
+      <button
+        className="quiet-button"
+        onClick={() => setOpen((value) => !value)}
+      >
+        {open ? "Hide preferences" : "Review preferences"}
+      </button>
+      {open && (
+        <>
+          <p className="small muted">
+            Consent records your cohort, assistance status and permission to
+            include your usage in pilot outcome measurement. It does not publish
+            your research, authorize contact or create a native routine.
+          </p>
+          {enrollment && (
+            <p className="small muted">
+              Current classification: {enrollment.classification} · Updated{" "}
+              {when(enrollment.updatedAt)}
+            </p>
+          )}
+          <label className="field">
+            Setup assistance
+            <select
+              value={assistance}
+              onChange={(event) =>
+                setAssistance(event.target.value as Assistance)
+              }
+            >
+              <option value="unknown">Not recorded</option>
+              <option value="assisted">Assisted</option>
+              <option value="unassisted">Unassisted</option>
+            </select>
+          </label>
+          <InlineError error={error} />
+          <div className="decision-actions">
+            {[true, false].map((consent) => (
+              <button
+                key={String(consent)}
+                className={
+                  "button " + (consent ? "button-dark" : "quiet-button")
+                }
+                disabled={busy}
+                onClick={async () => {
+                  setBusy(true);
+                  setError("");
+                  try {
+                    await mutate("/api/pilot/enrollment", {
+                      consent,
+                      assistance,
+                    });
+                  } catch (failure) {
+                    setError(readableError(failure));
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              >
+                {consent
+                  ? enrollment?.consent
+                    ? "Save opt-in preferences"
+                    : "Opt in to pilot measurement"
+                  : "Keep me out of pilot measurement"}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </section>
+  );
 }
-export function OverviewView({ onMission, onCreate, onConnect, onDecisions, onSharing }: { onMission: (id: string) => void; onCreate: () => void; onConnect: () => void; onDecisions: () => void; onSharing: () => void }) {
+export function OverviewView({
+  onMission,
+  onCreate,
+  onConnect,
+  onDecisions,
+  onSharing,
+}: {
+  onMission: (id: string) => void;
+  onCreate: () => void;
+  onConnect: () => void;
+  onDecisions: () => void;
+  onSharing: () => void;
+}) {
   const { summary } = useWorkspace();
-  const missions = usePages<Mission>("/api/missions"); const decisions = usePages<OwnerReview>("/api/decisions");
-  const latest = decisions.items.filter((review, index, all) => all.findIndex(item => item.missionId === review.missionId) === index);
-  const due = latest.filter(review => review.nextReviewAt && new Date(review.nextReviewAt).getTime() <= Date.now());
-  const firstDecision = latest[0]; const bots = summary!.bots.filter(bot => bot.status !== "revoked");
-  const hasCheckin = bots.some(bot => bot.lastSeenAt);
+  const missions = usePages<Mission>("/api/missions");
+  const decisions = usePages<OwnerReview>("/api/decisions");
+  const latest = decisions.items.filter(
+    (review, index, all) =>
+      all.findIndex((item) => item.missionId === review.missionId) === index,
+  );
+  const due = latest.filter(
+    (review) =>
+      review.nextReviewAt &&
+      new Date(review.nextReviewAt).getTime() <= Date.now(),
+  );
+  const firstDecision = latest[0];
+  const bots = summary!.bots.filter((bot) => bot.status !== "revoked");
+  const hasCheckin = bots.some((bot) => bot.lastSeenAt);
   const weeklyDisabled = !summary!.weeklyResearchEnabled;
   // Older compatible hub releases do not include actionSummary. Keep their bounded
   // decision/mission lists useful while preferring the complete server totals.
-  const actions = (summary as typeof summary & { actionSummary?: WorkspaceActionSummary })?.actionSummary;
-  const fallbackActive = missions.items.filter(mission => mission.status === "queued" || mission.status === "running");
+  const actions = (
+    summary as typeof summary & { actionSummary?: WorkspaceActionSummary }
+  )?.actionSummary;
+  const fallbackActive = missions.items.filter(
+    (mission) => mission.status === "queued" || mission.status === "running",
+  );
   const awaitingTotal = actions?.awaitingReview.total ?? 0;
   const dueTotal = actions?.dueReviews.total ?? due.length;
-  const activeTotal = actions?.activeWork.total ?? summary!.counts.activeMissions;
+  const activeTotal =
+    actions?.activeWork.total ?? summary!.counts.activeMissions;
   const blockerTotal = actions?.blockers.total ?? 0;
-  const hasPriorityWork = awaitingTotal + dueTotal + activeTotal + blockerTotal > 0;
-  return <><section className="weekly-intro"><div><div className="eyebrow">RESEARCH → REVIEW → DECIDE</div><h2>One question. A clearer next step.</h2><p>Bring back what changed, inspect the sources and keep a decision you can revisit.</p></div><span className="tag muted">Private beta</span></section>
-    <div className="owner-loop" aria-label="Your research workflow"><div className={bots.length ? "done" : ""}><Check size={15} />Connect your Bot</div><div className={summary!.counts.missions ? "done" : ""}><Check size={15} />Ask a useful question</div><div className={summary!.counts.evidence ? "done" : ""}><Check size={15} />Review the evidence</div><div className={summary!.counts.reviewedMissions ? "done" : ""}><Check size={15} />Record your decision</div></div>
-    <div className="workspace-columns"><div><section className="panel"><div className="panel-title"><h2>Your priority queue</h2>{actions && <span className="small muted">Current at {when(actions.generatedAt)}</span>}</div>
-      {actions?.awaitingReview && actions.awaitingReview.total > 0 && <section aria-labelledby="awaiting-review-heading"><h3 id="awaiting-review-heading">Findings waiting for owner review</h3><p className="small muted">{actions.awaitingReview.total} terminal mission{actions.awaitingReview.total === 1 ? " has" : "s have"} accessible findings and no recorded decision.</p>{actions.awaitingReview.items.map(item => <button type="button" className="mission-row" key={item.missionId} onClick={() => onMission(item.missionId)}><div><strong>{item.title}</strong><p>{item.accessibleFindingCount} accessible finding{item.accessibleFindingCount === 1 ? "" : "s"} · {item.status === "completed" ? "Results delivered" : item.status === "failed" ? "Failed with partial findings" : "Cancelled with partial findings"}</p></div><span className="tag pending">Review</span><ArrowRight size={15} /></button>)}{actions.awaitingReview.items.length < actions.awaitingReview.total && <p className="small muted">Showing {actions.awaitingReview.items.length} of {actions.awaitingReview.total}. Open Missions for the full history.</p>}</section>}
-      {dueTotal > 0 && <section aria-labelledby="due-review-heading"><h3 id="due-review-heading">Decisions due for another look</h3><p className="small muted">A review date is a prompt for your judgment. It does not start Bot work.</p>{actions?.dueReviews.items.map(item => <button type="button" className="mission-row" key={item.reviewId} onClick={() => onMission(item.missionId)}><div><strong>{item.title}</strong><p>{decisionLabel[item.decision]} · version {item.reviewVersion} · Due {when(item.nextReviewAt)}</p></div><span className="tag pending">Due</span><ArrowRight size={15} /></button>) ?? due.slice(0, 3).map(review => <button type="button" className="mission-row" key={review.id} onClick={() => onMission(review.missionId)}><div><strong>{review.rationale.slice(0, 130)}</strong><p>{decisionLabel[review.decision]} · Review {when(review.nextReviewAt)}</p></div><ArrowRight size={15} /></button>)}{actions && actions.dueReviews.items.length < actions.dueReviews.total && <p className="small muted">Showing {actions.dueReviews.items.length} of {actions.dueReviews.total}. Open Decisions for the full history.</p>}</section>}
-      {activeTotal > 0 && <section aria-labelledby="active-work-heading"><h3 id="active-work-heading">Research in progress</h3><p className="small muted">Native routines determine check-ins. A recorded lease alone does not prove that a Bot is currently working.</p>{actions?.activeWork.items.map(item => <button type="button" className="mission-row" key={item.missionId} onClick={() => onMission(item.missionId)}><div><strong>{item.title}</strong><p>{item.retryingTasks ? `${item.retryingTasks} retrying · ` : ""}{item.leasedTasks ? `${item.leasedTasks} leased · ` : ""}{item.queuedTasks ? `${item.queuedTasks} waiting for check-in · ` : ""}{item.completedTasks}/{item.totalTasks} delivered</p></div><span className="tag pending">{item.retryingTasks ? "Retrying" : item.leasedTasks ? "Lease recorded" : "Waiting"}</span><ArrowRight size={15} /></button>) ?? <MissionRows items={fallbackActive.slice(0, 3)} onSelect={item => onMission(item.id)} />}{actions && actions.activeWork.items.length < actions.activeWork.total && <p className="small muted">Showing {actions.activeWork.items.length} of {actions.activeWork.total}. Open Missions for all active work.</p>}</section>}
-      {actions?.blockers && actions.blockers.total > 0 && <section aria-labelledby="blockers-heading"><h3 id="blockers-heading">Concrete blockers</h3><p className="small muted">These states need owner attention or explain why bounded work ended.</p>{actions.blockers.items.map(item => <button type="button" className="mission-row" key={`${item.missionId}:${item.code}`} onClick={() => onMission(item.missionId)}><div><strong>{item.title}</strong><p>{item.message}</p></div><span className="tag muted">Blocked</span><ArrowRight size={15} /></button>)}{actions.blockers.items.length < actions.blockers.total && <p className="small muted">Showing {actions.blockers.items.length} of {actions.blockers.total}. Open Missions for the full history.</p>}</section>}
-      {!hasPriorityWork && (!bots.length ? <Empty title="Start with the Grok Bot you already use." text="Pair one original native Bot securely. A second perspective can follow when you need it." action="Connect your Bot" onAction={onConnect} /> : !hasCheckin ? <><h3>Waiting for a first check-in.</h3><p className="muted">Pairing is recorded. Open the approved native skill for one bounded check; a hub lease cannot prove the Bot is running.</p><button type="button" className="button button-dark" onClick={onCreate}>{weeklyDisabled ? "Prepare a generic mission" : "Prepare a weekly question"} <ArrowRight size={15} /></button>{weeklyDisabled && <p className="small muted">Weekly mission setup is still pending. This opens the compatible generic research flow.</p>}</> : <><h3>What should you decide this week?</h3><p className="muted">Use one offer, one buyer and the public websites you approve. A decision to do nothing can be useful too.</p><button type="button" className="button button-dark" onClick={onCreate}>{weeklyDisabled ? "Prepare a generic mission" : "Prepare a weekly mission"} <ArrowRight size={15} /></button>{weeklyDisabled && <p className="small muted">Weekly mission setup is still pending. This opens the compatible generic research flow.</p>}</>)}
-    </section>
-      <section className="panel"><div className="panel-title"><h2>Recent missions</h2><span className="small muted">{summary!.counts.missions} total</span></div><InlineError error={missions.error} retry={missions.reload} />{missions.loading && !missions.items.length ? <Loading /> : <MissionRows items={missions.items.slice(0, 5)} onSelect={item => onMission(item.id)} />}{!missions.loading && !missions.items.length && !missions.error && <p className="small muted">Your first question will appear here after you review and create it.</p>}<p className="small muted">Completed means results were delivered. Open a mission to record whether they helped.</p></section>
-    </div><aside><section className="paper-panel"><div className="eyebrow">YOUR LAST RECORDED DECISION</div>{firstDecision ? <><h2>{decisionLabel[firstDecision.decision]}</h2><p className="decision-rationale">{firstDecision.rationale}</p><p>Version {firstDecision.version} · {when(firstDecision.createdAt)}</p><button className="button" onClick={() => onMission(firstDecision.missionId)}>Revisit this decision <ArrowRight size={15} /></button></> : <><h2>Keep what you decided.</h2><p>After a mission ends, record test, watch or stop pursuing. Your review stays separate from permission to share.</p></>}<button className="quiet-button" onClick={onDecisions}>Decision history <ArrowRight size={14} /></button></section><InlineError error={decisions.error} retry={decisions.reload} />
-      <section className="panel"><h3>Your Bots</h3>{bots.map(bot => <div className="compact-bot" key={bot.id}><strong>{bot.name}</strong><span>{bot.status} · {bot.lastSeenAt ? `Last check-in ${when(bot.lastSeenAt)}` : "No check-in recorded"}</span><span>{bot.runtime === "native-grok" ? "Original native · owner-declared" : "Compatible copy · best effort"}</span></div>)}{!bots.length && <p className="small muted">No Bots connected.</p>}</section>
-      {summary!.counts.pendingApprovals > 0 && <section className="panel"><h3>Sharing approvals</h3><p className="small muted">{summary!.counts.pendingApprovals} contribution(s) awaiting permission to share. Your private decision history is not included.</p><button className="quiet-button" onClick={onSharing}>Review exact contributions <ArrowRight size={14} /></button></section>}
-    </aside></div><PilotConsent />
-  </>;
+  const hasPriorityWork =
+    awaitingTotal + dueTotal + activeTotal + blockerTotal > 0;
+  return (
+    <>
+      <section className="weekly-intro">
+        <div>
+          <div className="eyebrow">RESEARCH → REVIEW → DECIDE</div>
+          <h2>One question. A clearer next step.</h2>
+          <p>
+            Bring back what changed, inspect the sources and keep a decision you
+            can revisit.
+          </p>
+        </div>
+        <span className="tag muted">Private workspace</span>
+      </section>
+      <ol className="owner-loop" aria-label="Your research workflow">
+        {[
+          { done: hasCheckin, label: "Connect & confirm check-in" },
+          { done: !!summary!.counts.missions, label: "Ask a useful question" },
+          {
+            done: !!summary!.counts.reviewedMissions,
+            label: "Review the evidence",
+          },
+          {
+            done: !!summary!.counts.reviewedMissions,
+            label: "Record your decision",
+          },
+        ].map((step, index) => (
+          <li key={step.label} className={step.done ? "done" : ""}>
+            {step.done ? (
+              <Check size={15} aria-label="Completed" />
+            ) : (
+              <span aria-label="Not completed">{index + 1}</span>
+            )}
+            {step.label}
+          </li>
+        ))}
+      </ol>
+      <div className="workspace-columns">
+        <div>
+          <section className="panel">
+            <div className="panel-title">
+              <h2>Your priority queue</h2>
+              {actions && (
+                <span className="small muted">
+                  Current at {when(actions.generatedAt)}
+                </span>
+              )}
+            </div>
+            {actions?.awaitingReview && actions.awaitingReview.total > 0 && (
+              <section aria-labelledby="awaiting-review-heading">
+                <h3 id="awaiting-review-heading">
+                  Findings waiting for owner review
+                </h3>
+                <p className="small muted">
+                  {actions.awaitingReview.total} terminal mission
+                  {actions.awaitingReview.total === 1 ? " has" : "s have"}{" "}
+                  accessible findings and no recorded decision.
+                </p>
+                {actions.awaitingReview.items.map((item) => (
+                  <button
+                    type="button"
+                    className="mission-row"
+                    key={item.missionId}
+                    onClick={() => onMission(item.missionId)}
+                  >
+                    <div>
+                      <strong>{item.title}</strong>
+                      <p>
+                        {item.accessibleFindingCount} accessible finding
+                        {item.accessibleFindingCount === 1 ? "" : "s"} ·{" "}
+                        {item.status === "completed"
+                          ? "Results delivered"
+                          : item.status === "failed"
+                            ? "Failed with partial findings"
+                            : "Cancelled with partial findings"}
+                      </p>
+                    </div>
+                    <span className="tag pending">Review</span>
+                    <ArrowRight size={15} />
+                  </button>
+                ))}
+                {actions.awaitingReview.items.length <
+                  actions.awaitingReview.total && (
+                  <p className="small muted">
+                    Showing {actions.awaitingReview.items.length} of{" "}
+                    {actions.awaitingReview.total}. Open Missions for the full
+                    history.
+                  </p>
+                )}
+              </section>
+            )}
+            {dueTotal > 0 && (
+              <section aria-labelledby="due-review-heading">
+                <h3 id="due-review-heading">Decisions due for another look</h3>
+                <p className="small muted">
+                  A review date is a prompt for your judgment. It does not start
+                  Bot work.
+                </p>
+                {actions?.dueReviews.items.map((item) => (
+                  <button
+                    type="button"
+                    className="mission-row"
+                    key={item.reviewId}
+                    onClick={() => onMission(item.missionId)}
+                  >
+                    <div>
+                      <strong>{item.title}</strong>
+                      <p>
+                        {decisionLabel[item.decision]} · version{" "}
+                        {item.reviewVersion} · Due {when(item.nextReviewAt)}
+                      </p>
+                    </div>
+                    <span className="tag pending">Due</span>
+                    <ArrowRight size={15} />
+                  </button>
+                )) ??
+                  due.slice(0, 3).map((review) => (
+                    <button
+                      type="button"
+                      className="mission-row"
+                      key={review.id}
+                      onClick={() => onMission(review.missionId)}
+                    >
+                      <div>
+                        <strong>{review.rationale.slice(0, 130)}</strong>
+                        <p>
+                          {decisionLabel[review.decision]} · Review{" "}
+                          {when(review.nextReviewAt)}
+                        </p>
+                      </div>
+                      <ArrowRight size={15} />
+                    </button>
+                  ))}
+                {actions &&
+                  actions.dueReviews.items.length <
+                    actions.dueReviews.total && (
+                    <p className="small muted">
+                      Showing {actions.dueReviews.items.length} of{" "}
+                      {actions.dueReviews.total}. Open Decisions for the full
+                      history.
+                    </p>
+                  )}
+              </section>
+            )}
+            {activeTotal > 0 && (
+              <section aria-labelledby="active-work-heading">
+                <h3 id="active-work-heading">Research in progress</h3>
+                <p className="small muted">
+                  Native routines determine check-ins. A recorded lease alone
+                  does not prove that a Bot is currently working.
+                </p>
+                {actions?.activeWork.items.map((item) => (
+                  <button
+                    type="button"
+                    className="mission-row"
+                    key={item.missionId}
+                    onClick={() => onMission(item.missionId)}
+                  >
+                    <div>
+                      <strong>{item.title}</strong>
+                      <p>
+                        {item.retryingTasks
+                          ? `${item.retryingTasks} retrying · `
+                          : ""}
+                        {item.leasedTasks
+                          ? `${item.leasedTasks} leased · `
+                          : ""}
+                        {item.queuedTasks
+                          ? `${item.queuedTasks} waiting for check-in · `
+                          : ""}
+                        {item.completedTasks}/{item.totalTasks} delivered
+                      </p>
+                    </div>
+                    <span className="tag pending">
+                      {item.retryingTasks
+                        ? "Retrying"
+                        : item.leasedTasks
+                          ? "Lease recorded"
+                          : "Waiting"}
+                    </span>
+                    <ArrowRight size={15} />
+                  </button>
+                )) ?? (
+                  <MissionRows
+                    items={fallbackActive.slice(0, 3)}
+                    onSelect={(item) => onMission(item.id)}
+                  />
+                )}
+                {actions &&
+                  actions.activeWork.items.length <
+                    actions.activeWork.total && (
+                    <p className="small muted">
+                      Showing {actions.activeWork.items.length} of{" "}
+                      {actions.activeWork.total}. Open Missions for all active
+                      work.
+                    </p>
+                  )}
+              </section>
+            )}
+            {actions?.blockers && actions.blockers.total > 0 && (
+              <section aria-labelledby="blockers-heading">
+                <h3 id="blockers-heading">Concrete blockers</h3>
+                <p className="small muted">
+                  These states need owner attention or explain why bounded work
+                  ended.
+                </p>
+                {actions.blockers.items.map((item) => (
+                  <button
+                    type="button"
+                    className="mission-row"
+                    key={`${item.missionId}:${item.code}`}
+                    onClick={() => onMission(item.missionId)}
+                  >
+                    <div>
+                      <strong>{item.title}</strong>
+                      <p>{item.message}</p>
+                    </div>
+                    <span className="tag muted">Blocked</span>
+                    <ArrowRight size={15} />
+                  </button>
+                ))}
+                {actions.blockers.items.length < actions.blockers.total && (
+                  <p className="small muted">
+                    Showing {actions.blockers.items.length} of{" "}
+                    {actions.blockers.total}. Open Missions for the full
+                    history.
+                  </p>
+                )}
+              </section>
+            )}
+            {!hasPriorityWork &&
+              (!bots.length ? (
+                <Empty
+                  title="Start with the Grok Bot you already use."
+                  text="Pair one original native Bot securely. A second perspective can follow when you need it."
+                  action="Connect your Bot"
+                  onAction={onConnect}
+                />
+              ) : !hasCheckin ? (
+                <>
+                  <h3>Waiting for a first check-in.</h3>
+                  <p className="muted">
+                    Pairing is recorded. Open the approved native skill for one
+                    bounded check; a hub lease cannot prove the Bot is running.
+                  </p>
+                  <button
+                    type="button"
+                    className="button button-dark"
+                    onClick={onCreate}
+                  >
+                    {weeklyDisabled ? "Question setup pending" : "New question"}{" "}
+                    <ArrowRight size={15} />
+                  </button>
+                  {weeklyDisabled && (
+                    <p className="small muted">
+                      New question creation is not enabled on this deployment.
+                      Your existing records remain accessible.
+                    </p>
+                  )}
+                </>
+              ) : (
+                <>
+                  <h3>What should you decide this week?</h3>
+                  <p className="muted">
+                    Use one offer, one buyer and the public websites you
+                    approve. A decision to do nothing can be useful too.
+                  </p>
+                  <button
+                    type="button"
+                    className="button button-dark"
+                    onClick={onCreate}
+                  >
+                    {weeklyDisabled ? "Question setup pending" : "New question"}{" "}
+                    <ArrowRight size={15} />
+                  </button>
+                  {weeklyDisabled && (
+                    <p className="small muted">
+                      New question creation is not enabled on this deployment.
+                      Your existing records remain accessible.
+                    </p>
+                  )}
+                </>
+              ))}
+          </section>
+          <section className="panel">
+            <div className="panel-title">
+              <h2>Recent missions</h2>
+              <span className="small muted">
+                {summary!.counts.missions} total
+              </span>
+            </div>
+            <InlineError error={missions.error} retry={missions.reload} />
+            {missions.loading && !missions.items.length ? (
+              <Loading />
+            ) : (
+              <MissionRows
+                items={missions.items.slice(0, 5)}
+                onSelect={(item) => onMission(item.id)}
+              />
+            )}
+            {!missions.loading && !missions.items.length && !missions.error && (
+              <p className="small muted">
+                Your first question will appear here after you review and create
+                it.
+              </p>
+            )}
+            <p className="small muted">
+              Completed means results were delivered. Open a mission to record
+              whether they helped.
+            </p>
+          </section>
+        </div>
+        <aside>
+          <section className="paper-panel">
+            <div className="eyebrow">YOUR LAST RECORDED DECISION</div>
+            {firstDecision ? (
+              <>
+                <h2>{decisionLabel[firstDecision.decision]}</h2>
+                <p className="decision-rationale">{firstDecision.rationale}</p>
+                <p>
+                  Version {firstDecision.version} ·{" "}
+                  {when(firstDecision.createdAt)}
+                </p>
+                <button
+                  className="button"
+                  onClick={() => onMission(firstDecision.missionId)}
+                >
+                  Revisit this decision <ArrowRight size={15} />
+                </button>
+              </>
+            ) : (
+              <>
+                <h2>Keep what you decided.</h2>
+                <p>
+                  After a mission ends, record test, watch or stop pursuing.
+                  Your review stays separate from permission to share.
+                </p>
+              </>
+            )}
+            <button className="quiet-button" onClick={onDecisions}>
+              Decision history <ArrowRight size={14} />
+            </button>
+          </section>
+          <InlineError error={decisions.error} retry={decisions.reload} />
+          <section className="panel">
+            <h3>Your Bots</h3>
+            {bots.map((bot) => (
+              <div className="compact-bot" key={bot.id}>
+                <strong>{bot.name}</strong>
+                <span>
+                  {bot.status} ·{" "}
+                  {bot.lastSeenAt
+                    ? `Last check-in ${when(bot.lastSeenAt)}`
+                    : "No check-in recorded"}
+                </span>
+                <span>
+                  {bot.runtime === "native-grok"
+                    ? "Original native · owner-declared"
+                    : "Compatible copy · best effort"}
+                </span>
+              </div>
+            ))}
+            {!bots.length && <p className="small muted">No Bots connected.</p>}
+          </section>
+          {summary!.counts.pendingApprovals > 0 && (
+            <section className="panel">
+              <h3>Sharing approvals</h3>
+              <p className="small muted">
+                {summary!.counts.pendingApprovals} contribution(s) awaiting
+                permission to share. Your private decision history is not
+                included.
+              </p>
+              <button className="quiet-button" onClick={onSharing}>
+                Review exact contributions <ArrowRight size={14} />
+              </button>
+            </section>
+          )}
+        </aside>
+      </div>
+      <PilotConsent />
+    </>
+  );
 }

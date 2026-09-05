@@ -6,3 +6,5 @@ services:
     build:
       context: ..
       dockerfile: deploy/web.Dockerfile
+      args:
+        SOURCE_COMMIT: ${GITHUB_SHA:-}

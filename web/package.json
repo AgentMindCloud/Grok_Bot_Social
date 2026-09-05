@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/generate-avatar-gallery.mjs",
+    "prebuild": "node scripts/generate-avatar-gallery.mjs && node scripts/package-native.mjs",
     "build": "next build",
     "generate:avatars": "node scripts/generate-avatar-gallery.mjs",
     "typecheck": "tsc --noEmit"
@@ -12,6 +12,7 @@
   "dependencies": {
     "clsx": "^2.1.1",
     "framer-motion": "^11.11.0",
+    "gsap": "3.15.0",
     "lucide-react": "^0.454.0",
     "next": "15.5.25",
     "react": "^18.3.1",

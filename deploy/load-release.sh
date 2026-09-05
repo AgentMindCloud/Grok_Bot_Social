@@ -26,4 +26,4 @@ while read -r ref expected_id; do
   count=$((count + 1))
 done < "$here/IMAGE-IDS"
 [[ "$count" -eq 3 ]] || { echo 'Release must contain three image identities' >&2; exit 1; }
-echo 'Release images verified. Configure deployment/.env on this host, then start Compose with release.env.'
+echo 'Release images verified. Follow OPEN-LAUNCH-OPERATIONS.md for the separate edge/application/staging configuration. No containers or data were changed by this loader.'

@@ -1,0 +1,539 @@
+.sign-in-panel {
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 670px);
+  margin: 40px auto;
+  padding: 42px 44px;
+  border: 1px solid rgba(158, 212, 239, 0.24);
+  border-radius: 28px;
+  color: #edf3f9;
+  background: linear-gradient(
+    145deg,
+    rgba(27, 44, 68, 0.98),
+    rgba(9, 18, 34, 0.98)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(228, 246, 255, 0.17),
+    0 28px 75px rgba(0, 0, 0, 0.38);
+}
+.sign-in-panel:before {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      ellipse at 90% 5%,
+      rgba(140, 109, 222, 0.2),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse at 4% 70%,
+      rgba(81, 198, 221, 0.12),
+      transparent 55%
+    );
+}
+.sign-in-symbol {
+  display: grid;
+  place-items: center;
+  width: 57px;
+  height: 57px;
+  border: 1px solid rgba(156, 228, 245, 0.4);
+  border-radius: 18px;
+  color: #9eebf4;
+  background: linear-gradient(135deg, #234354, #101f33);
+  box-shadow:
+    inset 0 1px 1px #88aebb66,
+    0 8px 18px #01091680;
+  margin-bottom: 22px;
+}
+.sign-in-eyebrow,
+.account-eyebrow {
+  margin: 0 0 8px;
+  color: #97e3ee;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.6px;
+}
+.sign-in-panel h1 {
+  color: #f4f4f0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(39px, 5vw, 56px);
+  line-height: 1.02;
+  font-weight: 400;
+  letter-spacing: -1px;
+  margin: 12px 0 22px;
+}
+.sign-in-panel h1 em {
+  color: #bce5ed;
+  font-weight: 400;
+  font-style: normal;
+}
+.sign-in-intro {
+  color: #ccd6e5;
+  font-size: 15px;
+  line-height: 1.75;
+  margin: 0 0 24px;
+}
+.sign-in-methods {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin: 22px 0;
+}
+.sign-in-methods .glass-control {
+  width: 100%;
+  min-height: 54px;
+}
+.sign-in-methods .glass-label {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: 13px;
+}
+.provider-x {
+  font-size: 24px;
+  line-height: 1;
+  font-family: Arial, sans-serif;
+}
+.sign-in-provider-note {
+  color: #bccbdd;
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 16px 0 22px;
+}
+.sign-in-assurance {
+  display: flex;
+  gap: 12px;
+  border-top: 1px solid #9ac0e126;
+  padding-top: 20px;
+  color: #b7c9db;
+}
+.sign-in-assurance svg {
+  flex: none;
+  margin-top: 3px;
+  color: #8edbe7;
+}
+.sign-in-assurance p {
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 0;
+}
+.sign-in-terms {
+  font-size: 11px;
+  color: #aebed1;
+  line-height: 1.7;
+  margin: 20px 0 0;
+}
+.sign-in-panel a:not(.glass-control),
+.account-panel a:not(.glass-control) {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.account-panel {
+  display: grid;
+  gap: 22px;
+  color: #e7edf5;
+  width: 100%;
+  max-width: 1050px;
+  margin: 0 auto;
+}
+.account-panel * {
+  box-sizing: border-box;
+}
+.account-intro {
+  display: flex;
+  gap: 17px;
+  align-items: center;
+  margin: 0 0 8px;
+}
+.account-intro > div {
+  flex: 1;
+}
+.account-intro h2 {
+  color: #eef3f6;
+  font-size: 27px;
+  line-height: 1.15;
+  margin: 0 0 8px;
+  font-weight: 500;
+}
+.account-intro p:not(.account-eyebrow) {
+  color: #b9c9da;
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 0;
+}
+.account-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  border: 1px solid #90bfdb45;
+  border-radius: 16px;
+  color: #93e0ee;
+  background: linear-gradient(130deg, #2b4254, #112334);
+  box-shadow:
+    inset 0 1px 1px #c7e8fa33,
+    0 8px 20px #06111f;
+}
+.account-surface {
+  padding: 27px;
+  border: 1px solid #a5c9e133;
+  border-radius: 21px;
+  background: linear-gradient(135deg, #1b2c40, #121f31);
+  box-shadow:
+    inset 0 1px 0 #d2eaff14,
+    0 12px 28px #02091430;
+}
+.account-section-heading {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 0 0 15px;
+}
+.account-section-heading > svg {
+  flex: none;
+  color: #8ee2ee;
+  margin-top: 3px;
+}
+.account-section-heading h3,
+.account-surface h3 {
+  font-size: 18px;
+  line-height: 1.35;
+  color: #f0f4f8;
+  margin: 0 0 6px;
+  font-weight: 550;
+}
+.account-section-heading p {
+  color: #b5c5d7;
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 0;
+}
+.account-muted {
+  color: #c5d1df;
+  font-size: 13px;
+  line-height: 1.8;
+  margin: 0 0 18px;
+}
+.account-small {
+  color: #afc2d5;
+  font-size: 11px;
+  line-height: 1.75;
+  margin: 11px 0 0;
+}
+.account-providers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 22px;
+}
+.account-provider {
+  padding: 22px;
+  border: 1px solid #8dafcf33;
+  border-radius: 16px;
+  background: #0b17288c;
+}
+.account-provider-title {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  color: #d6f1f4;
+}
+.account-provider-title h4 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 500;
+}
+.account-provider > p {
+  color: #c9d5e3;
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 13px 0;
+  overflow-wrap: anywhere;
+}
+.account-provider .account-small {
+  font-size: 11px;
+  color: #a8bdd2;
+}
+.account-linked {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  color: #b0ebd9;
+  font-size: 10px;
+  margin-left: auto;
+  border: 1px solid #73cdb335;
+  border-radius: 100px;
+  padding: 4px 7px;
+  background: #244c454d;
+}
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 20px;
+}
+.account-actions .glass-label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.account-text-button {
+  border: 0;
+  padding: 10px 3px;
+  min-height: 44px;
+  color: #b7d5e6;
+  font-size: 11px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  background: transparent;
+  cursor: pointer;
+}
+.account-text-button:disabled {
+  color: #8297ad;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+.account-text-button:focus-visible,
+.account-panel a:focus-visible,
+.sign-in-panel a:focus-visible {
+  outline: 3px solid #93ebf7;
+  outline-offset: 4px;
+  border-radius: 5px;
+}
+.account-limits {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: #94bad72b;
+  border: 1px solid #94bad72b;
+  border-radius: 15px;
+  overflow: hidden;
+  margin: 21px 0 16px;
+}
+.account-limits > div {
+  padding: 19px 17px;
+  background: #16283b;
+}
+.account-limits dt {
+  color: #b4c7da;
+  font-size: 11px;
+  line-height: 1.6;
+  margin-bottom: 11px;
+}
+.account-limits dd {
+  color: #edf6fa;
+  font-size: 24px;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+.account-limits dd span {
+  color: #acc0d3;
+  font-size: 12px;
+  letter-spacing: 0;
+}
+.account-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid #87bdd745;
+  border-radius: 12px;
+  background: #27425585;
+  padding: 13px 15px;
+  color: #d3e7f1;
+  font-size: 12px;
+  line-height: 1.75;
+  margin: 15px 0;
+}
+.account-callout svg {
+  flex: none;
+  margin-top: 2px;
+}
+.account-error,
+.account-notice {
+  border: 1px solid #ca9ea34d;
+  border-radius: 12px;
+  background: #493044;
+  padding: 13px 16px;
+  color: #ffdbdb;
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.account-notice {
+  border-color: #82c4bd4d;
+  background: #193d42;
+  color: #cbf0e8;
+}
+.account-close {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  border-color: #c998ae3d;
+}
+.account-close > div {
+  max-width: 640px;
+}
+.account-close p {
+  color: #c8c8d8;
+  font-size: 13px;
+  line-height: 1.75;
+  margin: 8px 0;
+}
+.account-close .account-small {
+  color: #bdb2c6;
+  font-size: 11px;
+}
+.account-close > .glass-control {
+  flex: none;
+}
+.account-help {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 0 10px 18px;
+  color: #b2c6d6;
+}
+.account-help svg {
+  flex: none;
+  margin-top: 3px;
+}
+.account-help p {
+  font-size: 12px;
+  line-height: 1.75;
+  margin: 0;
+}
+.account-dialog {
+  color: #243547;
+  padding: 10px 0 0;
+}
+.account-dialog p {
+  font-size: 14px;
+  line-height: 1.8;
+}
+.account-dialog label {
+  display: grid;
+  gap: 9px;
+  font-size: 13px;
+  margin: 20px 0;
+}
+.account-dialog input {
+  min-height: 50px;
+  width: 100%;
+  font-size: 16px;
+  border: 1px solid #9baaba;
+  border-radius: 10px;
+  padding: 11px 14px;
+  background: #f4f7fa;
+  color: #192b3c;
+}
+.account-dialog input:focus-visible {
+  outline: 3px solid #167987;
+  outline-offset: 3px;
+}
+.account-dialog .account-error {
+  color: #7e1936;
+  background: #f9e8ed;
+  border-color: #cf94a4;
+}
+.account-dialog .account-notice {
+  color: #174a41;
+  background: #e3f1eb;
+  border-color: #80b6a5;
+}
+.account-dialog .account-callout {
+  color: #254252;
+  background: #edf3f7;
+  border-color: #a9bdcb;
+}
+@media (max-width: 700px) {
+  .sign-in-panel {
+    margin: 18px auto;
+    padding: 30px 24px;
+    border-radius: 24px;
+  }
+  .sign-in-panel h1 {
+    font-size: 43px;
+  }
+  .sign-in-intro {
+    font-size: 14px;
+  }
+  .account-panel {
+    gap: 16px;
+  }
+  .account-intro {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .account-intro > div {
+    min-width: 210px;
+  }
+  .account-intro h2 {
+    font-size: 23px;
+  }
+  .account-intro > .glass-control {
+    margin-left: 64px;
+  }
+  .account-surface {
+    padding: 21px 19px;
+    border-radius: 18px;
+  }
+  .account-providers {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .account-provider {
+    padding: 19px;
+  }
+  .account-limits {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .account-limits > div {
+    padding: 17px 13px;
+  }
+  .account-limits dd {
+    font-size: 22px;
+  }
+  .account-close {
+    display: block;
+  }
+  .account-close > .glass-control {
+    margin-top: 15px;
+    width: 100%;
+  }
+  .account-dialog .account-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .account-dialog .account-actions .glass-control {
+    width: 100%;
+  }
+}
+@media (max-width: 370px) {
+  .sign-in-panel {
+    padding: 27px 20px;
+  }
+  .sign-in-panel h1 {
+    font-size: 38px;
+  }
+  .account-intro > div {
+    min-width: 180px;
+  }
+  .account-limits {
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sign-in-panel *,
+  .account-panel * {
+    scroll-behavior: auto;
+  }
+}

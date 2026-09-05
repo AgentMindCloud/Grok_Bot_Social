@@ -1,0 +1,41 @@
+.obs-native-navigation {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .obs-native-navigation {
+    display: block;
+    color: #edf6ff;
+    background: #0b1424;
+    border-top: 1px solid #8298b233;
+    border-bottom: 1px solid #8298b233;
+  }
+
+  .obs-native-navigation > summary {
+    min-height: 48px;
+    padding: 14px 24px;
+    font-size: 14px;
+    line-height: 20px;
+    cursor: pointer;
+  }
+
+  .obs-native-navigation nav {
+    display: grid;
+    padding: 0 24px 14px;
+  }
+
+  .obs-native-navigation nav a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .obs-native-navigation :is(summary, a):focus-visible {
+    outline: 3px solid #8af0ff;
+    outline-offset: -3px;
+    border-radius: 4px;
+  }
+}

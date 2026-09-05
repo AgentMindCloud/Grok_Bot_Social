@@ -1,16 +1,56 @@
 "use client";
 import { FormEvent, useEffect, useState } from "react";
-import { ArrowRight, ArrowUpRight, Check, Copy, Pause, Play, Plus, RefreshCw, ShieldCheck, Unplug, Users } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Check,
+  Copy,
+  Pause,
+  Play,
+  Plus,
+  RefreshCw,
+  ShieldCheck,
+  Unplug,
+  Users,
+} from "lucide-react";
 import Modal from "@/components/Modal";
-import { hub, HubError, readableError, when, type Workspace, type Bot, type Mission, type Evidence, type Approval, type Circle } from "@/lib/hub-api";
+import {
+  hub,
+  HubError,
+  readableError,
+  when,
+  type Workspace,
+  type Bot,
+  type Mission,
+  type Evidence,
+  type Approval,
+  type Circle,
+} from "@/lib/hub-api";
 import { useWorkspace } from "../_hooks/useWorkspace";
 import { Empty, EvidenceNote } from "./WorkspacePrimitives";
 export type ManagementAction = "pair" | "mission" | "evidence" | "join";
-export function ManagementPanel({tab,request,onMissionCreated}:{tab:string;request:{kind:ManagementAction;sequence:number}|null;onMissionCreated:()=>void}) {
-const {summary,session,mutate,refresh,setError,error,setNotice}=useWorkspace();
-const [busy,setBusy]=useState(false);
-const data:Workspace = {owner:summary!.owner,bots:summary!.bots,circles:summary!.circles,missions:[],evidence:[],approvals:[],events:[]};
-const activeBots=data.bots.filter(bot=>bot.status!=="revoked");
+export function ManagementPanel({
+  tab,
+  request,
+  onMissionCreated,
+}: {
+  tab: string;
+  request: { kind: ManagementAction; sequence: number } | null;
+  onMissionCreated: () => void;
+}) {
+  const { summary, session, mutate, refresh, setError, error, setNotice } =
+    useWorkspace();
+  const [busy, setBusy] = useState(false);
+  const data: Workspace = {
+    owner: summary!.owner,
+    bots: summary!.bots,
+    circles: summary!.circles,
+    missions: [],
+    evidence: [],
+    approvals: [],
+    events: [],
+  };
+  const activeBots = data.bots.filter((bot) => bot.status !== "revoked");
   const [modal, setModal] = useState<
       | "pair"
       | "mission"
@@ -84,14 +124,52 @@ const activeBots=data.bots.filter(bot=>bot.status!=="revoked");
     };
   }, [circle?.id, circleRevision, tab, session?.authenticated]);
 
-const mutation=(path:string,body:unknown={})=>mutate(path,body);
-async function act(action:()=>Promise<unknown>,message?:string){if(busy)return false;setBusy(true);setError("");try{await action();await refresh();setCircleRevision(value=>value+1);if(message)setNotice(message);return true;}catch(failure){setError(readableError(failure));return false;}finally{setBusy(false);}}
-function open(which:typeof modal){setError("");setNotice("");setModal(which);setCopied(false);if(which==="pair")setPairing(null);if(which==="invite")setInvite(null);}
-useEffect(()=>{if(request)open(request.kind);},[request?.sequence]);
-function navigate(_:string){onMissionCreated();}
-function selectCircle(item:Circle){setCircle(item);setCircleContent(null);setError("");setCircleRevision(value=>value+1);}
-const approvalEvidence=approval?data.evidence.find(item=>item.id===approval.evidenceId):undefined;
-const nativeConnectionAvailable=!session!.localLoginEnabled&&typeof window!=="undefined"&&window.location.protocol==="https:"&&!["localhost","127.0.0.1","[::1]"].includes(window.location.hostname);
+  const mutation = (path: string, body: unknown = {}) => mutate(path, body);
+  async function act(action: () => Promise<unknown>, message?: string) {
+    if (busy) return false;
+    setBusy(true);
+    setError("");
+    try {
+      await action();
+      await refresh();
+      setCircleRevision((value) => value + 1);
+      if (message) setNotice(message);
+      return true;
+    } catch (failure) {
+      setError(readableError(failure));
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  }
+  function open(which: typeof modal) {
+    setError("");
+    setNotice("");
+    setModal(which);
+    setCopied(false);
+    if (which === "pair") setPairing(null);
+    if (which === "invite") setInvite(null);
+  }
+  useEffect(() => {
+    if (request) open(request.kind);
+  }, [request?.sequence]);
+  function navigate(_: string) {
+    onMissionCreated();
+  }
+  function selectCircle(item: Circle) {
+    setCircle(item);
+    setCircleContent(null);
+    setError("");
+    setCircleRevision((value) => value + 1);
+  }
+  const approvalEvidence = approval
+    ? data.evidence.find((item) => item.id === approval.evidenceId)
+    : undefined;
+  const nativeConnectionAvailable =
+    !session!.localLoginEnabled &&
+    typeof window !== "undefined" &&
+    window.location.protocol === "https:" &&
+    !["localhost", "127.0.0.1", "[::1]"].includes(window.location.hostname);
   function botCard(bot: Bot) {
     return (
       <article className="resident-bot" key={bot.id}>
@@ -173,181 +251,184 @@ const nativeConnectionAvailable=!session!.localLoginEnabled&&typeof window!=="un
     );
   }
 
-return <>
-          {tab === "bots" && (
-            <>
-              <p className="muted">
-                One scout is enough to begin. Add a delegate when you want to go
-                further.
+  return (
+    <>
+      {tab === "bots" && (
+        <>
+          <p className="muted">
+            One scout is enough to begin. Add a delegate when you want to go
+            further.
+          </p>
+          <div className="bot-pair">{data.bots.map(botCard)}</div>
+          {activeBots.length < 2 && (
+            <details className="workspace-advanced">
+              <summary>Advanced setup · secure pairing code</summary>
+              <p>
+                Use browser approval above for a new connection or an explicit
+                reconnect. This older method requires secure code entry on your
+                Bot’s computer.
               </p>
-              <div className="bot-pair">{data.bots.map(botCard)}</div>
-              {activeBots.length < 2 && (
-                <button className="button" onClick={() => open("pair")}>
-                  <Plus size={16} /> Connect{" "}
-                  {activeBots.length ? "a second" : "your first"} bot
-                </button>
-              )}
-              <div className="panel">
-                <h3>Presence with a purpose.</h3>
-                <p className="small muted">
-                  Your bot's native routine determines its check-ins. Hub access
-                  can be paused or revoked; an action already running outside
-                  the hub may continue. Runtime type is owner-declared, not
-                  vendor-attested.
-                </p>
-              </div>
-            </>
+              <button
+                className="button button-dark"
+                onClick={() => open("pair")}
+              >
+                <Plus size={16} /> Create an advanced pairing code
+              </button>
+            </details>
           )}
-          {tab === "circles" && (
-            <>
-              <div className="panel-title">
-                <p className="muted">
-                  Invite a few trusted owners. Share selected evidence.
-                </p>
-                <button
-                  className="button button-dark"
-                  onClick={() => open("join")}
-                >
-                  Join with an invite <ArrowRight size={15} />
-                </button>
-              </div>
-              <div className="bot-pair">
-                {data.circles.map((item) => (
-                  <section className="resident-bot" key={item.id}>
-                    <Users size={25} color="var(--accent)" />
-                    <h3 style={{ marginTop: 18 }}>{item.name}</h3>
-                    <span className="tag muted">{item.role}</span>
-                    <div className="bot-controls">
-                      <button
-                        className="quiet-button"
-                        onClick={() => void selectCircle(item)}
-                      >
-                        Open circle <ArrowRight size={14} />
-                      </button>
-                      {item.role === "owner" && (
-                        <button
-                          className="quiet-button"
-                          onClick={() => {
-                            setCircle(item);
-                            open("invite");
-                          }}
-                        >
-                          Create invite <Plus size={14} />
-                        </button>
-                      )}
-                    </div>
-                  </section>
-                ))}
-              </div>
-              {circle && (
-                <section className="panel">
-                  <h2>{circle.name}</h2>
-                  {circleContent ? (
-                    <>
-                      <h3>Members</h3>
-                      {circleContent.members?.map((member) => (
-                        <div className="member-row" key={member.ownerId}>
-                          <div>
-                            <strong>{member.displayName}</strong>
-                            <p className="small muted">
-                              @{member.handle} · {member.role}
-                            </p>
-                          </div>
-                          {circle.role === "owner" &&
-                            member.ownerId !== data.owner.id && (
-                              <button
-                                className="quiet-button"
-                                disabled={busy}
-                                onClick={() => {
-                                  setRemoveMember(member);
-                                  open("remove-member");
-                                }}
-                              >
-                                Remove member
-                              </button>
-                            )}
-                        </div>
-                      ))}
-                      <h3>Shared findings</h3>
-                      {circleContent.evidence.length ? (
-                        circleContent.evidence.map((item) => (
-                          <EvidenceNote item={item} key={item.id} />
-                        ))
-                      ) : (
-                        <p className="small muted">
-                          No approved shared findings yet.
-                        </p>
-                      )}
-                      {circleContent.missions &&
-                        circleContent.missions.length > 0 && (
-                          <>
-                            <h3>Circle missions</h3>
-                            {circleContent.missions.map((item) => (
-                              <div key={item.id} className="evidence-card">
-                                <h3>{item.title}</h3>
-                                <p>{item.brief}</p>
-                                <span className="tag muted">{item.status}</span>
-                                {item.ownerId !== data.owner.id &&
-                                  ["queued", "running"].includes(item.status) &&
-                                  activeBots.some(
-                                    (bot) => bot.status === "active",
-                                  ) && (
-                                    <form
-                                      onSubmit={(event) => {
-                                        event.preventDefault();
-                                        const form = new FormData(
-                                          event.currentTarget,
-                                        );
-                                        void act(
-                                          () =>
-                                            mutation(
-                                              "/api/missions/" +
-                                                item.id +
-                                                "/participate",
-                                              { botId: form.get("botId") },
-                                            ),
-                                          "Your bot has joined the mission.",
-                                        );
-                                      }}
-                                    >
-                                      <label className="field">
-                                        Contribute with your bot
-                                        <select name="botId">
-                                          {activeBots
-                                            .filter(
-                                              (bot) => bot.status === "active",
-                                            )
-                                            .map((bot) => (
-                                              <option
-                                                key={bot.id}
-                                                value={bot.id}
-                                              >
-                                                {bot.name} · {bot.role}
-                                              </option>
-                                            ))}
-                                        </select>
-                                      </label>
-                                      <button
-                                        className="button button-dark"
-                                        disabled={busy}
-                                      >
-                                        Join this mission{" "}
-                                        <ArrowRight size={16} />
-                                      </button>
-                                    </form>
-                                  )}
-                              </div>
-                            ))}
-                          </>
-                        )}
-                    </>
-                  ) : (
-                    <p className="small muted">Loading circle…</p>
+          <div className="panel">
+            <h3>Presence with a purpose.</h3>
+            <p className="small muted">
+              Your bot's native routine determines its check-ins. Hub access can
+              be paused or revoked; an action already running outside the hub
+              may continue. Runtime type is owner-declared, not vendor-attested.
+            </p>
+          </div>
+        </>
+      )}
+      {tab === "circles" && (
+        <>
+          <div className="panel-title">
+            <p className="muted">
+              Invite a few trusted owners. Share selected evidence.
+            </p>
+            <button className="button button-dark" onClick={() => open("join")}>
+              Join with an invite <ArrowRight size={15} />
+            </button>
+          </div>
+          <div className="bot-pair">
+            {data.circles.map((item) => (
+              <section className="resident-bot" key={item.id}>
+                <Users size={25} color="var(--accent)" />
+                <h3 style={{ marginTop: 18 }}>{item.name}</h3>
+                <span className="tag muted">{item.role}</span>
+                <div className="bot-controls">
+                  <button
+                    className="quiet-button"
+                    onClick={() => void selectCircle(item)}
+                  >
+                    Open circle <ArrowRight size={14} />
+                  </button>
+                  {item.role === "owner" && (
+                    <button
+                      className="quiet-button"
+                      onClick={() => {
+                        setCircle(item);
+                        open("invite");
+                      }}
+                    >
+                      Create invite <Plus size={14} />
+                    </button>
                   )}
-                </section>
+                </div>
+              </section>
+            ))}
+          </div>
+          {circle && (
+            <section className="panel">
+              <h2>{circle.name}</h2>
+              {circleContent ? (
+                <>
+                  <h3>Members</h3>
+                  {circleContent.members?.map((member) => (
+                    <div className="member-row" key={member.ownerId}>
+                      <div>
+                        <strong>{member.displayName}</strong>
+                        <p className="small muted">
+                          @{member.handle} · {member.role}
+                        </p>
+                      </div>
+                      {circle.role === "owner" &&
+                        member.ownerId !== data.owner.id && (
+                          <button
+                            className="quiet-button"
+                            disabled={busy}
+                            onClick={() => {
+                              setRemoveMember(member);
+                              open("remove-member");
+                            }}
+                          >
+                            Remove member
+                          </button>
+                        )}
+                    </div>
+                  ))}
+                  <h3>Shared findings</h3>
+                  {circleContent.evidence.length ? (
+                    circleContent.evidence.map((item) => (
+                      <EvidenceNote item={item} key={item.id} />
+                    ))
+                  ) : (
+                    <p className="small muted">
+                      No approved shared findings yet.
+                    </p>
+                  )}
+                  {circleContent.missions &&
+                    circleContent.missions.length > 0 && (
+                      <>
+                        <h3>Circle missions</h3>
+                        {circleContent.missions.map((item) => (
+                          <div key={item.id} className="evidence-card">
+                            <h3>{item.title}</h3>
+                            <p>{item.brief}</p>
+                            <span className="tag muted">{item.status}</span>
+                            {item.ownerId !== data.owner.id &&
+                              ["queued", "running"].includes(item.status) &&
+                              activeBots.some(
+                                (bot) => bot.status === "active",
+                              ) && (
+                                <form
+                                  onSubmit={(event) => {
+                                    event.preventDefault();
+                                    const form = new FormData(
+                                      event.currentTarget,
+                                    );
+                                    void act(
+                                      () =>
+                                        mutation(
+                                          "/api/missions/" +
+                                            item.id +
+                                            "/participate",
+                                          { botId: form.get("botId") },
+                                        ),
+                                      "Your bot has joined the mission.",
+                                    );
+                                  }}
+                                >
+                                  <label className="field">
+                                    Contribute with your bot
+                                    <select name="botId">
+                                      {activeBots
+                                        .filter(
+                                          (bot) => bot.status === "active",
+                                        )
+                                        .map((bot) => (
+                                          <option key={bot.id} value={bot.id}>
+                                            {bot.name} · {bot.role}
+                                          </option>
+                                        ))}
+                                    </select>
+                                  </label>
+                                  <button
+                                    className="button button-dark"
+                                    disabled={busy}
+                                  >
+                                    Join this mission <ArrowRight size={16} />
+                                  </button>
+                                </form>
+                              )}
+                          </div>
+                        ))}
+                      </>
+                    )}
+                </>
+              ) : (
+                <p className="small muted">Loading circle…</p>
               )}
-            </>
+            </section>
           )}
+        </>
+      )}
       {modal && (
         <Modal
           title={
@@ -403,7 +484,7 @@ return <>
                             "Hub origin: " + window.location.origin,
                             "Read https://github.com/AgentMindCloud/Grok_Bot_Social/blob/main/docs/NATIVE-GROK-INTEGRATION.md and the adapter SKILL.md before setup. Inspect the code and use a separate configuration directory for this bot on our shared cloud computer.",
                             "Pair using your own name. When ready, ask me to use your secure computer-entry flow to supply GROK_HUB_PAIR_CODE. Do not ask me to paste the code into this conversation. Store the resulting scoped credential locally; never print it or include it in a chat message. Do not import private files, memories or other account credentials.",
-                            "Complete one bounded inbox check first. Then help me create a native routine with a check-in schedule that fits my usage budget. Follow only my authorized research assignments, cite original sources, and leave sharing decisions for my owner workspace.",
+                            "Confirm connection with one authenticated heartbeat, then stop. Do not claim a research task, start or change a native routine, or enable weekly research as part of connecting. Research scope and routines require separate owner instructions.",
                           ].join("\n\n"),
                         );
                         setCopied(true);
@@ -900,5 +981,6 @@ return <>
           )}
         </Modal>
       )}
-</>;
+    </>
+  );
 }

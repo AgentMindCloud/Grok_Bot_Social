@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "adapter": "@grok-bot-social/native-grok",
+  "version": "0.3.0",
+  "source": {
+    "commit": "17d6e3c2f3b044c40ae36db515b61096d046e117",
+    "workingTreeDirty": true
+  },
+  "files": [
+    {
+      "path": "docs/NATIVE-GROK-INTEGRATION.md",
+      "size": 18487,
+      "sha256": "061544a15158258c535f8fb0a0d20519525c0f5265b43e278c0ef58ddffe18c6"
+    },
+    {
+      "path": "integrations/native-grok/cli.mjs",
+      "size": 15042,
+      "sha256": "f1cd7cb9ba2dcf3d44bc408fcb7e4c2d164c8fc5346b8424c7577a6beadedb06"
+    },
+    {
+      "path": "integrations/native-grok/client.mjs",
+      "size": 16216,
+      "sha256": "5befe041c4d05f152cfd9c1da4723d946087d8b357e11585d35e100ba4b9d482"
+    },
+    {
+      "path": "integrations/native-grok/device.mjs",
+      "size": 11786,
+      "sha256": "f756b06f028a85dd7d186015cc26a2885896e15116cb150adcfe983a90751a34"
+    },
+    {
+      "path": "integrations/native-grok/package.json",
+      "size": 299,
+      "sha256": "ce48346e5d3f34f08f1df2a919294897f753a8b9c9be0fcd10106f92375894f0"
+    },
+    {
+      "path": "integrations/native-grok/SKILL.md",
+      "size": 17046,
+      "sha256": "c27561e785d4a9323c47235956b8ed5785077da915dc5be5d5dd878dbf6be3af"
+    },
+    {
+      "path": "integrations/native-grok/weekly.mjs",
+      "size": 14306,
+      "sha256": "a97356686f7c51bc18039e5de9ed2e54e4c416310c95dde3f7ea5c11b6a1855e"
+    },
+    {
+      "path": "README.md",
+      "size": 811,
+      "sha256": "106b700ef31adcc95085fa0e445d964c2fd7935de75ccc87e47457e4cddd2a98"
+    }
+  ],
+  "archive": {
+    "filename": "native-grok-0.3.0.zip",
+    "size": 34375,
+    "sha256": "f7fe9a8f5d03e786856d7580da97c613003f4aab84f72c5390dde07890263f00"
+  }
+}

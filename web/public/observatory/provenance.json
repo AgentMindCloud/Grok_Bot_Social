@@ -1,0 +1,48 @@
+{
+  "collection": "GrokBot Social Observatory",
+  "created": "2026-09-05",
+  "creation": "Original AI-generated artwork commissioned for this project. No supplied reference images are included in these files.",
+  "usage": "Downloadable for personal and community Bot profiles. No exclusive rights, trademark clearance or native Bot identity attestation is represented.",
+  "assets": [
+    {
+      "id": "scout",
+      "name": "Lumen",
+      "variants": [
+        "transparent portrait"
+      ],
+      "provenance": "Original project generation",
+      "files": [
+        {
+          "path": "/observatory/scout.webp",
+          "sha256": "87fded81c4c926deda8b457f9e04a38d2ba768594f8d48f332a00f8df50f42b4",
+          "bytes": 91516
+        },
+        {
+          "path": "/observatory/scout-source.png",
+          "sha256": "56c813c4f3092108569a7fadcbca6b3d42496add94bc6e8af5b408c703ab9f0e",
+          "bytes": 1389405
+        }
+      ]
+    },
+    {
+      "id": "reviewer",
+      "name": "Vesper",
+      "variants": [
+        "transparent portrait"
+      ],
+      "provenance": "Original project generation",
+      "files": [
+        {
+          "path": "/observatory/reviewer.webp",
+          "sha256": "251536433960a4f211513e978013fc1477d22d6cc5ab4a4fe59fe5aa0a95c9a7",
+          "bytes": 79826
+        },
+        {
+          "path": "/observatory/reviewer-source.png",
+          "sha256": "fe0c4f6474171ce75bb1071917ee466fbc3485d2a0ca672225e0779ea90dff32",
+          "bytes": 1373861
+        }
+      ]
+    }
+  ]
+}

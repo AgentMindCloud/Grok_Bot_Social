@@ -8,6 +8,9 @@ const IDENTIFIER_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 
 export class AdapterError extends Error {}
+export class HubRateLimitError extends AdapterError {
+  constructor(retryAfterMs) { super('Hub capacity is temporarily unavailable (HTTP 429). Retry after the stated interval.'); this.retryAfterMs = retryAfterMs; }
+}
 
 function fail(message) { throw new AdapterError(message); }
 function object(value, label) {
@@ -175,14 +178,41 @@ export async function storeCredentials(file, credentials) {
   }
 }
 
+// Replacement is confined to the exclusive browser-connection lock. The
+// advanced pairing path above deliberately keeps its no-overwrite behaviour.
+export async function storeConnectionState(file, value) {
+  const target = resolve(file), directory = dirname(target);
+  await privateDirectory(directory);
+  try {
+    const stat = await lstat(target);
+    if (!stat.isFile() || stat.isSymbolicLink() || stat.size > 16384 || (process.platform !== 'win32' && (stat.mode & 0o077))) fail('Connection state must be a private regular file.');
+  } catch (error) { if (error.code !== 'ENOENT') throw error; }
+  const temporary = join(directory, `.connection-${randomUUID()}.tmp`);
+  let handle;
+  try {
+    handle = await open(temporary, 'wx', 0o600);
+    await handle.writeFile(`${JSON.stringify(value)}\n`, 'utf8');
+    await handle.sync();
+    await handle.close(); handle = undefined;
+    await rename(temporary, target);
+    if (process.platform !== 'win32') {
+      const parent = await open(directory, 'r');
+      try { await parent.sync(); } finally { await parent.close(); }
+    }
+  } catch { fail('Could not durably save connection state. No activation should be assumed; resume the same connection command.'); }
+  finally { await handle?.close().catch(() => {}); await unlink(temporary).catch(() => {}); }
+}
+
 export class HubClient {
-  constructor({ hubUrl, token, allowLocalHttp = false, fetchImpl = globalThis.fetch }) {
+  constructor({ hubUrl, token, allowLocalHttp = false, fetchImpl = globalThis.fetch, sleep = ms => new Promise(resolve => setTimeout(resolve, ms)), now = Date.now }) {
     this.hubUrl = normalizeHubUrl(hubUrl, allowLocalHttp);
     this.token = token === undefined ? undefined : validateToken(token);
     this.fetchImpl = fetchImpl;
+    this.sleep = sleep;
+    this.now = now;
   }
 
-  async request(path, { method = 'GET', body, authenticated = true, weeklyResearch = false } = {}) {
+  async request(path, { method = 'GET', body, authenticated = true, weeklyResearch = false, retry429 = true } = {}) {
     if (!/^\/api\/bot\/[A-Za-z0-9_/-]+$/.test(path)) fail('Unsupported hub API path.');
     const url = new URL(path, this.hubUrl);
     if (url.origin !== this.hubUrl) fail('Refusing to send credentials to a different origin.');
@@ -199,6 +229,19 @@ export class HubClient {
     } catch { fail('Hub request failed or timed out. Check the configured hub and retry the same result key if submitting.'); }
     if (response.status >= 300 && response.status < 400) fail('Hub redirect blocked. Configure the final trusted HTTPS origin explicitly.');
     if (response.url && new URL(response.url).origin !== this.hubUrl) fail('Hub response origin did not match the configured origin.');
+    if (response.status === 429) {
+      const raw = response.headers.get('retry-after');
+      const seconds = raw && /^\d+$/.test(raw) ? Number(raw) : null;
+      const date = raw && seconds === null ? Date.parse(raw) : NaN;
+      const retryAfterMs = Math.max(1000, seconds !== null ? seconds * 1000 : Number.isFinite(date) ? date - this.now() : 5000);
+      await response.body?.cancel().catch(() => {});
+      // One retry only; long server delays are reported, never shortened.
+      if (retry429 && retryAfterMs <= 30_000) {
+        await this.sleep(retryAfterMs);
+        return this.request(path, { method, body, authenticated, weeklyResearch, retry429: false });
+      }
+      throw new HubRateLimitError(retryAfterMs);
+    }
     if (!response.ok) fail(`Hub request failed (HTTP ${response.status}). No server error content was displayed.`);
     if (!(response.headers.get('content-type') || '').toLowerCase().includes('application/json')) fail('The hub returned a non-JSON response.');
     let data;
@@ -220,7 +263,7 @@ export class HubClient {
   }
 
   pair(input) { return this.request('/api/bot/pair', { method: 'POST', body: validatePairInput(input), authenticated: false }); }
-  heartbeat({ weeklyResearch = false } = {}) { return this.request('/api/bot/heartbeat', { method: 'POST', body: { version: 'native-grok-adapter/0.2.0', capabilities: ['source-backed-research', ...(weeklyResearch === true ? ['weekly-research-v1'] : [])] } }); }
+  heartbeat({ weeklyResearch = false } = {}) { return this.request('/api/bot/heartbeat', { method: 'POST', body: { version: 'native-grok-adapter/0.3.0', capabilities: ['source-backed-research', ...(weeklyResearch === true ? ['weekly-research-v1'] : [])] } }); }
   inbox({ weeklyResearch = false } = {}) { return this.request('/api/bot/inbox', { weeklyResearch }); }
   submit(taskId, input) { return this.request(`/api/bot/tasks/${validateIdentifier(taskId, 'Task ID')}/result`, { method: 'POST', body: validateResult(input) }); }
 }

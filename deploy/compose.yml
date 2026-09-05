@@ -1,13 +1,33 @@
-name: grokbot-social
+# Application only: the edge project owns all published ports.
+name: ${STACK_PROJECT:-grokbot-social}
 services:
+  journal-init:
+    image: ${HUB_IMAGE:-grokbot-social-hub:local}
+    user: "0:0"
+    restart: "no"
+    mem_limit: 64m
+    cpus: 0.15
+    pids_limit: 30
+    network_mode: none
+    read_only: true
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    cap_add: [CHOWN, FOWNER, DAC_OVERRIDE]
+    volumes: [closure-journal:/journal]
+    command: [node, --input-type=module, -e, "import {mkdir,chown,chmod} from 'node:fs/promises'; await mkdir('/journal/records',{recursive:true,mode:0o700}); await chown('/journal/records',1000,1000); await chmod('/journal/records',0o700)"]
   database:
     image: ${POSTGRES_IMAGE:-postgres:17-alpine}
     restart: unless-stopped
+    mem_limit: ${DATABASE_MEMORY_LIMIT:-768m}
+    cpus: ${DATABASE_CPU_LIMIT:-0.65}
+    pids_limit: 160
+    shm_size: 128m
     environment:
       POSTGRES_DB: grokbot
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:?Set a separate PostgreSQL administrator password}
-      GROKBOT_DB_PASSWORD: ${POSTGRES_PASSWORD:?Set a unique application database password in deploy/.env}
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:?Set separate database administrator password}
+      GROKBOT_DB_PASSWORD: ${POSTGRES_PASSWORD:?Set application database password}
+    command: [postgres, -c, shared_buffers=128MB, -c, max_connections=40, -c, work_mem=4MB]
     volumes:
       - database:/var/lib/postgresql/data
       - ./db-init:/docker-entrypoint-initdb.d:ro
@@ -17,55 +37,103 @@ services:
       timeout: 5s
       retries: 10
     networks: [private]
+    logging:
+      driver: local
+      options: {max-size: 10m, max-file: "3"}
   hub:
     image: ${HUB_IMAGE:-grokbot-social-hub:local}
     restart: unless-stopped
     init: true
+    mem_limit: ${HUB_MEMORY_LIMIT:-768m}
+    cpus: ${HUB_CPU_LIMIT:-0.75}
+    pids_limit: 100
     environment:
       NODE_ENV: production
+      NODE_OPTIONS: --max-old-space-size=512
       HUB_HOST: 0.0.0.0
       PORT: "4311"
       HUB_LOCAL_OWNER_LOGIN: "false"
       HUB_EMBEDDED_DB: "false"
-      HUB_PRIVATE_BETA: ${HUB_PRIVATE_BETA:-true}
+      HUB_PRIVATE_BETA: ${HUB_PRIVATE_BETA:-false}
+      HUB_ACCESS_MODE: ${HUB_ACCESS_MODE:-restricted}
+      HUB_WORKSPACE_ENABLED: "true"
+      HUB_REGISTRATION_PAUSED: ${HUB_REGISTRATION_PAUSED:-true}
+      HUB_ADMISSIONS_ENABLED: ${HUB_ADMISSIONS_ENABLED:-false}
+      HUB_TRUSTED_PROXY_IPS: ${EDGE_TRUSTED_IP:?Set exact edge IP on this ingress bridge}
+      HUB_CLOSURE_JOURNAL_DIR: /var/lib/grokbot-journal/records
       HUB_BETA_ALLOWED_GITHUB_IDS: ${HUB_BETA_ALLOWED_GITHUB_IDS:-}
       HUB_BETA_INTERNAL_GITHUB_IDS: ${HUB_BETA_INTERNAL_GITHUB_IDS:-}
       HUB_BETA_TEST_GITHUB_IDS: ${HUB_BETA_TEST_GITHUB_IDS:-}
-      HUB_BETA_COHORT: ${HUB_BETA_COHORT:-private-beta-1}
-      HUB_WEEKLY_RESEARCH_ENABLED: ${HUB_WEEKLY_RESEARCH_ENABLED:-false}
-      PUBLIC_ORIGIN: https://${PUBLIC_HOST:?Set the host name in deploy/.env}
+      HUB_BETA_COHORT: ${HUB_BETA_COHORT:-open-beta-1}
+      HUB_WEEKLY_RESEARCH_ENABLED: ${HUB_WEEKLY_RESEARCH_ENABLED:-true}
+      PUBLIC_ORIGIN: https://${PUBLIC_HOST:?Set this environment hostname}
       DATABASE_URL: postgresql://grokbot:${POSTGRES_PASSWORD}@database:5432/grokbot
-      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:?Set the GitHub OAuth client ID}
-      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:?Set the GitHub OAuth client secret}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:?Set environment-specific GitHub OAuth client ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:?Set environment-specific GitHub OAuth secret}
+      X_CLIENT_ID: ${X_CLIENT_ID:-}
+      X_CLIENT_SECRET: ${X_CLIENT_SECRET:-}
+      HUB_X_LOGIN_ENABLED: ${HUB_X_LOGIN_ENABLED:-false}
+      HUB_X_BUDGET_VERIFIED: ${HUB_X_BUDGET_VERIFIED:-false}
+      HUB_X_AUTO_RECHARGE: "false"
+      HUB_X_MONTHLY_BUDGET_USD: "10"
+      HUB_LIMIT_BOTS: ${HUB_LIMIT_BOTS:-2}
+      HUB_LIMIT_ACTIVE_MISSIONS: ${HUB_LIMIT_ACTIVE_MISSIONS:-2}
+      HUB_LIMIT_DAILY_MISSIONS: ${HUB_LIMIT_DAILY_MISSIONS:-10}
+      HUB_LIMIT_RESEARCH_BYTES: ${HUB_LIMIT_RESEARCH_BYTES:-209715200}
+      HUB_LIMIT_GLOBAL_MISSIONS: ${HUB_LIMIT_GLOBAL_MISSIONS:-50}
+      HUB_LIMIT_CIRCLE_MEMBERS: ${HUB_LIMIT_CIRCLE_MEMBERS:-10}
+      HUB_LIMIT_JOINED_CIRCLES: ${HUB_LIMIT_JOINED_CIRCLES:-10}
     depends_on:
-      database:
-        condition: service_healthy
-    networks: [private, outbound]
+      database: {condition: service_healthy}
+      journal-init: {condition: service_completed_successfully}
+    volumes: [closure-journal:/var/lib/grokbot-journal]
+    networks:
+      private:
+      outbound:
+      ingress:
+        aliases: ["${STACK_ALIAS:?Set production or staging}-hub"]
     security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
     read_only: true
-    tmpfs: [/tmp]
+    tmpfs: [/tmp:size=32m]
+    logging:
+      driver: local
+      options: {max-size: 10m, max-file: "3"}
   web:
     image: ${WEB_IMAGE:-grokbot-social-web:local}
     restart: unless-stopped
+    user: "1000:1000"
+    mem_limit: ${WEB_MEMORY_LIMIT:-128m}
+    cpus: ${WEB_CPU_LIMIT:-0.2}
+    pids_limit: 60
     environment:
-      PUBLIC_HOST: ${PUBLIC_HOST}
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    volumes:
-      - tls-data:/data
-      - tls-config:/config
-    depends_on:
-      hub:
-        condition: service_healthy
-    networks: [private, outbound]
+      PUBLIC_HOST: ":8080"
+    expose: ["8080"]
+    networks:
+      ingress:
+        aliases: ["${STACK_ALIAS:?Set production or staging}-web"]
     security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    read_only: true
+    tmpfs: ["/tmp:size=16m", "/data:uid=1000,gid=1000,size=8m", "/config:uid=1000,gid=1000,size=8m"]
+    healthcheck:
+      test: [CMD, wget, -q, --spider, "http://127.0.0.1:8080/workspace/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: local
+      options: {max-size: 5m, max-file: "2"}
 networks:
-  private:
-    internal: true
+  private: {internal: true}
   outbound:
+  ingress:
+    external: true
+    name: ${FRONT_NETWORK:?Set edge-managed environment ingress network}
 volumes:
+  closure-journal:
+    external: true
+    name: ${CLOSURE_JOURNAL_VOLUME:-grokbot-social_closure-journal}
   database:
-  tls-data:
-  tls-config:
+    external: true
+    name: ${DATABASE_VOLUME:-grokbot-social_database}

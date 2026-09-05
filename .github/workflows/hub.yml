@@ -19,13 +19,8 @@ jobs:
           POSTGRES_USER: grokbot_test
           POSTGRES_PASSWORD: ephemeral-ci-only
           POSTGRES_DB: grokbot_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U grokbot_test"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U grokbot_test" --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -35,91 +30,51 @@ jobs:
           cache-dependency-path: |
             web/package-lock.json
             hub/package-lock.json
-      - name: Install hub dependencies
-        working-directory: hub
-        run: npm ci --no-audit --no-fund
-      - name: Typecheck hub
-        working-directory: hub
-        run: npm run build
-      - name: Verify actual PostgreSQL transactions and adapter integration
-        working-directory: hub
-        run: npm test
+      - run: npm ci --prefix hub --no-audit --no-fund
+      - run: npm run build --prefix hub
+      - name: Test PostgreSQL authorization, quota races, migration and device recovery
+        run: npm test --prefix hub
         env:
           TEST_DATABASE_URL: postgresql://grokbot_test:ephemeral-ci-only@127.0.0.1:5432/grokbot_test
-      - name: Native adapter checks
-        run: npm test --prefix integrations/native-grok
-      - name: Install frontend dependencies
-        working-directory: web
-        run: npm ci --no-audit --no-fund
-      - name: Verify advisory gate failure handling
-        run: node scripts/security-audit.mjs --self-test
-      - name: Audit production dependencies
-        run: node scripts/security-audit.mjs web hub
+      - run: npm test --prefix integrations/native-grok
+      - run: node --test deploy/backup-retention.test.mjs
+      - run: npm ci --prefix web --no-audit --no-fund
+      - run: node scripts/security-audit.mjs --self-test
+      - run: node scripts/security-audit.mjs web hub
         env:
           GITHUB_TOKEN: ${{ github.token }}
-      - name: Build public frontend
-        working-directory: web
-        run: npm run build
+      - name: Build static export and versioned native package
+        run: npm run build --prefix web
         env:
           NEXT_TELEMETRY_DISABLED: "1"
+      - name: Verify portable archive with standard ZIP reader
+        run: |
+          python3 - <<'PY'
+          import zipfile,json,hashlib
+          base='web/public/resources/native-grok-0.3.0'
+          manifest=json.load(open(base+'.manifest.json'))
+          with zipfile.ZipFile(base+'.zip') as archive:
+              assert archive.testzip() is None
+              for entry in manifest['files']:
+                  assert hashlib.sha256(archive.read(entry['path'])).hexdigest()==entry['sha256']
+          assert hashlib.sha256(open(base+'.zip','rb').read()).hexdigest()==manifest['archive']['sha256']
+          PY
   deployment:
-    timeout-minutes: 20
+    timeout-minutes: 25
     runs-on: ubuntu-latest
-    env:
-      PUBLIC_HOST: hub.example.com
-      POSTGRES_PASSWORD: ephemeral_ci_hex_0123456789abcdef0123456789
-      POSTGRES_ADMIN_PASSWORD: ephemeral_ci_admin_different_0123456789abcdef
-      GITHUB_CLIENT_ID: ci-startup-check-only
-      GITHUB_CLIENT_SECRET: ci-placeholder-no-account-access
-      HUB_PRIVATE_BETA: "true"
-      HUB_BETA_ALLOWED_GITHUB_IDS: "123"
-      HUB_BETA_INTERNAL_GITHUB_IDS: "123"
-      HUB_WEEKLY_RESEARCH_ENABLED: "true"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-      - name: Validate deployment without printing resolved environment
-        run: docker compose -f deploy/compose.yml config --quiet
-      - name: Build production images
-        run: docker compose -f deploy/compose.yml -f deploy/compose.build.yml build
-      - name: Validate Caddy ingress configuration
-        run: docker compose -f deploy/compose.yml run --rm --no-deps web caddy validate --config /etc/caddy/Caddyfile
-      - name: Verify production API startup and disabled developer login
-        run: |
-          docker compose -f deploy/compose.yml up -d --wait database hub
-          docker compose -f deploy/compose.yml exec -T hub node -e "const assert = require('node:assert/strict'); fetch('http://127.0.0.1:4311/api/session').then(r=>{assert.equal(r.status,200);return r.json()}).then(s=>{assert.equal(s.authenticated,false);assert.equal(s.localLoginEnabled,false);assert.equal(s.githubLoginEnabled,true);console.log('Production session defaults verified')}).catch(e=>{console.error(e);process.exit(1)})"
-      - name: Verify restricted database role
-        run: >-
-          docker compose -f deploy/compose.yml exec -T hub node --input-type=module -e
-          "import assert from 'node:assert/strict'; import pg from 'pg'; const db=new pg.Client({connectionString:process.env.DATABASE_URL}); await db.connect(); const {rows}=await db.query('SELECT rolsuper,rolcreatedb,rolcreaterole,rolreplication FROM pg_roles WHERE rolname=current_user'); for (const value of Object.values(rows[0])) assert.equal(value,false); await db.end(); console.log('Restricted application database role verified')"
-      - name: Verify static site and API through Caddy
-        run: |
-          docker compose -f deploy/compose.yml run -d --no-deps --name grokbot-social-ci-web -p 127.0.0.1:18080:8080 -e PUBLIC_HOST=:8080 web
-          node deploy/smoke.mjs
-      - name: Package the tested runtime for small VPS deployment
-        run: |
-          bash -n deploy/package-release.sh deploy/load-release.sh
-          bash deploy/package-release.sh "$GITHUB_SHA" dist-release
-          for service in hub web postgres; do
-            ref="grokbot-social-$service:sha-$GITHUB_SHA"
-            docker image rm "$ref"
-            if docker image inspect "$ref" >/dev/null 2>&1; then
-              echo 'Release tag must be absent before the import check' >&2
-              exit 1
-            fi
-          done
-          cd dist-release
-          sha256sum --check --strict SHA256SUMS
-          mv deployment build-metadata
-          tar -xzf deployment.tar.gz
-          cd ..
-          bash dist-release/deployment/load-release.sh "$GITHUB_SHA"
-          docker compose --env-file dist-release/deployment/release.env -f dist-release/deployment/compose.yml config --quiet
-      - name: Preserve the accepted runtime images
+        with: {node-version: "22"}
+      - name: Verify deployment scripts
+        run: for script in deploy/ci-smoke.sh deploy/package-release.sh deploy/load-release.sh; do bash -n "$script"; done
+      - name: Build and verify separate edge, production and synthetic staging
+        run: bash deploy/ci-smoke.sh
+      - name: Verify runtime archive checksums
+        working-directory: dist-release
+        run: sha256sum --check --strict SHA256SUMS
+      - uses: actions/upload-artifact@v4
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@v4
         with:
           name: runtime-${{ github.sha }}
           path: |
@@ -128,11 +83,6 @@ jobs:
             dist-release/SHA256SUMS
           retention-days: 7
           compression-level: 0
-      - name: Clean up disposable CI containers
-        if: always()
-        run: |
-          docker rm -f grokbot-social-ci-web || true
-          docker compose -f deploy/compose.yml down --volumes
   publish:
     needs: [verify, deployment]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -143,10 +93,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
-        with:
-          name: runtime-${{ github.sha }}
-          path: dist-release
-      - name: Publish the verified runtime bundle
+        with: {name: "runtime-${{ github.sha }}", path: dist-release}
+      - name: Publish tested runtime bundle; production deployment is separate
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}

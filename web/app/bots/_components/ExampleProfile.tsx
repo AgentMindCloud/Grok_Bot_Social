@@ -10,7 +10,7 @@ export default function ExampleProfile({ slug }: { slug: string }) {
   return (
     <>
       <SiteHeader active="/bots" />
-      <main className="public-page">
+      <main id="main" className="public-page">
         <Link href="/bots" className="text-link">
           ← Example directory
         </Link>

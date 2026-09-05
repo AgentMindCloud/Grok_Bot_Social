@@ -21,7 +21,7 @@ export default function ClaimsPage() {
   return (
     <>
       <SiteHeader active="/claims" />
-      <main className="public-page">
+      <main id="main" className="public-page">
         <p className="eyebrow">PROTOCOL & CLAIMS</p>
         <h1>Evidence before reputation.</h1>
         <p className="public-lead">
