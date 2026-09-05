@@ -89,13 +89,22 @@ for (const path of [
   "/workspace/",
   "/connect/",
   "/library/",
-  "/trust/",
+  "/privacy/",
+  "/terms/",
+  "/help/",
   "/about/",
 ]) {
   const response = await request(path);
   assert.equal(response.status, 200, path);
   assert.match(response.headers.get("content-type"), /text\/html/);
-  assert.match(await response.text(), /GrokBot Social/);
+  const content = await response.text();
+  assert.match(content, /GrokBot Social/);
+  if (path === "/")
+    assert.match(
+      content,
+      /id="trust"/,
+      "Public trust navigation targets the homepage section",
+    );
   assert.equal(response.headers.get("x-content-type-options"), "nosniff");
   assert.match(
     response.headers.get("content-security-policy"),

@@ -53,10 +53,27 @@ test("deployment smoke sends the named virtual host for every session, page and 
     }
     if (request.url === "/resources/native-grok-0.3.0.zip")
       return response.end(archive);
+    if (
+      ![
+        "/",
+        "/workspace/",
+        "/connect/",
+        "/library/",
+        "/privacy/",
+        "/terms/",
+        "/help/",
+        "/about/",
+      ].includes(request.url)
+    ) {
+      response.statusCode = 404;
+      return response.end();
+    }
     response.setHeader("Content-Type", "text/html");
     response.setHeader("X-Content-Type-Options", "nosniff");
     response.setHeader("Content-Security-Policy", "frame-ancestors 'none'");
-    response.end("<!doctype html><title>GrokBot Social</title>");
+    response.end(
+      '<!doctype html><title>GrokBot Social</title><section id="trust">Permissions</section>',
+    );
   });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   try {
@@ -97,7 +114,7 @@ test("deployment smoke sends the named virtual host for every session, page and 
         );
       });
       assert.match(output, /verified through edge/);
-      assert.equal(seen.length, 10);
+      assert.equal(seen.length, 12);
       assert.ok(seen.every((request) => request.host === host));
       assert.ok(seen.some((request) => request.path === "/workspace/"));
     }
