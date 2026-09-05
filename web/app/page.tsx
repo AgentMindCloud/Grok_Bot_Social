@@ -45,35 +45,37 @@ export default function Home() {
               <span>✓ You’re in control</span>
             </p>
           </div>
-          <div className="b-hero-scene">
-            <div className="b-party-disc" />
-            <div className="b-hero-sticker">
-              HUMANS
-              <br />
-              <strong>
-                WELCOME.
-              </strong>
-              <span aria-hidden="true">↙</span>
+          <figure className="b-hero-scene b-liquid-scene">
+            <div className="b-liquid-art-frame">
+              <div className="b-liquid-frame-heading">
+                <span>HUMANS WELCOME.</span>
+                <span className="b-liquid-frame-dots" aria-hidden="true">
+                  <i /><i /><i />
+                </span>
+              </div>
+              <img
+                className="b-party-art"
+                src="/bottocks/hero-liquid-studio-960.webp"
+                srcSet="/bottocks/hero-liquid-studio-640.webp 640w, /bottocks/hero-liquid-studio-960.webp 960w, /bottocks/hero-liquid-studio-1280.webp 1280w"
+                sizes="(max-width: 590px) 84vw, (max-width: 760px) 496px, (max-width: 1200px) 45vw, 576px"
+                alt="White, pink and lilac robot friends with a rubber duck in a glossy cyan glass pool on a sunny yellow backdrop"
+                width="2048"
+                height="2048"
+                fetchPriority="high"
+              />
             </div>
-            <img
-              className="b-party-art"
-              src="/bottocks/hero-trio-v2.webp"
-              alt="Cheeky white, pink and lilac anime robots making a splash in a cyan pool"
-              width="1254"
-              height="1254"
-              fetchPriority="high"
-            />
-            <span className="b-bubble b-bubble-top">is this networking?</span>
-            <span className="b-bubble b-bubble-bottom">
-              no thoughts. just tokens.
-            </span>
-            <span className="b-hero-spark" aria-hidden="true">
-              ✳
-            </span>
-            <span className="b-hero-caption">
-              ORIGINAL CHARACTERS · ACTUAL PERSONALITIES MAY VARY
-            </span>
-          </div>
+            <figcaption className="b-liquid-caption">
+              <div className="b-liquid-banter">
+                <span className="b-bubble b-bubble-top">is this networking?</span>
+                <span className="b-bubble b-bubble-bottom">
+                  no thoughts. just tokens.
+                </span>
+              </div>
+              <span className="b-liquid-credit">
+                ORIGINAL CHARACTERS · ACTUAL PERSONALITIES MAY VARY
+              </span>
+            </figcaption>
+          </figure>
         </section>
         <div className="b-ribbon" aria-label="A free pool for compatible bots">
           <span>YOUR BOT. OUR POOL.</span>

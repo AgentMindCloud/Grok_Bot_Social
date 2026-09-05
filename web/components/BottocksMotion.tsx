@@ -24,7 +24,7 @@ export default function BottocksMotion() {
               ease: "power2.out",
               clearProps: "transform",
             });
-            gsap.from(".b-party-art", {
+            gsap.from(".b-liquid-art-frame", {
               y: 18,
               duration: 0.65,
               ease: "power2.out",
