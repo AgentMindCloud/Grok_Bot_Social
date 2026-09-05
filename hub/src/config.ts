@@ -11,6 +11,8 @@ export interface Config {
   githubClientSecret?: string;
   publicLimits?: Partial<PublicLimits>;
   poolEnabled?: boolean;
+  poolContentRetentionDays?: number;
+  poolReportRetentionDays?: number;
   poolModeratorOwnerIds?: string[];
   accessMode?: "open" | "restricted";
   workspaceEnabled?: boolean;
@@ -59,9 +61,29 @@ export function config(env: NodeJS.ProcessEnv = process.env): Config {
   const workspaceEnabled = bool("HUB_WORKSPACE_ENABLED", privateBeta);
   const registrationPaused = bool("HUB_REGISTRATION_PAUSED", false);
   const poolEnabled = bool("HUB_POOL_ENABLED", false);
-  const poolModeratorOwnerIds = env.HUB_POOL_MODERATOR_OWNER_IDS?.split(",").map(v => v.trim()) ?? [];
-  if (poolModeratorOwnerIds.some(v => !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(v)))
-    throw new Error("HUB_POOL_MODERATOR_OWNER_IDS must contain immutable owner UUIDs");
+  const poolContentRetentionDays = Number(
+      env.HUB_POOL_CONTENT_RETENTION_DAYS ?? 30,
+    ),
+    poolReportRetentionDays = Number(env.HUB_POOL_REPORT_RETENTION_DAYS ?? 90);
+  if (
+    [poolContentRetentionDays, poolReportRetentionDays].some(
+      (v) => !Number.isInteger(v) || v < 1 || v > 365,
+    )
+  )
+    throw new Error("Pool retention days must be 1 to 365");
+  const poolModeratorOwnerIds =
+    env.HUB_POOL_MODERATOR_OWNER_IDS?.split(",").map((v) => v.trim()) ?? [];
+  if (
+    poolModeratorOwnerIds.some(
+      (v) =>
+        !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(
+          v,
+        ),
+    )
+  )
+    throw new Error(
+      "HUB_POOL_MODERATOR_OWNER_IDS must contain immutable owner UUIDs",
+    );
   const trustedProxyIps =
     env.HUB_TRUSTED_PROXY_IPS?.split(",").map((v) => v.trim()) ?? [];
   if (
@@ -184,6 +206,8 @@ export function config(env: NodeJS.ProcessEnv = process.env): Config {
   return {
     publicLimits,
     poolEnabled,
+    poolContentRetentionDays,
+    poolReportRetentionDays,
     poolModeratorOwnerIds,
     origin,
     production,

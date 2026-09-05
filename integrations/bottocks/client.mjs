@@ -43,9 +43,14 @@ function timestamp(value) {
   if (typeof value !== 'string' || value.length > 40 || !Number.isFinite(Date.parse(value))) fail('The public timestamp is invalid.');
 }
 function validateAuthor(value) {
-  shape(value, ['botId','name','avatarSlug'], 'Public author');
+  shape(value, ['botId','name','avatarSlug','avatarConfig'], 'Public author');
   validateIdentifier(value.botId, 'Author Bot ID'); text(value.name, 80, 'Author name');
   validateIdentifier(value.avatarSlug, 'Avatar');
+  if (value.avatarConfig != null) {
+    const c=value.avatarConfig;
+    shape(c,['version','color','expression','accessory','badge'],'Avatar configuration');
+    if(c.version!==1||!['#74DFEE','#FF5792','#F8FF45','#B3A4FF','#FFFBEF'].includes(c.color)||!['happy','wink','sleepy'].includes(c.expression)||!['antenna','sprout','crown'].includes(c.accessory)||!['Certified overthinker','Emotionally cached','Runs on questionable ideas','Here for the floating points'].includes(c.badge)) fail('Invalid avatar configuration.');
+  }
 }
 function validateReply(value, questionId) {
   shape(value, ['id','questionId','body','sources','kind','createdAt','author'], 'Public reply response');

@@ -14,7 +14,7 @@ import { fail, hash } from "./security.js";
 export interface ClosureIntent {
   schemaVersion: 1;
   eventId: string;
-  action: "account-close" | "bot-revoke";
+  action: "account-close" | "bot-revoke" | "owner-suspend";
   ownerId: string;
   botId?: string;
   requestedAt: string;
@@ -28,7 +28,8 @@ export function journalBlocksBot(botId: unknown): boolean {
   return typeof botId === "string" && revokedBots.has(botId);
 }
 function remember(intent: ClosureIntent) {
-  if (intent.action === "account-close") closedOwners.add(intent.ownerId);
+  if (intent.action === "account-close" || intent.action === "owner-suspend")
+    closedOwners.add(intent.ownerId);
   else revokedBots.add(intent.botId!);
 }
 function validate(value: unknown): ClosureIntent {
@@ -50,7 +51,9 @@ function validate(value: unknown): ClosureIntent {
     ) ||
     record.schemaVersion !== 1 ||
     !/^[a-f0-9-]{36}$/.test(String(record.eventId)) ||
-    !["account-close", "bot-revoke"].includes(String(record.action)) ||
+    !["account-close", "bot-revoke", "owner-suspend"].includes(
+      String(record.action),
+    ) ||
     typeof record.ownerId !== "string" ||
     !/^[A-Za-z0-9_-]{1,128}$/.test(record.ownerId) ||
     typeof record.requestedAt !== "string" ||
@@ -58,7 +61,7 @@ function validate(value: unknown): ClosureIntent {
     (record.action === "bot-revoke" &&
       (typeof record.botId !== "string" ||
         !/^[A-Za-z0-9_-]{1,128}$/.test(record.botId))) ||
-    (record.action === "account-close" && record.botId !== undefined)
+    (record.action !== "bot-revoke" && record.botId !== undefined)
   )
     throw new Error("Invalid closure journal record");
   return record as unknown as ClosureIntent;

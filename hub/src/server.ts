@@ -17,9 +17,13 @@ import {
   requireRecentAuthentication,
 } from "./auth.js";
 import { registerDevice } from "./device.js";
+import { registerAvatars } from "./avatars.js";
 import { registerPool } from "./pool.js";
 import { isIP } from "node:net";
-import { registerAccountLifecycle, replayClosureJournal } from "./account-lifecycle.js";
+import {
+  registerAccountLifecycle,
+  replayClosureJournal,
+} from "./account-lifecycle.js";
 import { ClosureJournal, journalBlocksBot } from "./closure-journal.js";
 import { runMaintenance, measureAdmissionPressure } from "./maintenance.js";
 import {
@@ -64,6 +68,9 @@ const botView = (r: Row) => ({
   runtime: r.runtime,
   status: r.status,
   trustLabel: "owner-paired" as const,
+  credentialScope: r.credential_scope,
+  avatarConfig: r.avatar_config ?? null,
+  avatarRevision: r.avatar_revision ?? 0,
   lastSeenAt: iso(r.last_seen_at),
   createdAt: iso(r.created_at),
 });
@@ -248,8 +255,14 @@ export async function createApp(db: Database, config: Config) {
   if ((config.trustedProxyIps ?? []).some((ip) => !isIP(ip)))
     throw new Error("Trusted proxies must be exact IP addresses");
   const publicLimits = resolvePublicLimits(config.publicLimits);
-  if (config.production && !config.closureJournalDir) throw new Error("Production requires persistent closure journal storage");
-  const closureJournal = config.closureJournalDir ? new ClosureJournal(config.closureJournalDir, config.production || process.platform !== "win32") : undefined;
+  if (config.production && !config.closureJournalDir)
+    throw new Error("Production requires persistent closure journal storage");
+  const closureJournal = config.closureJournalDir
+    ? new ClosureJournal(
+        config.closureJournalDir,
+        config.production || process.platform !== "win32",
+      )
+    : undefined;
   // A restored database is never exposed before durable erasure/revocation
   // intents have been replayed. Any corrupt/unavailable journal stops startup.
   if (closureJournal) await replayClosureJournal(db, closureJournal);
@@ -264,6 +277,19 @@ export async function createApp(db: Database, config: Config) {
     ajv: { customOptions: { removeAdditional: false } },
   });
   await app.register(cookie);
+  if (config.production)
+    app.addHook("onResponse", async (request, reply) => {
+      // Route templates only: never log URL queries, cookies, tokens, IDs or bodies.
+      console.info(
+        JSON.stringify({
+          event: "http.request",
+          method: request.method,
+          route: request.routeOptions.url ?? "unmatched",
+          status: reply.statusCode,
+          durationMs: Math.round(reply.elapsedTime),
+        }),
+      );
+    });
   let reconciliation: Promise<void> | undefined;
   const reconcile = () =>
     (reconciliation ??= reconcileMissions(db, config.maxAttempts).finally(
@@ -281,12 +307,13 @@ export async function createApp(db: Database, config: Config) {
   const maintenanceTimer = setInterval(() => {
     maintenance ??= (async () => {
       if (closureJournal) await replayClosureJournal(db, closureJournal, true);
-      return runMaintenance(
-        db,
-        config.production
+      return runMaintenance(db, {
+        contentRetentionDays: config.poolContentRetentionDays,
+        reportRetentionDays: config.poolReportRetentionDays,
+        ...(config.production
           ? { admissionPaused: await measureAdmissionPressure() }
-          : {},
-      );
+          : {}),
+      });
     })()
       .catch(() => console.error("Hub maintenance failed"))
       .finally(() => {
@@ -360,7 +387,10 @@ export async function createApp(db: Database, config: Config) {
     }
     return found;
   }
-  async function bot(request: FastifyRequest): Promise<Row> {
+  async function bot(
+    request: FastifyRequest,
+    scope: "private" | "public" = "private",
+  ): Promise<Row> {
     const auth = request.headers.authorization;
     if (!auth?.startsWith("Bearer gbs_") || auth.length > 200)
       return fail(401, "Bot token required");
@@ -374,10 +404,16 @@ export async function createApp(db: Database, config: Config) {
     requireActive(found);
     requireEligible(config, found.github_id);
     if (found.status !== "active") return fail(409, "Bot is paused");
+    if (scope === "private" && found.credential_scope === "pool-only")
+      return fail(403, "This credential is limited to public pool APIs");
     rate(request, `bot:${found.id}`, 1800);
     return found;
   }
-  async function lockedBot(tx: Queryable, authenticated: Row): Promise<Row> {
+  async function lockedBot(
+    tx: Queryable,
+    authenticated: Row,
+    scope: "private" | "public" = "private",
+  ): Promise<Row> {
     requireActive(
       (
         await tx.query("SELECT * FROM owners WHERE id=$1 FOR SHARE", [
@@ -399,6 +435,8 @@ export async function createApp(db: Database, config: Config) {
     requireActive(found);
     requireEligible(config, found.github_id);
     if (found.status !== "active") return fail(409, "Bot is paused");
+    if (scope === "private" && found.credential_scope === "pool-only")
+      return fail(403, "This credential is limited to public pool APIs");
     return found;
   }
   async function login(
@@ -423,11 +461,19 @@ export async function createApp(db: Database, config: Config) {
       requireActive(active);
       requireEligible(config, active.github_id);
       if (provider !== "local") {
-        const identity = providerUserId && (await tx.query(
-          "SELECT provider FROM provider_identities WHERE provider=$1 AND provider_user_id=$2 AND owner_id=$3",
-          [provider, providerUserId, active.id],
-        )).rows[0];
-        if (!identity) fail(403, "Sign-in identity changed. Use a currently linked provider and try again.");
+        const identity =
+          providerUserId &&
+          (
+            await tx.query(
+              "SELECT provider FROM provider_identities WHERE provider=$1 AND provider_user_id=$2 AND owner_id=$3",
+              [provider, providerUserId, active.id],
+            )
+          ).rows[0];
+        if (!identity)
+          fail(
+            403,
+            "Sign-in identity changed. Use a currently linked provider and try again.",
+          );
       }
       if (current.cookies[cookieName])
         await tx.query("DELETE FROM sessions WHERE id_hash=$1", [
@@ -588,14 +634,32 @@ export async function createApp(db: Database, config: Config) {
     cookieOptions,
   });
   registerDevice(app, db, config, { owner, checkOrigin, rate, botView, event });
-  registerPool(app, db, config, { owner, bot, lockedBot, rate });
-  registerAccountLifecycle(app, db, config, {
-    owner,
-    checkOrigin,
-    requireRecentAuthentication,
-    cookieName,
-    cookieOptions,
-  }, closureJournal);
+  registerAvatars(app, db, owner);
+  registerPool(
+    app,
+    db,
+    config,
+    {
+      owner,
+      bot: (request) => bot(request, "public"),
+      lockedBot: (tx, authenticated) => lockedBot(tx, authenticated, "public"),
+      rate,
+    },
+    closureJournal,
+  );
+  registerAccountLifecycle(
+    app,
+    db,
+    config,
+    {
+      owner,
+      checkOrigin,
+      requireRecentAuthentication,
+      cookieName,
+      cookieOptions,
+    },
+    closureJournal,
+  );
 
   app.get("/api/workspace", async (request) => {
     const found = await owner(request);
@@ -717,7 +781,7 @@ export async function createApp(db: Database, config: Config) {
     });
   });
   app.post("/api/bot/heartbeat", async (request) => {
-    const authenticated = await bot(request);
+    const authenticated = await bot(request, "public");
     const body = object(request.body ?? {}, ["version", "capabilities"]);
     if (body.version !== undefined) string(body.version, "Version", 100);
     if (body.capabilities !== undefined) {
@@ -727,7 +791,7 @@ export async function createApp(db: Database, config: Config) {
     }
     return db.transaction(async (tx) => {
       await lockAdmission(tx);
-      await lockedBot(tx, authenticated);
+      await lockedBot(tx, authenticated, "public");
       const result = await tx.query(
         "UPDATE bots SET last_seen_at=now() WHERE id=$1 RETURNING *",
         [authenticated.id],
@@ -745,7 +809,12 @@ export async function createApp(db: Database, config: Config) {
       object(request.body ?? {}, []);
       const botId = string((request.params as Row).id, "Bot id", 100);
       if (action === "revoke" && closureJournal) {
-        const owned = (await db.query("SELECT id FROM bots WHERE id=$1 AND owner_id=$2", [botId, found.id])).rows[0];
+        const owned = (
+          await db.query("SELECT id FROM bots WHERE id=$1 AND owner_id=$2", [
+            botId,
+            found.id,
+          ])
+        ).rows[0];
         if (!owned) fail(404, "Bot not found");
         await closureJournal.append("bot-revoke", found.id, botId);
       }
@@ -757,7 +826,10 @@ export async function createApp(db: Database, config: Config) {
           [action === "pause" ? "paused" : "revoked", botId, found.id],
         );
         if (!result.rows[0]) return fail(404, "Bot not found");
-        await tx.query("UPDATE pool_leases SET status='cancelled' WHERE bot_id=$1 AND status='leased'", [botId]);
+        await tx.query(
+          "UPDATE pool_leases SET status='cancelled' WHERE bot_id=$1 AND status='leased'",
+          [botId],
+        );
         if (action === "revoke") {
           const missions = await tx.query(
             "SELECT m.* FROM missions m WHERE m.status IN ('queued','running') AND EXISTS(SELECT 1 FROM tasks t WHERE t.mission_id=m.id AND t.bot_id=$1 AND t.status IN ('queued','leased')) ORDER BY m.id FOR UPDATE OF m",
@@ -822,7 +894,7 @@ export async function createApp(db: Database, config: Config) {
       await lockAdmission(tx);
       await assertActiveOwner(tx, found.id);
       const bots = await tx.query(
-        "SELECT id FROM bots WHERE id=ANY($1::text[]) AND owner_id=$2 AND status='active' ORDER BY id FOR UPDATE",
+        "SELECT id FROM bots WHERE id=ANY($1::text[]) AND owner_id=$2 AND status='active' AND credential_scope='legacy-private' ORDER BY id FOR UPDATE",
         [botIds, found.id],
       );
       if (bots.rows.length !== botIds.length)
@@ -871,7 +943,7 @@ export async function createApp(db: Database, config: Config) {
       await assertActiveOwner(tx, found.id);
       const ownBot = (
         await tx.query(
-          "SELECT * FROM bots WHERE id=$1 AND owner_id=$2 AND status='active' FOR UPDATE",
+          "SELECT * FROM bots WHERE id=$1 AND owner_id=$2 AND status='active' AND credential_scope='legacy-private' FOR UPDATE",
           [botId, found.id],
         )
       ).rows[0];

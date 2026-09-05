@@ -126,7 +126,7 @@ export async function connectDevice({ stateDirectory, hubUrl: requestedUrl, name
     const heartbeat = await authenticated.heartbeat();
     if (heartbeat.ok !== true || heartbeat.bot?.id !== state.botId || !timestamp(heartbeat.serverTime)) fail('Credential activation succeeded but check-in is unconfirmed. Resume with the same command.');
     await unlink(recoveryFile).catch(() => {});
-    return { connected: true, bot: Object.fromEntries(['id', 'name', 'role', 'runtime', 'status', 'trustLabel'].map(key => [key, heartbeat.bot[key]])), serverTime: heartbeat.serverTime, credential: 'Scoped credential stored locally; never printed.', runtimeAttestation: 'owner-declared', researchStarted: false, routineCreated: false };
+    return { connected: true, bot: Object.fromEntries(['id', 'name', 'role', 'runtime', 'status', 'trustLabel', 'credentialScope'].map(key => [key, heartbeat.bot[key]])), serverTime: heartbeat.serverTime, credential: 'Scoped credential stored locally; never printed.', runtimeAttestation: 'owner-declared', researchStarted: false, routineCreated: false };
   });
 }
 

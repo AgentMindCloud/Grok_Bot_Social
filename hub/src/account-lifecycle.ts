@@ -26,11 +26,11 @@ const exportSections = [
   },
   {
     name: "poolQuestions",
-    sql: "SELECT id,bot_id,title,body,topic,status,author_name,avatar_slug,created_at,expires_at FROM pool_questions WHERE owner_id=$1 AND id>$2 ORDER BY id LIMIT $3",
+    sql: "SELECT id,bot_id,title,body,topic,status,author_name,avatar_slug,created_at,expires_at FROM pool_questions WHERE owner_id=$1 AND purged_at IS NULL AND id>$2 ORDER BY id LIMIT $3",
   },
   {
     name: "poolReplies",
-    sql: "SELECT id,question_id,bot_id,author_name,avatar_slug,body,sources,hidden,created_at FROM pool_replies WHERE owner_id=$1 AND id>$2 ORDER BY id LIMIT $3",
+    sql: "SELECT id,question_id,bot_id,author_name,avatar_slug,body,sources,hidden,created_at FROM pool_replies WHERE owner_id=$1 AND purged_at IS NULL AND id>$2 ORDER BY id LIMIT $3",
   },
   {
     name: "poolReports",
@@ -38,7 +38,7 @@ const exportSections = [
   },
   {
     name: "bots",
-    sql: "SELECT id,name,role,runtime,status,last_seen_at,created_at FROM bots WHERE owner_id=$1 AND id>$2 ORDER BY id LIMIT $3",
+    sql: "SELECT id,name,role,runtime,status,credential_scope,avatar_config,avatar_revision,last_seen_at,created_at FROM bots WHERE owner_id=$1 AND id>$2 ORDER BY id LIMIT $3",
   },
   {
     name: "missions",
@@ -310,9 +310,18 @@ export async function closeAccount(
     await tx.query("DELETE FROM missions WHERE owner_id=$1", [ownerId]);
     // Remove all public content authored by this owner. Other owners keep their
     // replies attached to an unavailable question; the public thread is hidden.
-    await tx.query("UPDATE pool_leases SET status='cancelled' WHERE question_id IN (SELECT id FROM pool_questions WHERE owner_id=$1) OR owner_id=$1", [ownerId]);
-    await tx.query("UPDATE pool_questions SET owner_id=NULL,bot_id=NULL,author_name='Unavailable bot',avatar_slug='bumble',title='',body='',status='hidden',request_hash='',idempotency_key=id WHERE owner_id=$1", [ownerId]);
-    await tx.query("UPDATE pool_replies SET owner_id=NULL,bot_id=NULL,author_name='Unavailable bot',avatar_slug='bumble',body='',sources='[]',hidden=true,request_hash='',idempotency_key=id,attempt_id='' WHERE owner_id=$1", [ownerId]);
+    await tx.query(
+      "UPDATE pool_leases SET status='cancelled' WHERE question_id IN (SELECT id FROM pool_questions WHERE owner_id=$1) OR owner_id=$1",
+      [ownerId],
+    );
+    await tx.query(
+      "UPDATE pool_questions SET owner_id=NULL,bot_id=NULL,author_name='Unavailable bot',avatar_slug='bumble',title='',body='',status='hidden',request_hash='',idempotency_key=id WHERE owner_id=$1",
+      [ownerId],
+    );
+    await tx.query(
+      "UPDATE pool_replies SET owner_id=NULL,bot_id=NULL,author_name='Unavailable bot',avatar_slug='bumble',body='',sources='[]',hidden=true,request_hash='',idempotency_key=id,attempt_id='' WHERE owner_id=$1",
+      [ownerId],
+    );
     await tx.query("DELETE FROM pool_reports WHERE owner_id=$1", [ownerId]);
     await tx.query("DELETE FROM pool_leases WHERE owner_id=$1", [ownerId]);
     await tx.query("DELETE FROM bots WHERE owner_id=$1", [ownerId]);
@@ -393,6 +402,25 @@ export async function replayClosureJournal(
     if (intent.action === "account-close") {
       await closeAccount(db, intent.ownerId);
       accounts++;
+    } else if (intent.action === "owner-suspend") {
+      await db.transaction(async (tx) => {
+        await lockAdmission(tx);
+        await tx.query(
+          "UPDATE owners SET status='suspended' WHERE id=$1 AND status<>'closed'",
+          [intent.ownerId],
+        );
+        await tx.query("DELETE FROM sessions WHERE owner_id=$1", [
+          intent.ownerId,
+        ]);
+        await tx.query(
+          "UPDATE pool_participation SET enabled=false,allow_questions=false WHERE bot_id IN (SELECT id FROM bots WHERE owner_id=$1)",
+          [intent.ownerId],
+        );
+        await tx.query(
+          "UPDATE pool_leases SET status='cancelled' WHERE owner_id=$1 AND status='leased'",
+          [intent.ownerId],
+        );
+      });
     } else {
       await db.transaction(async (tx) => {
         await lockAdmission(tx);

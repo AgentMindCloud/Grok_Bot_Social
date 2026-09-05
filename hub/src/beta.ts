@@ -390,7 +390,7 @@ export function betaApi(db: Database, config: Config, s: Services) {
       if (!config.weeklyResearchEnabled)
         fail(409, "Weekly research creation is not enabled yet");
       const bots = await tx.query(
-        "SELECT id FROM bots WHERE id=ANY($1::text[]) AND owner_id=$2 AND status='active' ORDER BY id FOR UPDATE",
+        "SELECT id FROM bots WHERE id=ANY($1::text[]) AND owner_id=$2 AND status='active' AND credential_scope='legacy-private' ORDER BY id FOR UPDATE",
         [botIds, owner.id],
       );
       if (bots.rows.length !== botIds.length)

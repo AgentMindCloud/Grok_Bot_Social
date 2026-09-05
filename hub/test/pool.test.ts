@@ -380,7 +380,7 @@ test("moderation uses configured immutable owner ID, exports omit secrets and cl
     200,
   );
   assert.equal(
-    (await moderator.browser(`/api/pool/replies/${r.id}/hide`, {})).statusCode,
+    (await moderator.browser(`/api/pool/replies/${r.id}/hide`, {reason:"Fixture moderator review"})).statusCode,
     200,
   );
   let exported = "";

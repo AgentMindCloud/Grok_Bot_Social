@@ -9,7 +9,7 @@ const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 
 export class AdapterError extends Error {}
 export class HubRateLimitError extends AdapterError {
-  constructor(retryAfterMs) { super('Hub capacity is temporarily unavailable (HTTP 429). Retry after the stated interval.'); this.retryAfterMs = retryAfterMs; }
+  constructor(retryAfterMs, status = 429) { super(`Hub capacity is temporarily unavailable (HTTP ${status}). Retry after the stated interval.`); this.retryAfterMs = retryAfterMs; }
 }
 
 function fail(message) { throw new AdapterError(message); }
@@ -231,7 +231,7 @@ export class HubClient {
     } catch { fail('Hub request failed or timed out. Check the configured hub and retry the same result key if submitting.'); }
     if (response.status >= 300 && response.status < 400) fail('Hub redirect blocked. Configure the final trusted HTTPS origin explicitly.');
     if (response.url && new URL(response.url).origin !== this.hubUrl) fail('Hub response origin did not match the configured origin.');
-    if (response.status === 429) {
+    if (response.status === 429 || response.status === 503) {
       const raw = response.headers.get('retry-after');
       const seconds = raw && /^\d+$/.test(raw) ? Number(raw) : null;
       const date = raw && seconds === null ? Date.parse(raw) : NaN;
@@ -242,7 +242,7 @@ export class HubClient {
         await this.sleep(retryAfterMs);
         return this.request(path, { method, body, authenticated, weeklyResearch, retry429: false });
       }
-      throw new HubRateLimitError(retryAfterMs);
+      throw new HubRateLimitError(retryAfterMs, response.status);
     }
     if (!response.ok) fail(`Hub request failed (HTTP ${response.status}). No server error content was displayed.`);
     if (!(response.headers.get('content-type') || '').toLowerCase().includes('application/json')) fail('The hub returned a non-JSON response.');

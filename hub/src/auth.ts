@@ -176,10 +176,10 @@ export function registerAuth(
   config: Config,
   s: Services,
 ) {
-  const stateCookie = (provider: Provider) =>
-    `${config.production ? "__Host-" : ""}${provider === "github" ? "gbs-oauth-state" : "gbs-x-oauth-state"}`;
-  const verifierCookie = (provider: Provider) =>
-    `${config.production ? "__Host-" : ""}gbs-${provider}-oauth-verifier`;
+  const stateCookie = (provider: Provider, state: string) =>
+    `${config.production ? "__Host-" : ""}${provider === "github" ? "gbs-oauth-state" : "gbs-x-oauth-state"}-${hash(state).slice(0, 16)}`;
+  const verifierCookie = (provider: Provider, state: string) =>
+    `${config.production ? "__Host-" : ""}gbs-${provider}-oauth-verifier-${hash(state).slice(0, 16)}`;
   const ready = async (provider: Provider) => {
     if (provider === "github") {
       if (!config.githubClientId || !config.githubClientSecret)
@@ -239,11 +239,11 @@ export function registerAuth(
         ],
       );
     });
-    reply.setCookie(stateCookie(provider), state, {
+    reply.setCookie(stateCookie(provider, state), state, {
       ...s.cookieOptions,
       maxAge: 600,
     });
-    reply.setCookie(verifierCookie(provider), verifier, {
+    reply.setCookie(verifierCookie(provider, state), verifier, {
       ...s.cookieOptions,
       maxAge: 600,
     });
@@ -261,6 +261,11 @@ export function registerAuth(
       `${config.origin}/api/auth/${provider}/callback`,
     );
     url.searchParams.set("state", state);
+    url.searchParams.set(
+      "code_challenge",
+      createHash("sha256").update(verifier).digest("base64url"),
+    );
+    url.searchParams.set("code_challenge_method", "S256");
     if (provider === "x") {
       url.searchParams.set("response_type", "code");
       url.searchParams.set("scope", "tweet.read users.read");
@@ -376,6 +381,7 @@ export function registerAuth(
                 client_secret: config.githubClientSecret,
                 code,
                 redirect_uri: redirect,
+                code_verifier: verifier,
               }),
             },
           )
@@ -469,9 +475,9 @@ export function registerAuth(
       )
         fail(400, "OAuth issuer rejected");
       const state = string(query.state, "OAuth state", 100);
-      const cookie = request.cookies[stateCookie(provider)];
-      reply.clearCookie(stateCookie(provider), s.cookieOptions);
-      reply.clearCookie(verifierCookie(provider), s.cookieOptions);
+      const cookie = request.cookies[stateCookie(provider, state)];
+      reply.clearCookie(stateCookie(provider, state), s.cookieOptions);
+      reply.clearCookie(verifierCookie(provider, state), s.cookieOptions);
       if (!cookie || !safeEqual(state, cookie))
         fail(400, "OAuth state rejected");
       const used = (
@@ -481,12 +487,9 @@ export function registerAuth(
         )
       ).rows[0];
       if (!used) fail(400, "OAuth state expired or already used");
-      const verifier = request.cookies[verifierCookie(provider)] ?? "";
-      // GitHub has no PKCE secret exchange; existing clients only carrying the state cookie remain compatible.
-      if (
-        provider === "x" &&
-        (!verifier || !safeEqual(hash(verifier), used.verifier_secret_hash))
-      )
+      const verifier = request.cookies[verifierCookie(provider, state)] ?? "";
+      // Every authorization transaction binds its PKCE verifier, including GitHub.
+      if (!verifier || !safeEqual(hash(verifier), used.verifier_secret_hash))
         fail(400, "OAuth verifier rejected");
       try {
         if (query.error !== undefined)

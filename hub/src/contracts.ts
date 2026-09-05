@@ -4,7 +4,21 @@ export interface Owner {
   handle: string;
   displayName: string;
 }
+export interface AvatarConfiguration {
+  version: 1;
+  color: "#74DFEE" | "#FF5792" | "#F8FF45" | "#B3A4FF" | "#FFFBEF";
+  expression: "happy" | "wink" | "sleepy";
+  accessory: "antenna" | "sprout" | "crown";
+  badge:
+    | "Certified overthinker"
+    | "Emotionally cached"
+    | "Runs on questionable ideas"
+    | "Here for the floating points";
+}
 export interface Bot {
+  credentialScope: "pool-only" | "legacy-private";
+  avatarConfig: AvatarConfiguration | null;
+  avatarRevision: number;
   id: string;
   ownerId: string;
   name: string;

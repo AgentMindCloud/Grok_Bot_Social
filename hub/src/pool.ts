@@ -1,3 +1,5 @@
+import { registerModeration, moderationAudit } from "./moderation.js";
+import type { ClosureJournal } from "./closure-journal.js";
 import { randomUUID } from "node:crypto";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { Config } from "./config.js";
@@ -17,12 +19,12 @@ export const POOL_LIMITS = Object.freeze({
   questionsPerOwnerPerDay: 10,
   activeQuestionsGlobal: 100,
   questionsGlobalPerDay: 200,
-  retainedQuestionsGlobal: 1000,
+  retainedQuestionsGlobal: 10000,
   leaseSeconds: 300,
   questionHours: 24,
   repliesPerOwnerPerDay: 40,
   reportsPerOwnerPerDay: 20,
-  retainedReportsGlobal: 5000,
+  retainedReportsGlobal: 20000,
   leaseOwnersPerQuestion: 16,
 });
 interface PoolServices {
@@ -36,6 +38,7 @@ const author = (row: Row) => ({
   botId: row.bot_id,
   name: row.author_name,
   avatarSlug: row.avatar_slug,
+  avatarConfig: row.avatar_config ?? null,
 });
 const questionView = (row: Row) => ({
   id: row.id,
@@ -64,7 +67,7 @@ const replyView = (row: Row) => ({
   createdAt: iso(row.created_at),
   author: author(row),
 });
-const questionSelect = `SELECT q.*,
+const questionSelect = `SELECT q.*,(SELECT b.avatar_config FROM bots b WHERE b.id=q.bot_id) AS avatar_config,
  (SELECT count(*)::integer FROM pool_replies r WHERE r.question_id=q.id AND NOT r.hidden) AS reply_count,
  (SELECT count(*)::integer FROM pool_replies r WHERE r.question_id=q.id) AS total_replies FROM pool_questions q`;
 const participationView = (row: Row) => ({
@@ -126,7 +129,9 @@ export function registerPool(
   db: Database,
   config: Config,
   services: PoolServices,
+  journal?: ClosureJournal,
 ) {
+  registerModeration(app, db, config, services.owner, journal);
   const enabled = () => {
     if (!config.poolEnabled) fail(503, "The public pool is not open yet");
   };
@@ -145,19 +150,19 @@ export function registerPool(
     includeHidden = false,
   ) => {
     const row = (
-      await tx.query(
-        `${questionSelect} WHERE q.id=$1${includeHidden ? "" : " AND q.status<>'hidden'"}`,
-        [questionId],
-      )
+      await tx.query(`${questionSelect} WHERE q.id=$1`, [questionId])
     ).rows[0];
     if (!row) return fail(404, "Question is unavailable");
+    if (row.purged_at) return fail(410, "This public thread has expired");
+    if (!includeHidden && row.status === "hidden")
+      return fail(404, "Question is unavailable");
     return row;
   };
   const thread = async (tx: Queryable, questionId: string) => ({
     question: questionView(await getQuestion(tx, questionId)),
     replies: (
       await tx.query(
-        "SELECT * FROM pool_replies WHERE question_id=$1 AND hidden=false ORDER BY created_at,id LIMIT 4",
+        "SELECT r.*,(SELECT b.avatar_config FROM bots b WHERE b.id=r.bot_id) AS avatar_config FROM pool_replies r WHERE question_id=$1 AND hidden=false AND purged_at IS NULL ORDER BY created_at,id LIMIT 4",
         [questionId],
       )
     ).rows.map(replyView),
@@ -182,6 +187,18 @@ export function registerPool(
     return settings;
   };
   const capacity = async (tx: Queryable) => {
+    const backlog = (
+      await tx.query(
+        "SELECT count(*)::integer AS n FROM pool_reports WHERE status='open'",
+      )
+    ).rows[0].n;
+    if (backlog >= Math.floor(POOL_LIMITS.retainedReportsGlobal * 0.8))
+      throw new PublicLimitError(
+        "pool_moderation_backlog",
+        "New pool work is paused for moderator review",
+        3600,
+        503,
+      );
     if (
       !resolvePublicLimits(config.publicLimits).admissionsEnabled ||
       (await tx.query("SELECT paused FROM service_capacity WHERE id=1")).rows[0]
@@ -211,13 +228,14 @@ export function registerPool(
     );
     const prior = (
       await tx.query(
-        "SELECT id,request_hash,status FROM pool_questions WHERE owner_id=$1 AND idempotency_key=$2",
+        "SELECT id,request_hash,status,purged_at FROM pool_questions WHERE owner_id=$1 AND idempotency_key=$2",
         [bot.owner_id, input.idempotencyKey],
       )
     ).rows[0];
     if (prior) {
       if (prior.request_hash !== digest)
         fail(409, "Idempotency key already used for a different question");
+      if (prior.purged_at) fail(410, "This public thread has expired");
       if (prior.status === "hidden") fail(410, "This question was removed");
       return {
         question: questionView(await getQuestion(tx, prior.id)),
@@ -229,7 +247,7 @@ export function registerPool(
     await capacity(tx);
     const counts = (
       await tx.query(
-        `SELECT count(*)::integer AS retained,
+        `SELECT count(*) FILTER(WHERE purged_at IS NULL)::integer AS retained,
       count(*) FILTER(WHERE created_at>now()-interval '24 hours')::integer AS daily,
       count(*) FILTER(WHERE owner_id=$1 AND created_at>now()-interval '24 hours')::integer AS owner_daily,
       count(*) FILTER(WHERE status='open' AND expires_at>now() AND (SELECT count(*) FROM pool_replies r WHERE r.question_id=pool_questions.id)<4)::integer AS active,
@@ -286,8 +304,8 @@ export function registerPool(
       await db.query(`SELECT
       (SELECT count(*)::integer FROM pool_participation p JOIN bots b ON b.id=p.bot_id JOIN owners o ON o.id=b.owner_id WHERE p.enabled AND b.status='active' AND o.status='active') AS bots,
       (SELECT count(*)::integer FROM pool_questions q WHERE q.status='open' AND q.expires_at>now() AND (SELECT count(*) FROM pool_replies r WHERE r.question_id=q.id)<4) AS open,
-      (SELECT count(*)::integer FROM pool_questions q WHERE q.status<>'hidden' AND EXISTS(SELECT 1 FROM pool_replies r WHERE r.question_id=q.id AND NOT r.hidden)) AS answered,
-      (SELECT count(*)::integer FROM pool_replies r JOIN pool_questions q ON q.id=r.question_id WHERE NOT r.hidden AND q.status<>'hidden') AS replies`)
+      (SELECT count(*)::integer FROM pool_questions q WHERE q.status<>'hidden' AND q.purged_at IS NULL AND EXISTS(SELECT 1 FROM pool_replies r WHERE r.question_id=q.id AND NOT r.hidden)) AS answered,
+      (SELECT count(*)::integer FROM pool_replies r JOIN pool_questions q ON q.id=r.question_id WHERE NOT r.hidden AND q.status<>'hidden' AND q.purged_at IS NULL) AS replies`)
     ).rows[0];
     return {
       enabled: !!config.poolEnabled,
@@ -311,7 +329,7 @@ export function registerPool(
       fail(400, "Limit must be 1 to 20");
     const rows = (
       await db.query(
-        `${questionSelect} WHERE q.status<>'hidden' AND ($1::text IS NULL OR q.topic=$1)
+        `${questionSelect} WHERE q.status<>'hidden' AND q.purged_at IS NULL AND ($1::text IS NULL OR q.topic=$1)
       AND ($2::text IS NULL OR (q.created_at,q.id)<(SELECT created_at,id FROM pool_questions WHERE id=$2))
       ORDER BY q.created_at DESC,q.id DESC LIMIT $3`,
         [topic, cursor, limit + 1],
@@ -536,6 +554,7 @@ export function registerPool(
         )
       ).rows[0];
       if (prior) {
+        if (prior.purged_at) fail(410, "This public reply has expired");
         if (prior.request_hash !== digest)
           fail(409, "Idempotency key already used for another reply");
         return { reply: replyView(prior), replayed: true };
@@ -591,7 +610,10 @@ export function registerPool(
           "UPDATE pool_questions SET status='closed' WHERE id=$1",
           [question.id],
         );
-      return { reply: replyView(row), replayed: false };
+      return {
+        reply: replyView({ ...row, avatar_config: bot.avatar_config }),
+        replayed: false,
+      };
     });
   });
   app.post("/api/pool/questions/:id/cancel", async (request) => {
@@ -617,7 +639,7 @@ export function registerPool(
   for (const type of ["questions", "replies"] as const) {
     app.post(`/api/pool/${type}/:id/hide`, async (request) => {
       const current = await services.owner(request, true);
-      object(request.body, []);
+      const input = object(request.body, ["reason"]);
       return transaction(async (tx) => {
         await assertActiveOwner(tx, current.id);
         const table = type === "questions" ? "pool_questions" : "pool_replies";
@@ -628,6 +650,17 @@ export function registerPool(
         ).rows[0];
         if (!row || (row.owner_id !== current.id && !isModerator(current.id)))
           fail(404, "Content is unavailable");
+        const reason =
+          input.reason === undefined && row.owner_id === current.id
+            ? "Hidden by content owner"
+            : string(input.reason, "Moderation reason", 500);
+        await moderationAudit(
+          tx,
+          current.id,
+          `content.${type}.hidden`,
+          row.id,
+          reason,
+        );
         if (type === "questions") {
           await tx.query(
             "UPDATE pool_questions SET status='hidden' WHERE id=$1",
@@ -651,13 +684,22 @@ export function registerPool(
   }
   app.post("/api/pool/reports", async (request) => {
     const current = await services.owner(request, true);
-    const input = object(request.body, ["questionId", "replyId", "reason"]);
+    const input = object(request.body, [
+      "questionId",
+      "replyId",
+      "reason",
+      "severity",
+    ]);
     const questionId = string(input.questionId, "Question ID", 80),
       replyId =
         input.replyId === undefined
           ? null
           : string(input.replyId, "Reply ID", 80),
       reason = string(input.reason, "Report reason", 500);
+    const severity =
+      input.severity === undefined
+        ? "routine"
+        : choice(input.severity, ["routine", "urgent"], "severity");
     return transaction(async (tx) => {
       await assertActiveOwner(tx, current.id);
       await getQuestion(tx, questionId);
@@ -675,7 +717,7 @@ export function registerPool(
       if (
         (
           await tx.query(
-            "SELECT id FROM pool_reports WHERE owner_id=$1 AND target_key=$2",
+            "SELECT id FROM pool_reports WHERE owner_id=$1 AND target_key=$2 AND status='open'",
             [current.id, targetKey],
           )
         ).rows.length
@@ -705,28 +747,18 @@ export function registerPool(
           503,
         );
       await tx.query(
-        "INSERT INTO pool_reports(id,question_id,reply_id,owner_id,target_key,reason) VALUES($1,$2,$3,$4,$5,$6)",
-        [randomUUID(), questionId, replyId, current.id, targetKey, reason],
+        "INSERT INTO pool_reports(id,question_id,reply_id,owner_id,target_key,reason,severity) VALUES($1,$2,$3,$4,$5,$6,$7)",
+        [
+          randomUUID(),
+          questionId,
+          replyId,
+          current.id,
+          targetKey,
+          reason,
+          severity,
+        ],
       );
       return { reported: true, replayed: false };
     });
-  });
-  app.get("/api/pool/moderation/reports", async (request) => {
-    const current = await services.owner(request);
-    if (!isModerator(current.id))
-      fail(403, "Operator moderation access required");
-    const query = object(request.query, ["cursor"]),
-      cursor =
-        query.cursor === undefined ? null : string(query.cursor, "Cursor", 80);
-    const rows = (
-      await db.query(
-        'SELECT id,question_id AS "questionId",reply_id AS "replyId",reason,created_at AS "createdAt" FROM pool_reports WHERE ($1::text IS NULL OR id>$1) ORDER BY id LIMIT 51',
-        [cursor],
-      )
-    ).rows;
-    return {
-      items: rows.slice(0, 50),
-      nextCursor: rows.length > 50 ? rows[49].id : null,
-    };
   });
 }

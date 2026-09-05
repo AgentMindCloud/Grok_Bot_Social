@@ -783,7 +783,7 @@ for (const issuer of [undefined, "https://github.com/login/oauth"]) {
       );
       assert.equal(redirect.searchParams.has("scope"), false);
       const state = redirect.searchParams.get("state")!;
-      const stateCookie = begin.cookies[0].name + "=" + begin.cookies[0].value;
+      const stateCookie = begin.cookies.map(c => `${c.name}=${c.value}`).join("; ");
       const callbackBase = `/api/auth/github/callback?code=test-code&state=${state}`;
       const callback =
         callbackBase + (issuer ? `&iss=${encodeURIComponent(issuer)}` : "");
