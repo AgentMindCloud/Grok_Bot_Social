@@ -38,6 +38,7 @@ jobs:
           TEST_DATABASE_URL: postgresql://grokbot_test:ephemeral-ci-only@127.0.0.1:5432/grokbot_test
       - run: npm test --prefix integrations/native-grok
       - run: node --test deploy/backup-retention.test.mjs
+      - run: node --test deploy/smoke.test.mjs
       - run: npm ci --prefix web --no-audit --no-fund
       - run: node scripts/security-audit.mjs --self-test
       - run: node scripts/security-audit.mjs web hub
