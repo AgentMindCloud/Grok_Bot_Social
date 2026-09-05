@@ -1,0 +1,1012 @@
+.lp-experience {
+  --lp-ink: #09254b;
+  --lp-cyan: #0cceee;
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  max-width: 1120px;
+  margin-inline: auto;
+  color: var(--lp-ink);
+  border: 1px solid #ffffffb0;
+  border-radius: 36px;
+  background: linear-gradient(132deg, #f6ffffed, #d9f7ffef 46%, #cdf1ffe8);
+  box-shadow:
+    0 30px 70px #083e6920,
+    inset 0 1px 0 #fff,
+    inset 0 -3px 0 #86d6ec66;
+  overflow: hidden;
+  font-family: inherit;
+}
+.lp-experience button {
+  font-family: inherit;
+  cursor: pointer;
+}
+.lp-experience button:focus-visible {
+  outline: 3px solid #154ad0;
+  outline-offset: 5px;
+}
+.lp-scene-topline {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 26px 0;
+}
+.lp-play-label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+.lp-play-label > span {
+  height: 7px;
+  width: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #12b9b0;
+  box-shadow:
+    0 0 0 5px #05c0ab13,
+    0 0 13px #00b7bc55;
+}
+.lp-water-note {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #416580;
+}
+.lp-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1000/300;
+  min-height: 260px;
+  margin-top: 5px;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: crosshair;
+}
+.lp-stage-aura {
+  position: absolute;
+  inset: 0 5% 8%;
+  background: radial-gradient(ellipse at 50% 50%, #25d6fa44, transparent 62%);
+  filter: blur(20px);
+}
+.lp-deck-grid {
+  position: absolute;
+  inset: 5% -20% -30%;
+  background-image:
+    linear-gradient(#70b6d513 1px, transparent 1px),
+    linear-gradient(90deg, #70b6d513 1px, transparent 1px);
+  background-size: 46px 46px;
+  transform: perspective(750px) rotateX(48deg) rotateZ(-8deg);
+  mask-image: radial-gradient(ellipse, #000, transparent 65%);
+}
+.lp-pool-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 22px 14px #0472a512);
+}
+.lp-caustic {
+  animation: lp-caustics 14s linear infinite alternate;
+  transform-origin: 50% 50%;
+}
+.lp-caustic-second {
+  animation: lp-caustics-reverse 18s ease-in-out infinite alternate;
+}
+.lp-water-ring {
+  transform-origin: 500px 330px;
+  animation: lp-water-ring 7s ease-in-out infinite;
+}
+.lp-water-ring-second {
+  animation-delay: -3.5s;
+}
+.lp-glint {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lp-sparkle 5s ease-in-out infinite;
+}
+.lp-glint-second {
+  animation-delay: -2.7s;
+}
+.lp-orbit-note {
+  position: absolute;
+  color: #21719c;
+  font-weight: 700;
+  font-size: clamp(9px, 1.3vw, 14px);
+  letter-spacing: -0.015em;
+  font-style: italic;
+  opacity: 0.6;
+  pointer-events: none;
+}
+.lp-note-one {
+  left: 10%;
+  top: 16%;
+  transform: rotate(-9deg);
+}
+.lp-note-two {
+  right: 8%;
+  top: 26%;
+  transform: rotate(8deg);
+}
+.lp-swimmer {
+  position: absolute;
+  width: 14%;
+  max-width: 146px;
+  min-width: 64px;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  will-change: transform;
+  filter: drop-shadow(0 8px 6px #003c7230);
+}
+.lp-swimmer-bob {
+  animation: lp-bob 3.2s ease-in-out infinite;
+  animation-delay: var(--lp-stroke-delay);
+}
+.lp-robot {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+.lp-robot-head {
+  filter: drop-shadow(0 3px 1px #0c244329);
+}
+.lp-stroke {
+  transform-box: view-box;
+  animation: lp-stroke 2.2s ease-in-out infinite;
+  animation-delay: var(--lp-stroke-delay);
+}
+.lp-stroke-left {
+  transform-origin: 61px 142px;
+}
+.lp-stroke-right {
+  transform-origin: 124px 142px;
+  animation-name: lp-stroke-right;
+}
+.lp-swimmer-name {
+  position: absolute;
+  bottom: 1%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #ffffffb3;
+  background: linear-gradient(#ffffffed, #cef3ffd4);
+  box-shadow: 0 3px 10px #032d7333;
+  backdrop-filter: blur(8px);
+  font-size: 11px;
+  font-weight: 900;
+  transform: translate(-50%, 65%);
+  color: #103351;
+  transition:
+    box-shadow 0.2s,
+    border-color 0.2s;
+}
+.lp-swimmer-selected .lp-swimmer-name {
+  border-color: #fff;
+  box-shadow:
+    0 0 0 3px #ffffff5e,
+    0 4px 12px #00469c40;
+}
+.lp-swimmer-selected:after {
+  content: "";
+  position: absolute;
+  bottom: 13%;
+  left: 10%;
+  width: 80%;
+  height: 15%;
+  border: 2px solid #eaffffcc;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #71faff66;
+  z-index: -1;
+}
+.lp-wake {
+  position: absolute;
+  inset: 68% -15% 1%;
+  z-index: -1;
+  transform: rotate(-4deg);
+}
+.lp-wake i {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 2px solid #d0ffffb8;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: lp-wake 2.4s linear infinite;
+  animation-delay: var(--lp-stroke-delay);
+  box-shadow: 0 2px 0 #10b9e24d;
+}
+.lp-wake i:nth-child(2) {
+  animation-delay: calc(var(--lp-stroke-delay) - 0.8s);
+}
+.lp-wake i:nth-child(3) {
+  animation-delay: calc(var(--lp-stroke-delay) - 1.6s);
+}
+.lp-duck {
+  position: absolute;
+  width: 8%;
+  max-width: 82px;
+  min-width: 30px;
+  z-index: 63;
+  animation: lp-duck-float 5s ease-in-out infinite;
+  filter: drop-shadow(0 5px 3px #0474a940);
+}
+.lp-duck-0 {
+  left: 69%;
+  top: 61%;
+  transform: rotate(-10deg);
+}
+.lp-duck-1 {
+  left: 25%;
+  top: 58%;
+  animation-delay: -1.7s;
+}
+.lp-duck-2 {
+  left: 49%;
+  top: 65%;
+  animation-delay: -3.5s;
+}
+.lp-duck-art {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.lp-duck > i {
+  position: absolute;
+  left: -8%;
+  width: 117%;
+  bottom: 5%;
+  height: 19%;
+  border-bottom: 2px solid #d6ffff9e;
+  border-radius: 50%;
+}
+.lp-tap-hint {
+  position: absolute;
+  bottom: 3%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #356a86;
+  font-weight: 700;
+  pointer-events: none;
+}
+.lp-tap-ripple {
+  position: absolute;
+  width: 95px;
+  height: 46px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 70;
+}
+.lp-tap-ripple i {
+  position: absolute;
+  inset: 0;
+  border: 2px solid #e9ffff;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #8fffff88;
+  animation: lp-tap-ripple 2s ease-out forwards;
+}
+.lp-tap-ripple i:nth-child(2) {
+  animation-delay: 0.18s;
+}
+.lp-tap-ripple span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  color: white;
+  transform: translate(-50%, -50%);
+  font-size: 25px;
+  animation: lp-tap-star 1s ease-out forwards;
+}
+.lp-console {
+  position: relative;
+  z-index: 80;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: -3px 26px 0;
+  padding: 9px 14px;
+  border: 1px solid #ffffffc9;
+  border-radius: 24px;
+  background: linear-gradient(120deg, #ffffffc4, #e9faff94);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 5px 20px #1c88a511;
+  backdrop-filter: blur(12px);
+}
+.lp-mode-control {
+  display: flex;
+  border: 1px solid #a4d4e7;
+  border-radius: 15px;
+  padding: 4px;
+  background: #c5e4ef8c;
+  box-shadow: inset 0 2px 5px #09437510;
+}
+.lp-mode-control button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: transparent;
+  padding: 10px 14px;
+  border-radius: 11px;
+  color: #365d77;
+  font-size: 12px;
+  font-weight: 850;
+  box-shadow: none;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+}
+.lp-mode-control .lp-active {
+  background: linear-gradient(#fff, #d6f9ff);
+  box-shadow:
+    0 2px 4px #155f7725,
+    inset 0 1px 0 #fff;
+  color: #064b79;
+}
+.lp-action {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 19px;
+  border-radius: 15px;
+  border: 1px solid #80eaff;
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1.1;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+  min-height: 48px;
+}
+.lp-action:before {
+  content: "";
+  position: absolute;
+  left: -25%;
+  top: -100%;
+  height: 250%;
+  width: 22%;
+  background: linear-gradient(90deg, transparent, #ffffff66, transparent);
+  transform: rotate(30deg);
+  pointer-events: none;
+  opacity: 0;
+}
+.lp-action:hover:before,
+.lp-action:focus-visible:before {
+  animation: lp-control-shine 0.8s ease-out 1;
+}
+.lp-action:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 7px 0 #006dab,
+    0 12px 22px #0b77b130;
+}
+.lp-action:active {
+  transform: translateY(1px);
+}
+.lp-splash-button {
+  color: #fff;
+  background: linear-gradient(
+    180deg,
+    #70edff 0%,
+    #08c1f0 14%,
+    #0574c4 85%,
+    #1b9cd6
+  );
+  border-color: #7ff1ff;
+  box-shadow:
+    inset 0 2px 1px #ffffffb3,
+    inset 0 -2px 0 #0144778c,
+    0 4px 0 #056197,
+    0 6px 13px #0b77b130;
+  text-shadow: 0 1px 2px #064584;
+}
+.lp-splash-button > span {
+  font-size: 18px;
+  margin-left: 4px;
+}
+.lp-duck-button {
+  background: linear-gradient(#fffbbd, #ffe67d 25%, #ffd242);
+  border-color: #fff6a8;
+  color: #694513;
+  box-shadow:
+    inset 0 2px 1px #fff,
+    0 4px 0 #d0a438,
+    0 7px 12px #99762414;
+}
+.lp-duck-button:hover {
+  box-shadow:
+    0 7px 0 #d0a438,
+    0 12px 22px #99762420;
+}
+.lp-duck-button:disabled {
+  cursor: default;
+  transform: none;
+  background: linear-gradient(#fffcd6, #ffed9e);
+  box-shadow:
+    inset 0 2px 1px #fff,
+    0 2px 0 #d0a438;
+  color: #7c652e;
+}
+.lp-duck-button:disabled:before {
+  animation: none;
+  display: none;
+}
+.lp-duck-icon {
+  font-size: 20px;
+  color: #c88609;
+  text-shadow: 1px 1px #fff1a5;
+}
+.lp-control-count {
+  font-size: 10px;
+  opacity: 0.8;
+  background: #ffffff70;
+  border-radius: 7px;
+  padding: 4px 5px;
+  margin-left: 2px;
+}
+.lp-reset {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #b2d5e5;
+  border-radius: 50%;
+  background: linear-gradient(#fff, #d1eff9);
+  color: #45718b;
+  box-shadow:
+    inset 0 2px 0 white,
+    0 3px 0 #9abed0;
+  transition: transform 0.2s;
+}
+.lp-reset:hover {
+  transform: rotate(-20deg);
+}
+.lp-character-bar {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  padding: 11px 30px 10px;
+}
+.lp-character-picker {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.lp-character-picker button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  background: transparent;
+  padding: 4px 9px 4px 4px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #44627a;
+  transition:
+    background 0.2s,
+    border 0.2s;
+}
+.lp-character-picker button > span {
+  display: block;
+  width: 34px;
+  height: 34px;
+  overflow: hidden;
+  border: 1px solid #ffffffdc;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--lp-character-color) 20%, #fff);
+  box-shadow: 0 2px 4px #124f7130;
+}
+.lp-character-picker .lp-robot-compact {
+  width: 44px;
+  max-width: none;
+  height: 52px;
+  margin: -2px -5px;
+}
+.lp-character-picker .lp-chosen {
+  background: #ffffffb8;
+  border-color: #c0e4f1;
+  color: #083a5f;
+  box-shadow: 0 3px 7px #3469810c;
+}
+.lp-character-quote {
+  border-left: 1px solid #93c6dc6b;
+  padding-left: 24px;
+  min-width: 0;
+}
+.lp-character-quote > span {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-weight: 800;
+  color: #4b809a;
+}
+.lp-character-quote p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.55;
+  color: #183e5c;
+}
+.lp-scene-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  align-items: center;
+  padding: 0 30px 13px;
+  font-size: 9px;
+  line-height: 1.5;
+  color: #456f87;
+}
+.lp-scene-foot p {
+  margin: 0;
+}
+.lp-scene-foot > span {
+  font-size: 9px;
+  text-align: right;
+}
+.lp-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.lp-experience[data-mode="race"] .lp-stroke {
+  animation-duration: 0.75s;
+}
+.lp-experience[data-mode="race"] .lp-swimmer-bob {
+  animation-duration: 1.1s;
+}
+.lp-experience[data-mode="race"] .lp-wake i {
+  animation-duration: 1s;
+}
+.lp-experience[data-motion="paused"] *,
+.lp-experience[data-motion="paused"] *:before,
+.lp-experience[data-motion="paused"] *:after {
+  animation-play-state: paused !important;
+  transition: none !important;
+}
+.lp-experience[data-motion="paused"] .lp-tap-ripple i {
+  animation: none;
+  opacity: 0.85;
+  transform: scale(0.85);
+}
+.lp-experience[data-motion="paused"] .lp-tap-ripple i:nth-child(2) {
+  transform: scale(1.3);
+  opacity: 0.4;
+}
+.lp-experience[data-motion="paused"] .lp-tap-ripple span {
+  animation: none;
+  opacity: 0.85;
+}
+.lp-experience[data-motion="paused"] .lp-action:before {
+  display: none;
+}
+@keyframes lp-caustics {
+  from {
+    transform: translate(-25px, -6px) scale(1.02);
+  }
+  to {
+    transform: translate(30px, 12px) scale(1.08);
+  }
+}
+@keyframes lp-caustics-reverse {
+  from {
+    transform: translate(20px, 8px) scale(1.03);
+  }
+  to {
+    transform: translate(-18px, -10px) scale(1.1);
+  }
+}
+@keyframes lp-water-ring {
+  0%,
+  100% {
+    transform: scale(0.99);
+    opacity: 0.18;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.38;
+  }
+}
+@keyframes lp-sparkle {
+  0%,
+  65%,
+  100% {
+    transform: scale(0.65);
+    opacity: 0.4;
+  }
+  75% {
+    transform: scale(1.4);
+    opacity: 1;
+  }
+}
+@keyframes lp-bob {
+  0%,
+  100% {
+    transform: translateY(2px) rotate(-1.5deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(1.5deg);
+  }
+}
+@keyframes lp-stroke {
+  0%,
+  100% {
+    transform: rotate(-12deg);
+  }
+  50% {
+    transform: rotate(18deg);
+  }
+}
+@keyframes lp-stroke-right {
+  0%,
+  100% {
+    transform: rotate(-18deg);
+  }
+  50% {
+    transform: rotate(12deg);
+  }
+}
+@keyframes lp-wake {
+  0% {
+    transform: translateY(-3px) scale(0.72);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(12px) scale(1.3);
+    opacity: 0;
+  }
+}
+@keyframes lp-duck-float {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(-8deg);
+  }
+  50% {
+    transform: translate(6px, -5px) rotate(6deg);
+  }
+}
+@keyframes lp-tap-ripple {
+  0% {
+    transform: scale(0.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+@keyframes lp-tap-star {
+  0% {
+    transform: translate(-50%, -20%) scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -150%) scale(1.1);
+    opacity: 0;
+  }
+}
+@keyframes lp-control-shine {
+  0% {
+    left: -50%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.8;
+  }
+  100% {
+    left: 140%;
+    opacity: 0;
+  }
+}
+@media (max-width: 800px) {
+  .lp-console {
+    gap: 8px;
+    padding: 12px;
+    margin-inline: 18px;
+    flex-wrap: wrap;
+  }
+  .lp-mode-control {
+    margin-right: auto;
+  }
+  .lp-action {
+    padding: 13px 15px;
+  }
+  .lp-character-bar {
+    padding: 22px 25px 18px;
+    gap: 15px;
+  }
+  .lp-character-quote {
+    padding-left: 15px;
+  }
+  .lp-character-picker button {
+    padding-right: 6px;
+    gap: 4px;
+  }
+  .lp-character-quote p {
+    font-size: 12px;
+  }
+  .lp-scene-foot {
+    padding-inline: 25px;
+  }
+  .lp-scene-topline {
+    padding-inline: 24px;
+  }
+  .lp-swimmer-name {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+  .lp-note-one {
+    top: 14%;
+  }
+  .lp-note-two {
+    top: 22%;
+  }
+}
+@media (max-width: 570px) {
+  .lp-experience {
+    border-radius: 25px;
+  }
+  .lp-scene-topline {
+    padding: 21px 18px 0;
+    align-items: flex-start;
+  }
+  .lp-play-label {
+    font-size: 8px;
+    letter-spacing: 0.12em;
+  }
+  .lp-water-note {
+    font-size: 9px;
+    gap: 4px;
+  }
+  .lp-water-note svg {
+    width: 12px;
+  }
+  .lp-stage {
+    margin-top: 12px;
+    aspect-ratio: 1000/650;
+    min-height: 255px;
+  }
+  .lp-pool-art {
+    width: 100%;
+    max-width: none;
+    left: 0;
+    height: 100%;
+  }
+  .lp-swimmer {
+    width: 22%;
+    min-width: 70px;
+  }
+  .lp-swimmer-name {
+    font-size: 8px;
+    padding: 3px 6px;
+  }
+  .lp-swimmer-name svg {
+    width: 9px;
+  }
+  .lp-orbit-note {
+    font-size: 8px;
+  }
+  .lp-note-one {
+    left: 7%;
+    top: 15%;
+  }
+  .lp-note-two {
+    right: 6%;
+    top: 26%;
+  }
+  .lp-tap-hint {
+    font-size: 9px;
+    bottom: 0;
+  }
+  .lp-tap-hint svg {
+    width: 11px;
+  }
+  .lp-console {
+    margin: 15px 13px 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 44px;
+    gap: 10px;
+    padding: 13px;
+    border-radius: 20px;
+  }
+  .lp-mode-control {
+    order: 0;
+    flex: 1;
+    margin: 0;
+  }
+  .lp-mode-control button {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 11px;
+    font-size: 11px;
+  }
+  .lp-reset {
+    order: 1;
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+  }
+  .lp-splash-button {
+    order: 2;
+    grid-column: 1 / -1;
+    flex: 1;
+  }
+  .lp-duck-button {
+    order: 3;
+    grid-column: 1 / -1;
+    flex: 1;
+  }
+  .lp-action {
+    font-size: 10px;
+    gap: 5px;
+    padding: 12px 10px;
+    min-height: 44px;
+    border-radius: 12px;
+    white-space: nowrap;
+  }
+  .lp-action svg {
+    width: 15px;
+  }
+  .lp-control-count {
+    font-size: 9px;
+    padding: 3px;
+  }
+  .lp-splash-button > span {
+    display: none;
+  }
+  .lp-character-bar {
+    flex-direction: column;
+    gap: 13px;
+    align-items: stretch;
+    padding: 20px 23px 15px;
+  }
+  .lp-character-picker {
+    justify-content: center;
+    gap: 13px;
+  }
+  .lp-character-picker button {
+    font-size: 11px;
+    padding: 4px 10px 4px 4px;
+  }
+  .lp-character-quote {
+    text-align: center;
+    border: 0;
+    border-top: 1px solid #9fcddd66;
+    padding: 13px 0 0;
+    min-height: 66px;
+  }
+  .lp-character-quote > span {
+    justify-content: center;
+    font-size: 8px;
+  }
+  .lp-character-quote p {
+    font-size: 11px;
+    max-width: 290px;
+    margin-inline: auto;
+  }
+  .lp-scene-foot {
+    flex-direction: column;
+    gap: 4px;
+    padding: 0 18px 20px;
+    font-size: 8px;
+    text-align: center;
+  }
+  .lp-scene-foot > span {
+    font-size: 8px;
+    text-align: center;
+  }
+  .lp-tap-ripple {
+    width: 60px;
+    height: 30px;
+  }
+  .lp-duck {
+    width: 9%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-experience *,
+  .lp-experience *:before,
+  .lp-experience *:after {
+    animation-play-state: paused !important;
+    transition: none !important;
+  }
+  .lp-experience .lp-tap-ripple i,
+  .lp-experience .lp-tap-ripple span {
+    animation: none !important;
+  }
+}
+.xp-experience[data-world="night"] .lp-experience {
+  --lp-ink: #ddfaff;
+  background: radial-gradient(
+    ellipse at 50% 35%,
+    #114770 0%,
+    #132342 55%,
+    #0c1732 100%
+  );
+  border-color: #6aa4d554;
+  box-shadow:
+    0 30px 80px #02081966,
+    inset 0 1px 0 #80dfff35,
+    0 0 90px #05c3ed10;
+}
+.xp-experience[data-world="night"] .lp-stage-aura {
+  background: radial-gradient(ellipse at 50% 50%, #18d6fc52, transparent 65%);
+}
+.xp-experience[data-world="night"] .lp-play-label {
+  color: #cffaff;
+}
+.xp-experience[data-world="night"] .lp-water-note,
+.xp-experience[data-world="night"] .lp-orbit-note,
+.xp-experience[data-world="night"] .lp-tap-hint {
+  color: #a2d9f2;
+}
+.xp-experience[data-world="night"] .lp-console {
+  background: linear-gradient(120deg, #203c60d9, #122c4aeb);
+  border-color: #81d9ff40;
+  box-shadow:
+    inset 0 1px 0 #a2efff29,
+    0 8px 30px #010b2530;
+}
+.xp-experience[data-world="night"] .lp-mode-control {
+  background: #09243e;
+  border-color: #406980;
+}
+.xp-experience[data-world="night"] .lp-mode-control button {
+  color: #b4d8ed;
+}
+.xp-experience[data-world="night"] .lp-mode-control .lp-active {
+  color: #064b79;
+}
+.xp-experience[data-world="night"] .lp-character-picker button {
+  color: #aed7ee;
+}
+.xp-experience[data-world="night"] .lp-character-picker .lp-chosen {
+  background: #2a547c;
+  border-color: #80c6ee68;
+  color: #fff;
+}
+.xp-experience[data-world="night"] .lp-character-quote > span {
+  color: #88cee9;
+}
+.xp-experience[data-world="night"] .lp-character-quote p {
+  color: #ddf3ff;
+}
+.xp-experience[data-world="night"] .lp-scene-foot {
+  color: #9cb9d1;
+}
+.xp-experience[data-world="night"] .lp-pool-art {
+  filter: drop-shadow(0 12px 24px #00caff40);
+}
