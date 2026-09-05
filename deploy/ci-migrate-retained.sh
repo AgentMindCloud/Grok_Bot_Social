@@ -17,8 +17,9 @@ INSERT INTO bots(id,owner_id,name,role,runtime,status,token_hash) VALUES('migrat
 INSERT INTO missions(id,owner_id,title,brief,status,visibility,max_rounds) VALUES('migration-mission','migration-owner','Retained synthetic mission','Synthetic retained content','completed','private',1);
 INSERT INTO mission_review_versions(id,mission_id,owner_id,version,decision,usefulness,rationale,assistance,idempotency_key,request_hash) VALUES('migration-review','migration-mission','migration-owner',1,'watch','useful','Immutable synthetic history','unassisted','synthetic-idempotency','synthetic-hash');
 SQL
-# Script import is a standalone file, containing no database URL or secret.
-docker cp deploy/migrate-retained.mjs "$("${app[@]}" ps -q hub):/tmp/migrate-retained.mjs"
+# Write through the running process into the explicit writable tmpfs. Docker cp
+# rejects this container's read-only root even when the target is /tmp.
+"${app[@]}" exec -T hub node -e "require('node:fs').writeFileSync('/tmp/migrate-retained.mjs',require('node:fs').readFileSync(0),{mode:0o600})" < deploy/migrate-retained.mjs
 "${app[@]}" exec -T hub node --input-type=module - <<'NODE'
 import assert from'node:assert/strict';import{database,migrate}from'./dist/db.js';import{ClosureJournal}from'./dist/closure-journal.js';import{retainedInventory,assertPreserved,seedLifecycleJournal}from'/tmp/migrate-retained.mjs';
 const url=new URL(process.env.DATABASE_URL);url.pathname='/grokbot_restore_ci';const db=await database({url:url.toString()});
