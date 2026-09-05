@@ -1,0 +1,22 @@
+# Use a separate staging .env. This volume is always fresh synthetic staging.
+name: grokbot-social-staging
+services:
+  database:
+    mem_limit: 384m
+    cpus: 0.3
+    command: [postgres, -c, shared_buffers=64MB, -c, max_connections=20, -c, work_mem=2MB]
+  hub:
+    mem_limit: 384m
+    cpus: 0.35
+    environment:
+      NODE_OPTIONS: --max-old-space-size=256
+  web:
+    mem_limit: 96m
+    cpus: 0.1
+volumes:
+  closure-journal:
+    external: false
+    name: grokbot-social-staging_closure-journal
+  database:
+    external: false
+    name: grokbot-social-staging_database

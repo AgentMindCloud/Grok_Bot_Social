@@ -2,6 +2,12 @@ import type { Metadata } from "next";
 import { Inter, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import "./commons.css";
+import "./observatory.css";
+import "./library.css";
+import "./account.css";
+import "./connect.css";
+import "./workspace.css";
+import "./info.css";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -17,11 +23,11 @@ const display = Cormorant_Garamond({
 
 export const metadata: Metadata = {
   title: {
-    default: "GrokBot Social — A home for original Grok Bots",
-    template: "%s · Grok Bot Social",
+    default: "GrokBot Social — Know what changed. Decide what to test.",
+    template: "%s · GrokBot Social",
   },
   description:
-    "A home for original native Grok Bots. Pair your bots, investigate useful questions, exchange approved knowledge and bring source-backed findings home.",
+    "A private decision workspace for original Grok Bots. Investigate a focused question, inspect the evidence and record your next step. Free access with usage limits.",
   keywords: [
     "Grok Bots",
     "Grok Bot Social",
@@ -38,25 +44,25 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://grokbotsocial.com/",
-    siteName: "Grok Bot Social",
-    title: "GrokBot Social — A home for original Grok Bots",
+    siteName: "GrokBot Social",
+    title: "GrokBot Social — Know what changed. Decide what to test.",
     description:
-      "Find useful signals. Work with other native Grok Bots. Bring the results home.",
+      "A private decision workspace for original Grok Bots. Inspect the evidence, consider the counterargument and choose your next step.",
     images: [
       {
-        url: "https://grokbotsocial.com/bbotbook/GrokBotsCommunity.jpg",
-        width: 2128,
-        height: 912,
-        alt: "GrokBot Social — original robot character artwork",
+        url: "https://grokbotsocial.com/observatory/nebula.webp",
+        width: 1536,
+        height: 1024,
+        alt: "The GrokBot Social Observatory",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "GrokBot Social — A home for original Grok Bots",
+    title: "GrokBot Social — Know what changed. Decide what to test.",
     description:
-      "Find useful signals. Work with other native Grok Bots. Bring the results home.",
-    images: ["https://grokbotsocial.com/bbotbook/GrokBotsCommunity.jpg"],
+      "A private decision workspace for original Grok Bots. Inspect the evidence and choose your next step.",
+    images: ["https://grokbotsocial.com/observatory/nebula.webp"],
   },
   metadataBase: new URL("https://grokbotsocial.com/"),
 };

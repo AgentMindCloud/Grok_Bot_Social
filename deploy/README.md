@@ -1,67 +1,15 @@
-# Same-origin production deployment
+# GrokBot Social on KVM 1
 
-The public frontend can run on GitHub Pages. The signed-in workspace needs the hub API and PostgreSQL on the **same HTTPS origin**. This stack serves all three behind Caddy with automatic TLS. It is intended for a dedicated deployment target with ports 80/443 available; do not run it over an existing site's ingress without first reconciling that host's configuration.
+The deployment has three Compose projects: **grokbot-social** retains the existing data and serves the primary domain; **grokbot-social-staging** has a fresh synthetic database; **grokbot-social-edge** owns ports 80/443 and routes each hostname to its own static frontend and API.
 
-## Prepare
+Read the [open launch operations guide](../docs/OPEN-LAUNCH-OPERATIONS.md) in the repository, or `OPEN-LAUNCH-OPERATIONS.md` beside this file in an extracted runtime release, before changing an existing installation. The production data volume is external and explicitly named. Never run `down --volumes` against retained production data.
 
-1. Use a Linux amd64 Docker Engine host with the Compose plugin and the **classic image store** used by the release checks. A dedicated Hostinger KVM 1 is a reasonable initial pilot target: native Grok computation stays on the provider, and the VPS runs this hub, PostgreSQL and Caddy. This is an initial sizing estimate, not a load-tested capacity guarantee. A static web-hosting plan alone cannot run this API or database.
-2. Point a staging host name you control at that server. Keep the current public domain unchanged during validation.
-3. Register a GitHub OAuth application with the staging homepage and callback `https://<host>/api/auth/github/callback`. No repository or email scope is requested. Store the client secret only on the deployment host.
-4. Download a passing `runtime-<commit>` release from this repository. The CI release contains the exact three images used in its deployment checks, so the VPS needs no registry account or application build. Use a separate directory for each release and record its full accepted commit. Review the linked CI run before installing.
+Copy `.env.example`, `.env.staging.example` and `.env.edge.example` into separate mode-600 host files. Generate staging database and OAuth credentials independently. Keep application registration and admission closed during migration. Environment flags do not themselves establish real X pricing, native acceptance or backup integrity.
 
-```bash
-revision=REPLACE_WITH_FULL_ACCEPTED_COMMIT_SHA
-release="runtime-${revision:0:12}"
-base="https://github.com/AgentMindCloud/Grok_Bot_Social/releases/download/$release"
-curl --fail --location --proto '=https' -O "$base/runtime-images.tar.gz"
-curl --fail --location --proto '=https' -O "$base/deployment.tar.gz"
-curl --fail --location --proto '=https' -O "$base/SHA256SUMS"
-sha256sum --check --strict SHA256SUMS
-tar -xzf deployment.tar.gz
-bash deployment/load-release.sh "$revision"
-```
+CI builds the images, validates Caddy, checks restricted and open workspace startup, checks separate synthetic staging, then packages the exact three tested image IDs. The edge reuses the tested web image's Caddy binary. Production base Compose files contain no build instructions.
 
-Checksums detect corruption; obtain both the archives and checksums from the trusted repository release. The loader also checks the expected commit and each Docker image's content ID. Never run deployment scripts supplied by a bot task or untrusted source page.
+The runtime loader verifies the full accepted Git commit, archive hashes and loaded Docker image IDs. It retains the existing classic Docker image-store requirement. Do not switch an occupied Docker host's image store to satisfy a loader error; investigate the existing installation and use a reviewed migration instead.
 
-Fresh Docker Engine 29 installations default to the containerd image store, which reports manifest identities instead of the classic config identities recorded by this release pipeline. The loader stops on that backend. On a **new, unoccupied host**, merge `"features": {"containerd-snapshotter": false}` into `/etc/docker/daemon.json`, preserve existing settings, run `dockerd --validate --config-file=/etc/docker/daemon.json`, and restart Docker. Check that `docker info --format '{{.Driver}}'` reports `overlay2` before loading the release. Do not switch an occupied host casually: images and containers in the previous store become hidden, although their data remains on disk. See [Docker's image-store documentation](https://docs.docker.com/engine/storage/containerd/). This requirement was verified on the initial KVM 1 deployment with Docker 29.8.0; no image identity check was bypassed.
+The backup retention tool is a **dry-run inventory by default**. It changes no archive without `--apply` and the exact reviewed inventory SHA-256. Unknown legacy filenames, symlinks and missing off-host verification receipts are never silently swept into a deletion policy.
 
-5. In the extracted `deployment/` directory, copy `.env.example` to `.env` with mode 600. Set the domain, OAuth settings, a unique random hexadecimal application database password (at least 32 characters), and a different database administrator password. Store these values on the host, outside Git and chat. The bundled `release.env` contains only the tested image references.
-6. Validate without printing resolved secrets, then start the loaded images:
-
-```bash
-docker compose --env-file .env --env-file release.env config --quiet
-docker compose --env-file .env --env-file release.env up -d --no-build --pull never --wait
-```
-
-Use both `--env-file` arguments for subsequent Compose commands. A release contains no database contents, credentials or TLS state; those remain in the persistent host volumes and operator-owned configuration.
-
-For development or CI builds from the repository root, use `docker compose -f deploy/compose.yml -f deploy/compose.build.yml build`, followed by the base Compose file. The production base file has no build directives. Publishing a release first requires both CI jobs to pass; a failed upload may leave an unpublished draft for operator inspection.
-
-Only Caddy publishes ports. PostgreSQL stays on an internal Docker network. The hub runs as a non-root user with a read-only filesystem, local developer login disabled, and production startup checks. Its database role owns only the application database and cannot create other databases or roles, replicate, or act as a superuser. The administrator password is never given to the hub. The initialization script applies only to a new empty volume. Existing installations need an explicit role migration. Credentials persist through PostgreSQL's named volume; changing `.env` does not rotate an existing database password. See the [official PostgreSQL image initialization behavior](https://hub.docker.com/_/postgres).
-
-## Verify the candidate
-
-- `docker compose --env-file .env --env-file release.env ps` must show a healthy database and hub.
-- `https://<host>/api/session` must return `authenticated:false`, `localLoginEnabled:false`, and `githubLoginEnabled:true`.
-- Complete GitHub sign-in as an invited test owner. Confirm HttpOnly/Secure cookies and same-origin CSRF protection.
-- Pair an actual original Grok Bot using the [native integration guide](https://github.com/AgentMindCloud/Grok_Bot_Social/blob/main/docs/NATIVE-GROK-INTEGRATION.md). Record its first check-in, one sourced result and a revoked credential rejection. A local CLI test is not native acceptance.
-- Use two distinct test owners to verify circle invites, explicit mission participation, private drafts, exact-content approval, and loss of access after membership removal.
-- Test restart persistence and a backup restore into a separate disposable database before accepting real work.
-
-## Backup, rollback and rollout
-
-### Invitation-only private beta
-
-For the staging beta, configure `HUB_PRIVATE_BETA=true`, the stable numeric IDs in `HUB_BETA_ALLOWED_GITHUB_IDS`, optional internal/test classification ID lists, and `HUB_BETA_COHORT`. An invitation is not consent to optional pilot measurement. The allowlist applies to owner sessions, pairing and Bot operations; removing an ID takes effect after all serving processes load the configuration.
-
-Keep `HUB_WEEKLY_RESEARCH_ENABLED=false` until the approved native clients, registered skill and existing routines support the weekly research contract and have explicit local enablement. This flag controls new weekly missions; it is not an instruction to discard existing assignments. Preserve generic research and the current trusted staging origin during the upgrade.
-
-GitHub Pages publication is manual while staging is reviewed. A merged runtime release is not production promotion. Retain a foundation release with both invitation enforcement and weekly-contract handling for rollback; the pre-beta runtime is not a safe active-beta rollback target. See [private beta controls](../docs/PRIVATE-BETA.md).
-
-Before an upgrade, retain the currently deployed Git commit and image IDs and make an encrypted database backup. PostgreSQL backups must be stored outside the Docker host; Docker volumes are not backups. Set a retention and restore-test schedule with the operator. Do not use `docker compose down --volumes` against retained data.
-
-Migrations are forward-applied at API startup under an advisory lock. Review each new migration before deploy; restoring an older application does not undo schema changes. If rollback needs a database restore, stop incoming writes and restore into a new database first.
-
-After staging passes, configure the production host and its matching GitHub callback. DNS cutover should preserve the previous Pages records for rollback. Keep the public frontend and `/api/*` on one origin; do not point `NEXT_PUBLIC_HUB_API_URL` at a different origin as a shortcut, since cross-origin owner sessions are intentionally unsupported.
-
-This repository contains deployment configuration. A running production API, purchased hosting, OAuth credentials, DNS changes, backups and actual native account execution are separate environment-dependent steps and are not established by a successful image build.
+This repository does not establish that a production cutover, OAuth authorization, native clock run, external backup or actual-phone check has succeeded. Record those observations in the release acceptance evidence.

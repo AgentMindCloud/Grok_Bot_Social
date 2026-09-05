@@ -1041,8 +1041,19 @@ test("migration upgrades schema-two records without inventing measurement histor
           "SELECT version FROM schema_migrations ORDER BY version",
         )
       ).rows.map((row) => row.version),
-      [1, 2, 3],
+      [1, 2, 3, 4, 5, 6],
     );
+    const identity = (await old.query("SELECT owner_id,provider,provider_user_id FROM provider_identities WHERE owner_id='old-owner'")).rows[0];
+    assert.deepEqual(identity, { owner_id: "old-owner", provider: "github", provider_user_id: "42" });
+    const account = (await old.query("SELECT status,account_classification FROM owners WHERE id='old-owner'")).rows[0];
+    assert.equal(account.status, "active");
+    assert.equal(account.account_classification, "invited");
+    assert.ok(Number((await old.query("SELECT stored_bytes FROM owner_usage WHERE owner_id='old-owner'")).rows[0].stored_bytes) > 0);
+    assert.equal((await old.query("SELECT mission_id FROM mission_admissions WHERE owner_id='old-owner'")).rows[0].mission_id, "old-mission");
+    // Re-running startup migrations neither duplicates identities nor recharges usage.
+    const usageBefore = (await old.query("SELECT stored_bytes FROM owner_usage WHERE owner_id='old-owner'")).rows[0].stored_bytes;
+    await migrate(old);
+    assert.equal((await old.query("SELECT stored_bytes FROM owner_usage WHERE owner_id='old-owner'")).rows[0].stored_bytes, usageBefore);
   } finally {
     await old.close();
     await rm(dir, { recursive: true, force: true });

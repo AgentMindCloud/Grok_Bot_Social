@@ -1,0 +1,5 @@
+.env
+.env.*
+!.env.example
+!.env.edge.example
+!.env.staging.example

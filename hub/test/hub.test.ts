@@ -863,14 +863,14 @@ test("two-bot cap is atomic across different pair challenges; revoked slots are 
         }),
       ),
     );
-    assert.deepEqual(responses.map((r) => r.statusCode).sort(), [200, 409]);
+    assert.deepEqual(responses.map((r) => r.statusCode).sort(), [200, 429]);
     assert.equal(
       (await a.workspace()).bots.filter((b: any) => b.status !== "revoked")
         .length,
       2,
     );
     await a.request("POST", `/api/bots/${first.bot.id}/revoke`, {});
-    const failedIndex = responses.findIndex((r) => r.statusCode === 409);
+    const failedIndex = responses.findIndex((r) => r.statusCode === 429);
     assert.equal(
       (
         await a.app.inject({

@@ -1,0 +1,52 @@
+name: grokbot-social-edge
+services:
+  edge:
+    image: ${WEB_IMAGE:-grokbot-social-web:local}
+    restart: unless-stopped
+    mem_limit: 192m
+    cpus: 0.3
+    pids_limit: 80
+    environment:
+      PRODUCTION_SITE: ${PRODUCTION_SITE:-grokbotsocial.com}
+      STAGING_SITE: ${STAGING_SITE:-staging.grokbotsocial.com}
+    ports: ["80:80", "443:443", "443:443/udp"]
+    volumes:
+      - ./Caddyfile.edge:/etc/caddy/Caddyfile:ro
+      - tls-data:/data
+      - tls-config:/config
+    networks:
+      production:
+        ipv4_address: ${PRODUCTION_EDGE_IP:-172.30.61.2}
+      staging:
+        ipv4_address: ${STAGING_EDGE_IP:-172.30.62.2}
+      outbound:
+    security_opt: [no-new-privileges:true]
+    read_only: true
+    tmpfs: [/tmp:size=16m]
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, "http://127.0.0.1:2019/config/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: local
+      options: {max-size: 10m, max-file: "3"}
+networks:
+  production:
+    name: grokbot-social_production-ingress
+    internal: true
+    ipam:
+      config: [{subnet: "${PRODUCTION_INGRESS_SUBNET:-172.30.61.0/24}"}]
+  staging:
+    name: grokbot-social_staging-ingress
+    internal: true
+    ipam:
+      config: [{subnet: "${STAGING_INGRESS_SUBNET:-172.30.62.0/24}"}]
+  outbound:
+volumes:
+  tls-data:
+    external: true
+    name: ${TLS_DATA_VOLUME:-grokbot-social_tls-data}
+  tls-config:
+    external: true
+    name: ${TLS_CONFIG_VOLUME:-grokbot-social_tls-config}

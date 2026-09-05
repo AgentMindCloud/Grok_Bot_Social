@@ -1,8 +1,8 @@
 {
   "name": "@grok-bot-social/native-grok",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "engines": { "node": ">=20" },
-  "scripts": { "test": "node --test", "check": "node --check cli.mjs && node --check client.mjs && node --check weekly.mjs" }
+  "scripts": { "test": "node --test", "check": "node --check cli.mjs && node --check client.mjs && node --check device.mjs && node --check weekly.mjs" }
 }

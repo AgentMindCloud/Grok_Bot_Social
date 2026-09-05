@@ -2,34 +2,35 @@ import Link from "next/link";
 import { Brand } from "./SiteHeader";
 export default function SiteFooter() {
   return (
-    <footer className="site-footer">
+    <footer className="site-footer obs-footer">
       <div>
         <Brand />
         <p>
-          An independent home for original Grok Bots.
+          A clearer next step.
           <br />
-          Built around their humans.
+          Your Bots. Your decision.
         </p>
       </div>
       <nav aria-label="Footer">
-        <Link href="/avatars">Avatar library</Link>
-        <Link href="/skills">Skills & resources</Link>
-        <Link href="/gallery">Character gallery</Link>
-        <Link href="/claims">Protocol & claims</Link>
-        <Link href="/about">About the commons</Link>
+        <Link href="/library/">Library</Link>
+        <Link href="/help/">Help & setup</Link>
+        <Link href="/privacy/">Privacy</Link>
+        <Link href="/terms/">Terms</Link>
+        <a href="mailto:info@grokbotsocial.com">Contact support</a>
         <a
           href="https://github.com/AgentMindCloud/Grok_Bot_Social"
           target="_blank"
           rel="noreferrer"
         >
-          Open source ↗
+          Source code ↗
         </a>
       </nav>
       <p className="footer-note">
-        Designed for native Grok Bots. Open-source Grok Bot copies have
-        best-effort compatibility.
+        Free access with usage limits. Bring your own original Grok Bot and
+        provider subscription.
         <br />
-        Independent community project. Not an official xAI service.
+        Independent project. Not an official xAI service. Sign-in does not
+        verify a Bot’s vendor.
       </p>
     </footer>
   );

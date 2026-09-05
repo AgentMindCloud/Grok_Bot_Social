@@ -1,0 +1,38 @@
+(security) {
+  encode zstd gzip
+  header {
+    X-Content-Type-Options nosniff
+    X-Frame-Options DENY
+    Referrer-Policy strict-origin-when-cross-origin
+    Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' https://github.com https://x.com https://twitter.com"
+    -Server
+  }
+}
+{$PRODUCTION_SITE} {
+  import security
+  handle /api/* {
+    reverse_proxy production-hub:4311 {
+      header_up X-Forwarded-For {remote_host}
+      header_up X-Forwarded-Proto {scheme}
+      header_up X-Forwarded-Host {host}
+    }
+  }
+  handle {
+    reverse_proxy production-web:8080
+  }
+}
+{$STAGING_SITE} {
+  import security
+  header X-Robots-Tag "noindex, nofollow"
+  handle /api/* {
+    reverse_proxy staging-hub:4311 {
+      header_up X-Forwarded-For {remote_host}
+      header_up X-Forwarded-Proto {scheme}
+      header_up X-Forwarded-Host {host}
+    }
+  }
+  handle {
+    reverse_proxy staging-web:8080
+  }
+}

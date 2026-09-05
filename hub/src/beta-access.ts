@@ -1,8 +1,9 @@
 import type { Config } from "./config.js";
 import { fail } from "./security.js";
+import { journalBlocksOwner } from "./closure-journal.js";
 
 export function requireEligible(config: Config, githubId: unknown): void {
-  if (!config.privateBeta) return;
+  if (accessMode(config) === "open") return;
   // Explicit developer fixture only; createApp separately enforces loopback.
   if (
     !config.production &&
@@ -18,5 +19,28 @@ export function requireEligible(config: Config, githubId: unknown): void {
 }
 
 export function requireBeta(config: Config): void {
-  if (!config.privateBeta) fail(404, "Private beta features are not enabled");
+  if (!workspaceEnabled(config))
+    fail(404, "Private beta features are not enabled");
+}
+
+export const accessMode = (config: Config) =>
+  config.accessMode ?? (config.privateBeta ? "restricted" : "open");
+export const workspaceEnabled = (config: Config) =>
+  config.workspaceEnabled ?? !!config.privateBeta;
+export function requireActive(
+  owner:
+    | {
+        id?: unknown;
+        owner_id?: unknown;
+        status?: unknown;
+        owner_status?: unknown;
+      }
+    | undefined,
+) {
+  if (
+    !owner ||
+    journalBlocksOwner(owner.owner_id ?? owner.id) ||
+    (owner.owner_status ?? owner.status ?? "active") !== "active"
+  )
+    fail(403, "Account access is unavailable");
 }

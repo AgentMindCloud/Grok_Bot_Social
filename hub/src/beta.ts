@@ -12,7 +12,14 @@ import {
   publicUrl,
   string,
 } from "./security.js";
-import { requireBeta } from "./beta-access.js";
+import { requireBeta, workspaceEnabled } from "./beta-access.js";
+import {
+  lockAdmission,
+  admitMission,
+  chargeContent,
+  resolvePublicLimits,
+  assertActiveOwner,
+} from "./limits.js";
 
 const iso = (v: unknown) =>
   v == null ? null : new Date(v as string).toISOString();
@@ -129,6 +136,7 @@ const enrollView = (r?: Row) =>
     : null;
 
 export function betaApi(db: Database, config: Config, s: Services) {
+  const publicLimits = resolvePublicLimits(config.publicLimits);
   // Holds membership through evidence reads and publication-removal boundaries.
   const lockMemberships = async (tx: Queryable, ownerId: string) => {
     await tx.query(
@@ -198,7 +206,7 @@ export function betaApi(db: Database, config: Config, s: Services) {
       : config.betaTestGithubIds?.includes(owner.github_id) ||
           owner.github_id?.startsWith("local:")
         ? "test"
-        : "invited";
+        : (owner.account_classification ?? "invited");
     return {
       cohortKey: enrolled?.cohort_key ?? config.betaCohort ?? "private-beta-1",
       classification,
@@ -362,6 +370,8 @@ export function betaApi(db: Database, config: Config, s: Services) {
       }),
     );
     return db.transaction(async (tx) => {
+      await lockAdmission(tx);
+      await assertActiveOwner(tx, owner.id);
       // Owner lock serializes idempotency keys and bot pairing; existing bot paths never lock owner later.
       await tx.query("SELECT id FROM owners WHERE id=$1 FOR NO KEY UPDATE", [
         owner.id,
@@ -436,10 +446,19 @@ export function betaApi(db: Database, config: Config, s: Services) {
         `Offer: ${offer}`,
         `Buyer: ${buyer}`,
       ].join("\n\n");
+      const missionId = randomUUID();
+      await admitMission(
+        tx,
+        owner.id,
+        missionId,
+        botIds.length * rounds,
+        Buffer.byteLength(JSON.stringify(input)) + Buffer.byteLength(brief),
+        publicLimits,
+      );
       const mission = (
         await tx.query(
           "INSERT INTO missions(id,owner_id,title,brief,status,visibility,max_rounds,kind) VALUES($1,$2,$3,$4,'queued','private',$5,'weekly-decision') RETURNING *",
-          [randomUUID(), owner.id, title, brief, rounds],
+          [missionId, owner.id, title, brief, rounds],
         )
       ).rows[0];
       await tx.query(
@@ -536,6 +555,8 @@ export function betaApi(db: Database, config: Config, s: Services) {
       const owner = await s.owner(request);
       await s.reconcile();
       return db.transaction(async (tx) => {
+        await lockAdmission(tx);
+        await assertActiveOwner(tx, owner.id);
         await lockMemberships(tx, owner.id);
         // A transaction owns one pg client. Keep its queries sequential; concurrent
         // client.query calls are deprecated by pg and do not improve throughput.
@@ -596,7 +617,7 @@ export function betaApi(db: Database, config: Config, s: Services) {
           owner: s.ownerView(owner),
           bots: bots.rows.map(s.botView),
           circles: circles.rows,
-          privateBetaEnabled: !!config.privateBeta,
+          privateBetaEnabled: workspaceEnabled(config),
           weeklyResearchEnabled: !!config.weeklyResearchEnabled,
           counts: {
             missions: c.missions,
@@ -702,6 +723,8 @@ export function betaApi(db: Database, config: Config, s: Services) {
       const scope = `evidence:${owner.id}:${missionId}:${circleId}`,
         p = pageInput(q, scope);
       return db.transaction(async (tx) => {
+        await lockAdmission(tx);
+        await assertActiveOwner(tx, owner.id);
         await lockMemberships(tx, owner.id);
         let circle: string | null = circleId;
         if (circleId) await s.circleFor(tx, owner.id, circleId);
@@ -735,6 +758,8 @@ export function betaApi(db: Database, config: Config, s: Services) {
       requireBeta(config);
       const owner = await s.owner(request);
       return db.transaction(async (tx) => {
+        await lockAdmission(tx);
+        await assertActiveOwner(tx, owner.id);
         await lockMemberships(tx, owner.id);
         const rows = await permittedEvidence(tx, owner.id, [
           string((request.params as Row).id, "id", 100),
@@ -811,6 +836,8 @@ export function betaApi(db: Database, config: Config, s: Services) {
         }),
       );
       return db.transaction(async (tx) => {
+        await lockAdmission(tx);
+        await assertActiveOwner(tx, owner.id);
         await tx.query("SELECT id FROM owners WHERE id=$1 FOR NO KEY UPDATE", [
           owner.id,
         ]);
@@ -852,6 +879,12 @@ export function betaApi(db: Database, config: Config, s: Services) {
           evidence.some((e) => e.mission_id !== missionId)
         )
           fail(404, "Permitted mission evidence not found");
+        await chargeContent(
+          tx,
+          owner.id,
+          Buffer.byteLength(JSON.stringify(b)),
+          publicLimits,
+        );
         const snapshot = await measurement(tx, owner, assisted);
         const review = (
           await tx.query(
@@ -901,6 +934,8 @@ export function betaApi(db: Database, config: Config, s: Services) {
         scope = `reviews:${owner.id}:${missionId}`,
         p = pageInput(q, scope);
       return db.transaction(async (tx) => {
+        await lockAdmission(tx);
+        await assertActiveOwner(tx, owner.id);
         await lockMemberships(tx, owner.id);
         const rows = await tx.query(
           "SELECT *,created_at::text AS cursor_time FROM mission_review_versions WHERE owner_id=$1 AND ($2::text IS NULL OR mission_id=$2) AND ($3::timestamptz IS NULL OR (created_at,id)<($3::timestamptz,$4::text)) ORDER BY created_at DESC,id DESC LIMIT $5",
@@ -982,20 +1017,24 @@ export function betaApi(db: Database, config: Config, s: Services) {
         : config.betaTestGithubIds?.includes(owner.github_id) ||
             owner.github_id?.startsWith("local:")
           ? "test"
-          : "invited";
-      const row = (
-        await db.query(
-          "INSERT INTO pilot_enrollments(owner_id,cohort_key,classification,consent,assistance) VALUES($1,$2,$3,$4,$5) ON CONFLICT(owner_id) DO UPDATE SET consent=EXCLUDED.consent,assistance=EXCLUDED.assistance,updated_at=now() RETURNING *",
-          [
-            owner.id,
-            config.betaCohort ?? "private-beta-1",
-            classification,
-            b.consent,
-            assisted,
-          ],
-        )
-      ).rows[0];
-      return { enrollment: enrollView(row) };
+          : (owner.account_classification ?? "invited");
+      return db.transaction(async (tx) => {
+        await lockAdmission(tx);
+        await assertActiveOwner(tx, owner.id);
+        const row = (
+          await tx.query(
+            "INSERT INTO pilot_enrollments(owner_id,cohort_key,classification,consent,assistance) VALUES($1,$2,$3,$4,$5) ON CONFLICT(owner_id) DO UPDATE SET consent=EXCLUDED.consent,assistance=EXCLUDED.assistance,updated_at=now() RETURNING *",
+            [
+              owner.id,
+              config.betaCohort ?? "private-beta-1",
+              classification,
+              b.consent,
+              assisted,
+            ],
+          )
+        ).rows[0];
+        return { enrollment: enrollView(row) };
+      });
     });
   }
   return {

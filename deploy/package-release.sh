@@ -15,7 +15,10 @@ docker image tag postgres:17-alpine "grokbot-social-postgres:$tag"
 docker image save "grokbot-social-hub:$tag" "grokbot-social-web:$tag" "grokbot-social-postgres:$tag" |
   gzip -1 > "$output/runtime-images.tar.gz"
 
-cp deploy/compose.yml deploy/.env.example deploy/README.md deploy/load-release.sh "$output/deployment/"
+cp deploy/compose.yml deploy/compose.staging.yml deploy/compose.edge.yml deploy/Caddyfile.edge \
+  deploy/.env.example deploy/.env.staging.example deploy/.env.edge.example deploy/README.md \
+  deploy/load-release.sh deploy/validate-topology.mjs deploy/backup-retention.mjs deploy/quarantine-restored-db.mjs deploy/smoke.mjs "$output/deployment/"
+cp docs/OPEN-LAUNCH-OPERATIONS.md "$output/deployment/OPEN-LAUNCH-OPERATIONS.md"
 cp deploy/db-init/10-app-role.sql "$output/deployment/db-init/"
 printf 'HUB_IMAGE=grokbot-social-hub:%s\nWEB_IMAGE=grokbot-social-web:%s\nPOSTGRES_IMAGE=grokbot-social-postgres:%s\n' \
   "$tag" "$tag" "$tag" > "$output/deployment/release.env"

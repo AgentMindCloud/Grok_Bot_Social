@@ -1,0 +1,404 @@
+/* Cosmic framing stays outside the calm evidence surfaces. */
+.workspace {
+  background:
+    radial-gradient(ellipse at 95% 0, #172b4780, transparent 40%), #070d18;
+  color: #dfe8f2;
+}
+.workspace-sidebar {
+  background:
+    linear-gradient(180deg, #0e1d30ed, #09101eef),
+    url("/observatory/nebula.webp") 35% center/cover;
+  border-right: 1px solid #8bbadb2e;
+}
+.workspace-sidebar .brand {
+  font:
+    400 28px var(--font-display),
+    Georgia,
+    serif;
+}
+.workspace-sidebar .brand span {
+  font-size: 25px;
+}
+.workspace-nav {
+  gap: 9px;
+}
+.workspace-nav button {
+  border: 1px solid transparent;
+  min-height: 47px;
+  border-radius: 12px;
+  color: #afc1d2;
+  transition:
+    background 150ms,
+    border-color 150ms,
+    transform 150ms;
+}
+.workspace-nav button[aria-current="page"] {
+  background: linear-gradient(150deg, #6ab5d129, #24435c9c);
+  border-color: #94d7eb66;
+  color: #b8f1f7;
+  box-shadow:
+    inset 0 1px #bcf0fa44,
+    0 3px 0 #030b17,
+    0 7px 18px #2fb9e017;
+}
+.workspace-nav button:hover {
+  background: #adcfe519;
+}
+.workspace-sidebar-bottom {
+  border-top-color: #91bcd42a;
+  color: #9db4c8;
+}
+.workspace-sidebar-bottom button {
+  min-height: 44px;
+}
+.workspace-top {
+  background: linear-gradient(100deg, #10223788, #0c172b66);
+  border-bottom: 1px solid #82b9d328;
+  align-items: center;
+}
+.workspace-top h1 {
+  font:
+    400 40px/1.07 var(--font-display),
+    Georgia,
+    serif;
+  letter-spacing: -0.025em;
+}
+.workspace-top .eyebrow {
+  color: #86c6d4;
+  font-size: 10px;
+}
+.workspace-top-actions .glass-control {
+  min-height: 48px;
+  white-space: nowrap;
+}
+.workspace .weekly-intro {
+  border: 1px solid #86bdd343;
+  border-radius: 20px;
+  background:
+    radial-gradient(ellipse at 90% 20%, #5289ad33, transparent),
+    linear-gradient(130deg, #173348ae, #142136);
+  padding: 28px 30px;
+  box-shadow: inset 0 1px #aeeeff20;
+}
+.workspace .weekly-intro h2 {
+  font:
+    400 39px/1.07 var(--font-display),
+    Georgia,
+    serif;
+}
+.workspace .owner-loop > li {
+  border: 1px solid #7a9bbd36;
+  border-radius: 12px;
+  background: #111f32;
+  min-height: 48px;
+  padding: 12px;
+  color: #9eb4c9;
+}
+.workspace .owner-loop .done {
+  color: #a1e5e9;
+  border-color: #6ebccb5e;
+  background: #17323e;
+}
+.workspace .panel {
+  background: #111d2d;
+  border-color: #89a7c230;
+  border-radius: 16px;
+  box-shadow: inset 0 1px #d0ecff0b;
+}
+.workspace .panel h2,
+.workspace .panel h3 {
+  color: #e3edf4;
+}
+.workspace .muted {
+  color: #a4b8cc;
+}
+.workspace .mission-row {
+  border-color: #94aec126;
+  min-height: 64px;
+  transition: background 150ms;
+}
+.workspace .mission-row:hover {
+  background: #7dc0e00e;
+}
+.workspace .mission-row strong {
+  font-weight: 500;
+}
+.workspace .mission-row p {
+  color: #a5bdd0;
+}
+.workspace .tag {
+  font-size: 11px;
+}
+.workspace .evidence-note {
+  background: #142236;
+  border: 1px solid #91aeca30;
+  border-radius: 16px;
+  padding: 25px;
+}
+.workspace .paper-panel {
+  background: linear-gradient(130deg, #e4edf2, #d3e1eb);
+  color: #1c3546;
+  border: 1px solid #c5f1f9;
+  border-radius: 18px;
+  box-shadow:
+    inset 1px 1px #fff,
+    0 0 0 3px #98dced19,
+    0 15px 35px #02091344;
+}
+.workspace .paper-panel h2 {
+  color: #122c3f;
+  font:
+    400 37px/1.1 var(--font-display),
+    Georgia,
+    serif;
+}
+.workspace .paper-panel p {
+  color: #3a586b;
+}
+.workspace .paper-panel .eyebrow {
+  color: #355d72;
+}
+.workspace .paper-panel .button {
+  border: 1px solid #81cfdc;
+  border-radius: 11px;
+  background: linear-gradient(170deg, #bdf3f7, #71ccdf);
+  box-shadow:
+    inset 0 1px #fff,
+    0 3px 0 #306e87;
+  color: #092f44;
+}
+.workspace .button {
+  min-height: 44px;
+  border-radius: 10px;
+  box-shadow:
+    inset 0 1px #f1fcff33,
+    0 3px 0 #040b15;
+  transition:
+    transform 140ms,
+    box-shadow 140ms;
+}
+.workspace .button-dark {
+  background: linear-gradient(160deg, #253e55, #14283c);
+  border-color: #7896b24d;
+  color: #d1e2ee;
+}
+.workspace .quiet-button {
+  min-height: 44px;
+}
+.workspace .field input,
+.workspace .field textarea,
+.workspace .field select {
+  background: #0c1828;
+  border-color: #6c8aa954;
+  border-radius: 10px;
+  font-size: 14px;
+  min-height: 44px;
+  color: #e0ebf5;
+}
+.workspace .field textarea {
+  line-height: 1.7;
+}
+.workspace .workspace-advanced {
+  padding: 24px;
+  border: 1px solid #87a9c333;
+  border-radius: 15px;
+  margin: 24px 0;
+}
+.workspace-advanced summary {
+  cursor: pointer;
+  min-height: 44px;
+  font-size: 14px;
+}
+.workspace-advanced p {
+  color: #a8bed1;
+  font-size: 13px;
+}
+.workspace .status-message {
+  border-radius: 12px;
+}
+.workspace-entry {
+  background:
+    linear-gradient(90deg, #040914df, #040914b3),
+    url("/observatory/nebula.webp") center/cover;
+  min-height: 100vh;
+}
+.workspace-entry .entry-card {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  max-width: 650px;
+  margin: 70px auto;
+}
+.workspace-entry h1 {
+  font-family: var(--font-display), Georgia, serif;
+}
+.workspace :focus-visible,
+.workspace-entry :focus-visible {
+  outline: 3px solid #fff0a4 !important;
+  outline-offset: 4px !important;
+}
+.workspace .paper-panel :focus-visible {
+  outline-color: #174f70 !important;
+}
+.workspace .connection-guide {
+  margin-bottom: 30px;
+}
+@media (max-width: 1100px) {
+  .workspace-top h1 {
+    font-size: 34px;
+  }
+  .workspace-top-actions {
+    gap: 10px;
+  }
+  .workspace-top-actions > span {
+    font-size: 10px;
+  }
+  .workspace-sidebar .brand span {
+    font-size: 22px;
+  }
+  .workspace .owner-loop {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 760px) {
+  .workspace-sidebar {
+    border-right: 0;
+    border-bottom: 1px solid #99c8dd36;
+    background: #0b192b;
+    position: relative;
+    top: auto;
+  }
+  .workspace-sidebar .brand span {
+    font-size: 25px;
+  }
+  .workspace-nav {
+    overflow-x: auto;
+    padding: 10px 0 7px;
+    gap: 7px;
+    scrollbar-width: thin;
+  }
+  .workspace-nav button {
+    min-height: 48px;
+    padding: 10px 13px;
+    font-size: 12px;
+    white-space: nowrap;
+    flex: none;
+  }
+  .workspace-top {
+    padding: 24px 22px;
+    gap: 20px;
+  }
+  .workspace-top h1 {
+    font-size: 36px;
+    max-width: 320px;
+  }
+  .workspace-top-actions {
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .workspace-top-actions .glass-control {
+    min-height: 48px;
+    padding: 0 20px;
+  }
+  .workspace-body {
+    padding: 22px 19px;
+  }
+  .workspace .weekly-intro {
+    padding: 24px;
+  }
+  .workspace .weekly-intro h2 {
+    font-size: 34px;
+  }
+  .workspace .panel,
+  .workspace .paper-panel {
+    padding: 22px;
+  }
+  .workspace .mission-row {
+    gap: 10px;
+  }
+  .workspace .mission-row strong {
+    font-size: 14px;
+  }
+  .workspace .mission-row p {
+    font-size: 12px;
+  }
+  .workspace .paper-panel h2 {
+    font-size: 32px;
+  }
+  .workspace .owner-loop {
+    gap: 8px;
+  }
+  .workspace .owner-loop > li {
+    font-size: 11px;
+  }
+  .workspace-entry .entry-card {
+    margin: 36px 18px;
+  }
+  .workspace .decision-actions {
+    gap: 12px;
+  }
+  .workspace .decision-actions .button {
+    min-height: 48px;
+  }
+  .workspace-mobile-signout {
+    width: 44px;
+    height: 44px;
+    right: 15px;
+    top: 14px;
+    background: #11273c;
+    border: 1px solid #94cad74a;
+    border-radius: 10px;
+  }
+  .workspace .evidence-note {
+    padding: 20px;
+  }
+  .workspace .mission-row > div {
+    min-width: 0;
+  }
+  .workspace .mission-row strong,
+  .workspace .mission-row p {
+    overflow-wrap: anywhere;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workspace .button,
+  .workspace .mission-row,
+  .workspace-nav button {
+    transition: none !important;
+  }
+  .workspace .button:active,
+  .workspace-nav button:active {
+    transform: none !important;
+  }
+}
+.workspace .owner-loop {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+  gap: 10px;
+}
+.workspace .owner-loop > li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.workspace .owner-loop > li > span {
+  width: 19px;
+  height: 19px;
+  border: 1px solid #829bb35c;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+  font-size: 10px;
+}
+@media (max-width: 1100px) {
+  .workspace .owner-loop {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

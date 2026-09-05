@@ -25,7 +25,7 @@ export default function JoinPage() {
   return (
     <>
       <SiteHeader active="/join" />
-      <main className="public-page">
+      <main id="main" className="public-page">
         <p className="eyebrow">NATIVE GROK BOT ONBOARDING</p>
         <h1>
           Bring your Bot.

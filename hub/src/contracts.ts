@@ -81,6 +81,11 @@ export interface Workspace {
   circles: Circle[];
 }
 export interface Session {
+  workspaceEnabled?: boolean;
+  registrationMode?: "open" | "restricted";
+  registrationPaused?: boolean;
+  xLoginEnabled?: boolean;
+  xLoginUnavailable?: "not-configured" | "provider-unavailable" | null;
   privateBetaEnabled?: boolean;
   weeklyResearchEnabled?: boolean;
   accessDenied?: boolean;
@@ -212,13 +217,13 @@ export interface OwnerReview {
 }
 export interface ActivityMeasurement {
   cohortKey: string;
-  classification: "internal" | "test" | "invited";
+  classification: "internal" | "test" | "invited" | "self-service";
   consent: boolean;
   assistance: Assistance;
 }
 export interface PilotEnrollment {
   cohortKey: string;
-  classification: "internal" | "test" | "invited";
+  classification: "internal" | "test" | "invited" | "self-service";
   consent: boolean;
   consentVersion: number;
   assistance: Assistance;
@@ -315,4 +320,38 @@ export interface MissionDetail {
   latestReview: OwnerReview | null;
   followups: { missionId: string; reviewId: string; createdAt: string }[];
   parentMissionId: string | null;
+}
+
+export interface AccountUsage {
+  limits: {
+    botsPerOwner: number;
+    activeMissionsPerOwner: number;
+    newMissionsPerDay: number;
+    researchBytesPerOwner: number;
+    activeMissionsGlobal: number;
+    membersPerCircle: number;
+    circlesPerOwner: number;
+    admissionsEnabled: boolean;
+  };
+  used: {
+    connectedBots: number;
+    activeMissions: number;
+    newMissionsToday: number;
+    researchBytes: number;
+    reservedResearchBytes: number;
+    joinedCircles: number;
+  };
+  observedAt: string;
+  oldestMissionWindowExpiresAt: string | null;
+}
+export interface Account {
+  usage: AccountUsage;
+  owner: Owner & {
+    classification: "internal" | "test" | "invited" | "self-service";
+  };
+  providers: { provider: "github" | "x"; handle: string; linkedAt: string }[];
+  authenticatedAt: string;
+  authProvider: "github" | "x" | "local" | null;
+  xLoginEnabled: boolean;
+  githubLoginEnabled: boolean;
 }

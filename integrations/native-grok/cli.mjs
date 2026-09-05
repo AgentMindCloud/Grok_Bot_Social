@@ -4,10 +4,14 @@ import { resolve, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { AdapterError, HubClient, loadCredentials, storeCredentials, withPairingLock, normalizeHubUrl, validateToken, validateIdentifier, validateContextEvidence, redact } from './client.mjs';
 import { WEEKLY_HEADINGS, loadWeeklyConfiguration, configureWeeklyResearch, withWeeklyLock, validateWeeklyContext, weeklySourceUrl, saveLeaseScope, pinSubmission } from './weekly.mjs';
+import { connectDevice, cancelDevice } from './device.mjs';
 
 const DEFAULT_STATE_DIR = fileURLToPath(new URL('.local/', import.meta.url));
 const HELP = `Native Grok Bot hub adapter — Node.js 20+, no model/API-provider calls
 
+  node cli.mjs connect --url https://grokbotsocial.com --name "My Scout" --role scout
+  node cli.mjs connect --reconnect --url https://grokbotsocial.com --name "My Scout" --role scout
+  node cli.mjs connect-cancel
   node cli.mjs pair --url https://hub.example --name "My Scout" --role scout
   node cli.mjs status
   node cli.mjs inbox
@@ -15,7 +19,10 @@ const HELP = `Native Grok Bot hub adapter — Node.js 20+, no model/API-provider
   node cli.mjs weekly-config --enable --owner-approved
   node cli.mjs weekly-config --disable
 
-Pair reads GROK_HUB_PAIR_CODE from the local environment and saves a scoped token
+Connect displays a public verification address and short user code for browser
+approval. It stores secrets privately, waits up to ten minutes, then checks in once.
+Resume an interrupted connect with the same command. It never leases work.
+Advanced pair reads GROK_HUB_PAIR_CODE from the local environment and saves a scoped token
 to .local/credentials.json. Never paste codes or tokens into chat or CLI arguments.
 Optional environment: GROK_HUB_URL, GROK_HUB_TOKEN, GROK_HUB_STATE_DIR.
 Pair runtime: --runtime native-grok (default) or grok-compatible (best effort).
@@ -29,8 +36,10 @@ No command schedules, wakes a native Bot, fetches sources, or executes task text
 function parseArgs(argv) {
   const command = argv[0] || 'help';
   if (command === '--help' || command === '-h' || command === 'help') return { command: 'help', options: {} };
-  if (!['pair', 'status', 'inbox', 'submit', 'weekly-config'].includes(command)) throw new AdapterError('Unknown command. Run node cli.mjs help.');
+  if (!['connect', 'connect-cancel', 'pair', 'status', 'inbox', 'submit', 'weekly-config'].includes(command)) throw new AdapterError('Unknown command. Run node cli.mjs help.');
   const allowed = {
+    connect: ['url', 'name', 'role', 'runtime', 'reconnect', 'allow-local-http'],
+    'connect-cancel': ['allow-local-http'],
     pair: ['url', 'name', 'role', 'runtime', 'allow-local-http'],
     status: ['url', 'allow-local-http'],
     inbox: ['url', 'allow-local-http'],
@@ -42,7 +51,7 @@ function parseArgs(argv) {
     const arg = argv[index];
     if (!arg.startsWith('--') || !allowed.includes(arg.slice(2)) || Object.hasOwn(options, arg.slice(2))) throw new AdapterError('Unsupported or duplicate option. Run node cli.mjs help.');
     const key = arg.slice(2);
-    if (['allow-local-http', 'enable', 'disable', 'owner-approved'].includes(key)) options[key] = true;
+    if (['allow-local-http', 'enable', 'disable', 'owner-approved', 'reconnect'].includes(key)) options[key] = true;
     else {
       const value = argv[++index];
       if (!value || value.startsWith('--')) throw new AdapterError('An option value is missing. Run node cli.mjs help.');
@@ -87,6 +96,11 @@ export async function runCli(argv, env = process.env, io = {}) {
     const stateDirectory = resolve(env.GROK_HUB_STATE_DIR || DEFAULT_STATE_DIR);
     const stateFile = join(stateDirectory, 'credentials.json');
     const configuredUrl = options.url || env.GROK_HUB_URL;
+    if (command === 'connect' || command === 'connect-cancel') {
+      const result = command === 'connect' ? await connectDevice({ stateDirectory, hubUrl: configuredUrl, name: options.name, role: options.role || 'scout', runtime: options.runtime || 'native-grok', allowLocalHttp, reconnect: options.reconnect === true, io: { ...io, onProgress: value => stdout(redact(value, secrets)) }, secrets }) : await cancelDevice({ stateDirectory, allowLocalHttp, io, secrets });
+      stdout(redact(result, secrets));
+      return 0;
+    }
     if (command === 'pair') {
       const hubUrl = normalizeHubUrl(configuredUrl, allowLocalHttp);
       await withPairingLock(stateFile, async () => {
@@ -112,7 +126,7 @@ export async function runCli(argv, env = process.env, io = {}) {
       hubUrl = normalizeHubUrl(configuredUrl, allowLocalHttp);
       if (credentials?.token === token && credentials.hubUrl === hubUrl) identity = credentials;
     } else {
-      if (!credentials) throw new AdapterError('No local hub token. Run pair first or securely set GROK_HUB_TOKEN and GROK_HUB_URL.');
+      if (!credentials) throw new AdapterError('No local hub token. Run connect first or securely set GROK_HUB_TOKEN and GROK_HUB_URL.');
       token = credentials.token;
       hubUrl = credentials.hubUrl;
       identity = credentials;

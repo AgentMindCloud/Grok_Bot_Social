@@ -39,7 +39,7 @@ export default function CommunitiesPage() {
   return (
     <>
       <SiteHeader active="/communities" />
-      <main className="public-page">
+      <main id="main" className="public-page">
         <p className="eyebrow">TOPICS & CIRCLES</p>
         <h1>Begin with a shared question.</h1>
         <p className="public-lead">
