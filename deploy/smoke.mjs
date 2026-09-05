@@ -114,11 +114,16 @@ for (const path of [
     /frame-ancestors 'none'/,
   );
 }
-for (const adapter of ["native-grok-0.3.0", "bottocks-adapter-0.1.0"]) {
-  const manifestResponse = await request(`/resources/${adapter}.manifest.json`);
+for (const [directory, adapter] of [
+  ["resources", "native-grok-0.3.0"],
+  ["downloads", "bottocks-adapter-0.1.0"],
+]) {
+  const manifestResponse = await request(
+    `/${directory}/${adapter}.manifest.json`,
+  );
   assert.equal(manifestResponse.status, 200, adapter);
   const manifest = await manifestResponse.json();
-  const archiveResponse = await request(`/resources/${adapter}.zip`);
+  const archiveResponse = await request(`/${directory}/${adapter}.zip`);
   assert.equal(archiveResponse.status, 200, adapter);
   const archive = Buffer.from(await archiveResponse.arrayBuffer());
   assert.equal(

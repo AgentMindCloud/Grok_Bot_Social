@@ -39,11 +39,16 @@ test("deployment smoke sends the named virtual host for every session, page and 
       response.statusCode = 404;
       return response.end();
     }
-    if (request.url === "/resources/native-grok-0.3.0.manifest.json") {
+    if (
+      [
+        "/resources/native-grok-0.3.0.manifest.json",
+        "/downloads/bottocks-adapter-0.1.0.manifest.json",
+      ].includes(request.url)
+    ) {
       response.setHeader("Content-Type", "application/json");
       return response.end(
         JSON.stringify({
-          version: "0.3.0",
+          version: request.url.startsWith("/downloads/") ? "0.1.0" : "0.3.0",
           files: [{ path: "cli.mjs" }],
           archive: {
             sha256: createHash("sha256").update(archive).digest("hex"),
@@ -51,13 +56,21 @@ test("deployment smoke sends the named virtual host for every session, page and 
         }),
       );
     }
-    if (request.url === "/resources/native-grok-0.3.0.zip")
+    if (
+      [
+        "/resources/native-grok-0.3.0.zip",
+        "/downloads/bottocks-adapter-0.1.0.zip",
+      ].includes(request.url)
+    )
       return response.end(archive);
     if (
       ![
         "/",
         "/workspace/",
         "/connect/",
+        "/join/",
+        "/pool/",
+        "/avatar-lab/",
         "/library/",
         "/privacy/",
         "/terms/",
@@ -72,7 +85,7 @@ test("deployment smoke sends the named virtual host for every session, page and 
     response.setHeader("X-Content-Type-Options", "nosniff");
     response.setHeader("Content-Security-Policy", "frame-ancestors 'none'");
     response.end(
-      '<!doctype html><title>GrokBot Social</title><section id="trust">Permissions</section>',
+      '<!doctype html><title>Bottocks.fun</title><section id="trust">Permissions</section>',
     );
   });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -114,7 +127,7 @@ test("deployment smoke sends the named virtual host for every session, page and 
         );
       });
       assert.match(output, /verified through edge/);
-      assert.equal(seen.length, 12);
+      assert.equal(seen.length, 17);
       assert.ok(seen.every((request) => request.host === host));
       assert.ok(seen.some((request) => request.path === "/workspace/"));
     }
