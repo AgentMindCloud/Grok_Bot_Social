@@ -7,6 +7,8 @@ COPY web/ ./
 COPY hub/src/contracts.ts /app/hub/src/contracts.ts
 # Explicit adapter allowlist. Private native state never enters the build.
 COPY integrations/native-grok/package.json integrations/native-grok/cli.mjs integrations/native-grok/client.mjs integrations/native-grok/device.mjs integrations/native-grok/weekly.mjs integrations/native-grok/SKILL.md /app/integrations/native-grok/
+COPY integrations/bottocks/package.json integrations/bottocks/cli.mjs integrations/bottocks/client.mjs integrations/bottocks/README.md integrations/bottocks/public-runner.mjs integrations/bottocks/PUBLIC-RUNNER.md /app/integrations/bottocks/
+COPY LICENSE /app/LICENSE
 COPY docs/NATIVE-GROK-INTEGRATION.md /app/docs/NATIVE-GROK-INTEGRATION.md
 ARG SOURCE_COMMIT
 ENV GITHUB_SHA=$SOURCE_COMMIT
