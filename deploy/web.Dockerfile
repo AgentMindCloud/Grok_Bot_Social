@@ -13,6 +13,11 @@ ENV GITHUB_SHA=$SOURCE_COMMIT
 RUN npm run build
 
 FROM caddy:2-alpine
+# The static server runs as uid 1000 with every capability dropped on port 8080.
+# The base image's file capability would make exec fail with EPERM under that
+# bounding set. The separate root edge retains its ordinary container capability
+# to bind ports 80/443; the executable does not need a file capability.
+RUN setcap -r /usr/bin/caddy
 COPY deploy/Caddyfile /etc/caddy/Caddyfile
 COPY --from=build /app/web/out /srv
 # Preserve previously shared image URLs on the container hosting path as well.

@@ -131,3 +131,34 @@ test("a changed checkpoint invalidates an earlier receipt and an earlier retenti
     for (const directory of [root,peer]) { assert.ok(directory.startsWith(join(tmpdir(),"gbs-retention-test-"))); await rm(directory,{recursive:true,force:true}); }
   }
 });
+
+test("newer flat archives never displace the three complete checkpoint retention slots", async () => {
+  const root = await mkdtemp(join(tmpdir(),"gbs-retention-test-")), peer = await mkdtemp(join(tmpdir(),"gbs-retention-test-"));
+  const now = new Date("2026-09-05T00:00:00Z");
+  try {
+    await makeCheckpoint(root,1,true); await makeCheckpoint(peer,1,true);
+    const observed = await inventoryBackups(peer,"offhost",now), plan = await planVerificationReceipts(root,"vps",observed,"verified-offhost-fixture",now);
+    await writeVerificationReceipts(root,"vps",observed,"verified-offhost-fixture",plan.inventorySha256,now);
+    for (let day=2;day<=4;day++) await writeFile(join(root,`grokbot-2026080${day}T000000Z.dump.age`),"newer-flat-fixture");
+    const inventory = await inventoryBackups(root,"vps",now);
+    assert.deepEqual(inventory.candidates,[]);
+  } finally { for (const directory of [root,peer]) { assert.ok(directory.startsWith(join(tmpdir(),"gbs-retention-test-"))); await rm(directory,{recursive:true,force:true}); } }
+});
+
+test("receipt creation rejects stale/future peer observations and records the actual peer observation time", async () => {
+  const root = await mkdtemp(join(tmpdir(),"gbs-retention-test-")), peer = await mkdtemp(join(tmpdir(),"gbs-retention-test-"));
+  const seen = new Date("2026-09-05T00:00:00Z"), applied = new Date("2026-09-05T00:02:00Z");
+  try {
+    await makeCheckpoint(root,1,true); await makeCheckpoint(peer,1,true);
+    const observed = await inventoryBackups(peer,"offhost",seen);
+    await assert.rejects(planVerificationReceipts(root,"vps",observed,"verified-offhost-fixture",new Date("2026-09-05T00:16:00Z")),/stale/);
+    await assert.rejects(planVerificationReceipts(root,"vps",observed,"verified-offhost-fixture",new Date("2026-09-04T23:59:59Z")),/future/);
+    const forged = {...observed, observedAt: applied.toISOString()};
+    await assert.rejects(planVerificationReceipts(root,"vps",forged,"verified-offhost-fixture",applied),/observation digest/);
+    const plan = await planVerificationReceipts(root,"vps",observed,"verified-offhost-fixture",applied);
+    await writeVerificationReceipts(root,"vps",observed,"verified-offhost-fixture",plan.inventorySha256,applied);
+    const receipt = JSON.parse(await readFile(join(root,"20260801T000000Z.verified.json"),"utf8"));
+    assert.equal(receipt.offHostVerifiedAt,seen.toISOString());
+    assert.equal(receipt.peerObservationSha256,observed.observationSha256);
+  } finally { for (const directory of [root,peer]) { assert.ok(directory.startsWith(join(tmpdir(),"gbs-retention-test-"))); await rm(directory,{recursive:true,force:true}); } }
+});

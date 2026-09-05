@@ -9,6 +9,7 @@ const LOCK = ".retention-operation.lock";
 const CHECKPOINT_FILES = ["COMMIT", "IMAGE-IDS", "database.dump.age", "release.env", "runtime.env.age"];
 const JOURNAL = "closure-journal.tar.age";
 const HASH_SCOPE = "complete-checkpoint-v1";
+const PEER_MAX_AGE_MS = 15 * 60 * 1000;
 async function hashFile(path) {
   const hash = createHash("sha256");
   for await (const chunk of createReadStream(path)) hash.update(chunk);
@@ -97,7 +98,7 @@ export async function inventoryBackups(directory, scope, now = new Date()) {
       if (metadata.stat.size > 16384) throw new Error("Receipt too large");
       const parsed = JSON.parse(await readFile(metadata.path, "utf8"));
       const hashMatches = content.kind === "checkpoint"
-        ? parsed.schemaVersion === 2 && parsed.hashScope === HASH_SCOPE && parsed.checkpointSha256 === sha256 && JSON.stringify(parsed.files) === JSON.stringify(content.files) && /^[a-f0-9]{64}$/.test(parsed.peerInventorySha256 ?? "")
+        ? parsed.schemaVersion === 2 && parsed.hashScope === HASH_SCOPE && parsed.checkpointSha256 === sha256 && JSON.stringify(parsed.files) === JSON.stringify(content.files) && /^[a-f0-9]{64}$/.test(parsed.peerInventorySha256 ?? "") && /^[a-f0-9]{64}$/.test(parsed.peerObservationSha256 ?? "")
         : parsed.ciphertextSha256 === sha256;
       if (
         hashMatches && Number.isFinite(Date.parse(parsed.offHostVerifiedAt)) && Date.parse(parsed.offHostVerifiedAt) <= now.getTime()
@@ -125,9 +126,9 @@ export async function inventoryBackups(directory, scope, now = new Date()) {
   const cutoff = now.getTime() - 30 * 24 * 60 * 60 * 1000;
   const candidates = entries
     .filter(
-      (entry, index) =>
+      (entry) =>
         entry.verification &&
-        (scope === "vps" ? index >= 3 : Date.parse(entry.createdAt) < cutoff),
+        (scope === "vps" ? entries.filter(e => e.kind === entry.kind).findIndex(e => e.name === entry.name) >= 3 : Date.parse(entry.createdAt) < cutoff),
     )
     .map((entry) => entry.name);
   const plan = {
@@ -140,7 +141,10 @@ export async function inventoryBackups(directory, scope, now = new Date()) {
     invalid,
     candidates,
   };
-  return { ...plan, inventorySha256: digest(JSON.stringify(plan)) };
+  // Keep the reviewed content digest stable while separately binding when this
+  // exact inventory was observed. Receipt plans include both hashes.
+  const inventorySha256 = digest(JSON.stringify(plan)), observedAt = now.toISOString();
+  return { ...plan, inventorySha256, observedAt, observationSha256: digest(JSON.stringify({ inventorySha256, observedAt })) };
 }
 export async function applyRetention(
   directory,
@@ -184,9 +188,14 @@ export async function applyRetention(
   });
 }
 export async function planVerificationReceipts(directory, scope, peer, peerLocation, now = new Date()) {
-  const { inventorySha256, ...body } = peer;
+  const { inventorySha256, observedAt, observationSha256, ...body } = peer;
   if (peer.schemaVersion !== 2 || !Array.isArray(peer.entries) || digest(JSON.stringify(body)) !== inventorySha256)
     throw new Error("Peer inventory digest or format is invalid");
+  if (digest(JSON.stringify({ inventorySha256, observedAt })) !== observationSha256)
+    throw new Error("Peer observation digest is invalid");
+  const observedMs = Date.parse(observedAt);
+  if (!Number.isFinite(observedMs) || observedMs > now.getTime() || now.getTime() - observedMs > PEER_MAX_AGE_MS)
+    throw new Error("Peer inventory is stale or future-dated; observe the peer again");
   if (typeof peerLocation !== "string" || !/^[A-Za-z0-9][A-Za-z0-9 .:/_\\-]{0,239}$/.test(peerLocation))
     throw new Error("Give the reviewed peer location without credentials");
   if (peer.scope === scope || !["vps", "offhost"].includes(peer.scope)) throw new Error("Peer must use the opposite vps/offhost scope");
@@ -197,6 +206,7 @@ export async function planVerificationReceipts(directory, scope, peer, peerLocat
       (entry.kind !== "checkpoint" || JSON.stringify(other.files) === JSON.stringify(entry.files));
   });
   const plan = { schemaVersion: 1, directory: source.directory, scope, peerLocation, peerInventorySha256: peer.inventorySha256,
+    peerObservedAt: observedAt, peerObservationSha256: observationSha256,
     sourceInventorySha256: source.inventorySha256, asOfDate: now.toISOString().slice(0,10),
     receipts: matched.filter(entry => !entry.verification).map(entry => ({ name: entry.name, kind: entry.kind, sha256: entry.sha256, ...(entry.files ? { files: entry.files } : {}) })),
     unmatched: source.entries.filter(entry => !matched.some(e => e.name === entry.name)).map(e => e.name) };
@@ -215,7 +225,7 @@ export async function writeVerificationReceipts(directory, scope, peer, peerLoca
     for (const entry of plan.receipts) {
       const receipt = { schemaVersion: 2,
         ...(entry.kind === "checkpoint" ? { hashScope: HASH_SCOPE, checkpointSha256: entry.sha256, files: entry.files } : { ciphertextSha256: entry.sha256 }),
-        offHostVerifiedAt: now.toISOString(), peerLocation, peerInventorySha256: peer.inventorySha256 };
+        offHostVerifiedAt: peer.observedAt, peerLocation, peerInventorySha256: peer.inventorySha256, peerObservationSha256: peer.observationSha256 };
       const file = await open(join(root, `${entry.name}.verified.json`), "wx", 0o600);
       try { await file.writeFile(JSON.stringify(receipt,null,2)+"\n"); await file.sync(); }
       finally { await file.close(); }

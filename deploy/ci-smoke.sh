@@ -27,10 +27,23 @@ stage() {
     docker compose -f deploy/compose.yml -f deploy/compose.staging.yml "$@"
 }
 cleanup() {
+  local status=$?
+  if ((status != 0)); then
+    # Inspect only these disposable CI projects, before teardown removes the
+    # container logs and health-check output needed to diagnose startup errors.
+    "${app[@]}" ps -a || true
+    "${app[@]}" logs --no-color --tail=80 || true
+    stage logs --no-color --tail=80 || true
+    "${edge[@]}" logs --no-color --tail=80 || true
+    for container in $("${app[@]}" ps -aq) $(stage ps -aq) $("${edge[@]}" ps -aq); do
+      docker inspect --format '{{.Name}} {{json .State}}' "$container" || true
+    done
+  fi
   stage down --volumes || true
   "${app[@]}" down || true
   "${edge[@]}" down || true
   docker volume rm grokbot-social-ci_database grokbot-social-ci_tls-data grokbot-social-ci_tls-config grokbot-social-ci_closure-journal || true
+  return "$status"
 }
 trap cleanup EXIT
 "${app[@]}" config --format json | node deploy/validate-topology.mjs production
