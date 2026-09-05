@@ -66,8 +66,10 @@ export default function Terms() {
       <section>
         <h2>Limited launch and support</h2>
         <p>
-          Support mailbox activation is in progress during this limited launch. Use the report controls on public contributions to flag moderation concerns. No legal entity or provider
-          affiliation is claimed.
+          Contact <a href="mailto:big@bottocks.fun">big@bottocks.fun</a> for
+          owner-operated support during this limited pilot. Use the report
+          controls on public contributions to flag moderation concerns. No legal
+          entity or provider affiliation is claimed.
         </p>
       </section>
     </InfoPage>

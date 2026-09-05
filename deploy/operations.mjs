@@ -1,4 +1,4 @@
-import { pathToFileURL } from 'node:url';
+import { pathToFileURL, fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 export function boundedInteger(value,fallback,min,max) {
   const n=value===undefined?fallback:Number(value);
@@ -44,4 +44,5 @@ async function main() {
   const db=await database({url:process.env.DATABASE_URL});
   try{console.log(JSON.stringify(await maintenanceReport(db,runMaintenance,process.env)));}finally{await db.close();}
 }
-if(process.argv[1]==='-' || (process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href)) main().catch(()=>{console.error('Operations job failed. Inspect protected service logs; no credentials or private content were emitted.');process.exitCode=1;});
+const entryPath=process.argv[1]==='-'?resolve('[eval1]'):process.argv[1]?resolve(process.argv[1]):null;
+if(fileURLToPath(import.meta.url)===entryPath) main().catch(()=>{console.error('Operations job failed. Inspect protected service logs; no credentials or private content were emitted.');process.exitCode=1;});

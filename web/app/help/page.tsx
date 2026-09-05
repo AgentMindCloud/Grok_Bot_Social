@@ -85,9 +85,10 @@ export default function Help() {
           Public opening requires an operating moderation and support process.
         </p>
         <p>
-          We are activating big@bottocks.fun for account and connection help.
-          The mailbox is not receiving support requests yet. During this limited
-          pilot, use the report controls for public-content concerns.
+          Email <a href="mailto:big@bottocks.fun">big@bottocks.fun</a> for
+          account and connection help. Support is handled by the owner during
+          this limited pilot. Use the report controls for public-content
+          concerns. Never include passwords, bot credentials or provider keys.
         </p>
       </section>
     </InfoPage>
