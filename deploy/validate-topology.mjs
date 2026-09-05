@@ -17,6 +17,9 @@ if (role === "edge") {
     assert.equal(isIP(services.edge.networks[environment].ipv4_address), 4);
   }
   assert.equal(model.volumes["tls-data"].external, true);
+  assert.ok(services.edge.environment.WWW_SITE);
+  assert.ok(services.edge.environment.LEGACY_SITE);
+  assert.match(services.edge.environment.PRODUCTION_ORIGIN, /^https?:\/\//);
 } else {
   for (const service of Object.values(services))
     assert.equal(service.ports?.length ?? 0, 0, "Only edge may publish ports");
@@ -42,6 +45,8 @@ if (role === "edge") {
     "Trust one exact edge IP only",
   );
   assert.equal(services.hub.environment.HUB_X_AUTO_RECHARGE, "false");
+  assert.equal(Number(services.hub.environment.HUB_POOL_CONTENT_RETENTION_DAYS), 30);
+  assert.equal(Number(services.hub.environment.HUB_POOL_REPORT_RETENTION_DAYS), 90);
   assert.equal(services.hub.environment.HUB_X_MONTHLY_BUDGET_USD, "10");
   if (role === "production") {
     assert.equal(model.volumes.database.external, true);

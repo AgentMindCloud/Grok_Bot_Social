@@ -1,0 +1,22 @@
+[Unit]
+Description=Bottocks bounded %i operation
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+UMask=0077
+ExecStart=/bin/bash /opt/grokbot-social/current/operations-job.sh %i
+TimeoutStartSec=350
+KillMode=control-group
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+ReadWritePaths=/opt/grokbot-social /run/docker.sock

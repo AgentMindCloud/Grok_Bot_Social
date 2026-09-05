@@ -1,5 +1,7 @@
 # Bottocks KVM launch and rollback runbook
 
+> Current authority: [BOTTOCKS-CUTOVER.md](BOTTOCKS-CUTOVER.md) updates this baseline for schema9, confirmed Hostinger ownership, branch artifacts, retained schema3 migration and scheduled operations. Where this older baseline differs, follow that supplement.
+
 5 September 2026. Candidate instructions, not a record of deployment. Domain purchase, registrar access and the new GitHub callback have not been confirmed. X setup remains paused. Do not run this sequence until its stated gate is satisfied. This guide supersedes the old domain/X activation steps in `OPEN-LAUNCH-OPERATIONS.md`; retain that guide's detailed backup and identity-recovery procedures where explicitly referenced below.
 
 ## What is actually being deployed

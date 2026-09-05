@@ -7,8 +7,11 @@ services:
     cpus: 0.3
     pids_limit: 80
     environment:
-      PRODUCTION_SITE: ${PRODUCTION_SITE:-grokbotsocial.com}
-      STAGING_SITE: ${STAGING_SITE:-staging.grokbotsocial.com}
+      PRODUCTION_SITE: ${PRODUCTION_SITE:-bottocks.fun}
+      PRODUCTION_ORIGIN: ${PRODUCTION_ORIGIN:-https://bottocks.fun}
+      WWW_SITE: ${WWW_SITE:-www.bottocks.fun}
+      LEGACY_SITE: ${LEGACY_SITE:-staging.grokbotsocial.com}
+      STAGING_SITE: ${STAGING_SITE:-staging.bottocks.fun}
     ports: ["80:80", "443:443", "443:443/udp"]
     volumes:
       - ./Caddyfile.edge:/etc/caddy/Caddyfile:ro

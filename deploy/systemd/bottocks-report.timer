@@ -1,0 +1,12 @@
+[Unit]
+Description=Bottocks report schedule
+
+[Timer]
+OnCalendar=*-*-* 08:00:00 UTC
+Persistent=true
+RandomizedDelaySec=0
+AccuracySec=1s
+Unit=bottocks-operation@report.service
+
+[Install]
+WantedBy=timers.target

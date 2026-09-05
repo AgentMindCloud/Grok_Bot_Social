@@ -2,7 +2,8 @@ name: Native hub and web
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, codex/bottocks-launch]
+  workflow_dispatch:
 permissions:
   contents: read
 concurrency:
@@ -40,6 +41,7 @@ jobs:
       - run: node --test integrations/bottocks/client.test.mjs
       - run: node --test deploy/backup-retention.test.mjs
       - run: node --test deploy/smoke.test.mjs
+      - run: node --test deploy/operations.test.mjs deploy/migrate-retained.test.mjs
       - run: npm ci --prefix web --no-audit --no-fund
       - run: node scripts/security-audit.mjs --self-test
       - run: node scripts/security-audit.mjs web hub
@@ -69,14 +71,14 @@ jobs:
       - uses: actions/setup-node@v4
         with: {node-version: "22"}
       - name: Verify deployment scripts
-        run: for script in deploy/ci-smoke.sh deploy/package-release.sh deploy/load-release.sh; do bash -n "$script"; done
+        run: for script in deploy/*.sh; do bash -n "$script"; done
       - name: Build and verify separate edge, production and synthetic staging
         run: bash deploy/ci-smoke.sh
       - name: Verify runtime archive checksums
         working-directory: dist-release
         run: sha256sum --check --strict SHA256SUMS
       - uses: actions/upload-artifact@v4
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request'
         with:
           name: runtime-${{ github.sha }}
           path: |

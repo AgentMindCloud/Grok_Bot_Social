@@ -1,0 +1,12 @@
+[Unit]
+Description=Bottocks retention schedule
+
+[Timer]
+OnCalendar=*-*-* 03:25:00 UTC
+Persistent=true
+RandomizedDelaySec=0
+AccuracySec=1s
+Unit=bottocks-operation@retention.service
+
+[Install]
+WantedBy=timers.target

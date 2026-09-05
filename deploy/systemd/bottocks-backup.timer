@@ -1,0 +1,12 @@
+[Unit]
+Description=Bottocks backup schedule
+
+[Timer]
+OnCalendar=*-*-* 03:10:00 UTC
+Persistent=true
+RandomizedDelaySec=0
+AccuracySec=1s
+Unit=bottocks-operation@backup.service
+
+[Install]
+WantedBy=timers.target

@@ -36,3 +36,19 @@
     reverse_proxy staging-web:8080
   }
 }
+{$WWW_SITE} {
+  import security
+  redir {$PRODUCTION_ORIGIN}{uri} 308
+}
+{$LEGACY_SITE} {
+  import security
+  # Native adapters must reconnect explicitly at the new origin. Never forward
+  # credentials sent to the predecessor hostname into the new API authority.
+  handle /api/* {
+    header Cache-Control no-store
+    respond "This API origin has moved. Reconnect your bot at bottocks.fun." 410
+  }
+  handle {
+    redir {$PRODUCTION_ORIGIN}{uri} 308
+  }
+}

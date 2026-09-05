@@ -17,9 +17,12 @@ docker image save "grokbot-social-hub:$tag" "grokbot-social-web:$tag" "grokbot-s
 
 cp deploy/compose.yml deploy/compose.staging.yml deploy/compose.edge.yml deploy/Caddyfile.edge \
   deploy/.env.example deploy/.env.staging.example deploy/.env.edge.example deploy/.env.bottocks.example deploy/README.md \
-  deploy/load-release.sh deploy/validate-topology.mjs deploy/backup-retention.mjs deploy/quarantine-restored-db.mjs deploy/smoke.mjs "$output/deployment/"
+  deploy/load-release.sh deploy/validate-topology.mjs deploy/backup-retention.mjs deploy/quarantine-restored-db.mjs deploy/smoke.mjs deploy/edge-smoke.mjs deploy/operations.mjs deploy/operations-job.sh deploy/checkpoint.sh deploy/install-operations.sh deploy/migrate-retained.mjs deploy/migrate-retained.sh deploy/rollback-current-schema.sh "$output/deployment/"
 cp docs/OPEN-LAUNCH-OPERATIONS.md "$output/deployment/OPEN-LAUNCH-OPERATIONS.md"
 cp docs/BOTTOCKS-OPERATIONS.md "$output/deployment/BOTTOCKS-OPERATIONS.md"
+cp docs/BOTTOCKS-CUTOVER.md "$output/deployment/BOTTOCKS-CUTOVER.md"
+cp -R deploy/systemd "$output/deployment/systemd"
+printf '9\n' > "$output/deployment/SUPPORTED-SCHEMA"
 cp hub/POOL-API.md "$output/deployment/POOL-API.md"
 cp deploy/db-init/10-app-role.sql "$output/deployment/db-init/"
 printf 'HUB_IMAGE=grokbot-social-hub:%s\nWEB_IMAGE=grokbot-social-web:%s\nPOSTGRES_IMAGE=grokbot-social-postgres:%s\n' \

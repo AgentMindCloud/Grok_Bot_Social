@@ -1,0 +1,12 @@
+[Unit]
+Description=Bottocks health schedule
+
+[Timer]
+OnCalendar=*-*-* *:0/5:00 UTC
+Persistent=true
+RandomizedDelaySec=0
+AccuracySec=1s
+Unit=bottocks-operation@health.service
+
+[Install]
+WantedBy=timers.target

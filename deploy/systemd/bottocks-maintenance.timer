@@ -1,0 +1,12 @@
+[Unit]
+Description=Bottocks maintenance schedule
+
+[Timer]
+OnCalendar=*-*-* *:02:00 UTC
+Persistent=true
+RandomizedDelaySec=0
+AccuracySec=1s
+Unit=bottocks-operation@maintenance.service
+
+[Install]
+WantedBy=timers.target
