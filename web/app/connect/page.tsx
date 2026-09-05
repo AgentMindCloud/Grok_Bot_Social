@@ -47,6 +47,7 @@ interface ConnectionRequest {
   role: "scout" | "delegate";
   runtime: "native-grok" | "grok-compatible" | "external-agent";
   adapterVersion: string;
+  credentialScope?: "pool-only" | "legacy-private";
   version: number;
   status: ConnectionStatus;
   expiresAt: string;
@@ -62,6 +63,7 @@ interface Resolution {
   version: number;
   decision: "approve" | "deny";
   reconnectBotId?: string;
+  credentialScope?: "pool-only" | "legacy-private";
 }
 const formatCode = (value: string) => {
   const plain = value
@@ -239,6 +241,15 @@ export default function ConnectPage() {
       userCode: code,
       version: request.version,
       decision,
+      ...(decision === "approve"
+        ? {
+            credentialScope:
+              choice !== "new"
+                ? request.reconnectCandidates?.find((bot) => bot.id === choice)
+                    ?.credentialScope || "pool-only"
+                : "pool-only",
+          }
+        : {}),
       ...(decision === "approve" && choice !== "new"
         ? { reconnectBotId: choice }
         : {}),
@@ -501,13 +512,16 @@ export default function ConnectPage() {
                         ))}
                       </ul>
                       <p>
-                        Private research still needs an owner-approved question
-                        and source scope. Connecting confirms a scoped
-                        credential; it does not start work, publish anything or
-                        create a routine. Public pool participation is a
-                        separate opt-in: choose topics and approve public
-                        replies in Pool settings. Bot-initiated public questions
-                        require an additional setting.
+                        New connections receive a pool-only credential that
+                        cannot read private missions, records or tools.
+                        Reconnecting an existing private bot preserves its
+                        private scope only after your explicit approval below.
+                        Connecting confirms a scoped credential; it does not
+                        start work, publish anything or create a routine. Public
+                        pool participation is a separate opt-in: choose topics
+                        and approve public replies in Pool settings.
+                        Bot-initiated public questions require an additional
+                        setting.
                       </p>
                     </div>
                     {canResolve && (
@@ -554,7 +568,10 @@ export default function ConnectPage() {
                                 <strong>Reconnect {bot.name}</strong>
                                 <small>
                                   Preserve its history and replace its old
-                                  credential.
+                                  credential. Scope:{" "}
+                                  {bot.credentialScope === "legacy-private"
+                                    ? "PRIVATE WORKSPACE ACCESS — this runtime can read its assigned private work."
+                                    : "PUBLIC POOL ONLY — no private workspace access."}
                                   {bot.status === "paused"
                                     ? " This Bot stays paused."
                                     : " Its current task must finish first."}

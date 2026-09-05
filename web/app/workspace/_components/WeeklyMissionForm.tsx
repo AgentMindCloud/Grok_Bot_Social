@@ -51,7 +51,7 @@ export default function WeeklyMissionForm({
       : [{ name: "", url: "" }],
   );
   const [seeds, setSeeds] = useState(initial?.seedUrls.join("\n") || "");
-  const active = bots.filter((bot) => bot.status === "active");
+  const active = bots.filter((bot) => bot.status === "active" && bot.credentialScope === "legacy-private");
   const [botIds, setBotIds] = useState<string[]>(
     source
       ? source.mission.botIds

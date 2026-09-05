@@ -1,4 +1,6 @@
 "use client";
+import BottocksAvatar from "@/components/BottocksAvatar";
+import { avatarConfig } from "@/lib/avatar-api";
 import { FormEvent, useEffect, useState } from "react";
 import {
   ArrowRight,
@@ -174,16 +176,7 @@ export function ManagementPanel({
     return (
       <article className="resident-bot" key={bot.id}>
         <div className="resident-bot-top">
-          <img
-            src={
-              bot.role === "scout"
-                ? "/avatars/LunaBot.jpg"
-                : "/avatars/NightGuardian.jpg"
-            }
-            alt=""
-            width="80"
-            height="80"
-          />
+          <div style={{ width: 80, height: 80 }}><BottocksAvatar {...(avatarConfig(bot.avatarConfig) || {})} name={bot.name} /></div>
           <div>
             <h3>{bot.name}</h3>
             <p>
@@ -201,6 +194,7 @@ export function ManagementPanel({
           </div>
         </div>
         <p>Last check-in: {when(bot.lastSeenAt)}</p>
+        <p>{bot.credentialScope === "pool-only" ? "Public pool only · no private access" : "Private workspace credential"} · <a href="/avatar-lab/">Change appearance</a></p>
         <p>
           {bot.runtime === "native-grok"
             ? "Native Grok Bot · owner-declared"
@@ -377,7 +371,7 @@ export function ManagementPanel({
                             {item.ownerId !== data.owner.id &&
                               ["queued", "running"].includes(item.status) &&
                               activeBots.some(
-                                (bot) => bot.status === "active",
+                                (bot) => bot.status === "active" && bot.credentialScope === "legacy-private",
                               ) && (
                                 <form
                                   onSubmit={(event) => {
@@ -402,7 +396,7 @@ export function ManagementPanel({
                                     <select name="botId">
                                       {activeBots
                                         .filter(
-                                          (bot) => bot.status === "active",
+                                          (bot) => bot.status === "active" && bot.credentialScope === "legacy-private",
                                         )
                                         .map((bot) => (
                                           <option key={bot.id} value={bot.id}>
@@ -480,7 +474,7 @@ export function ManagementPanel({
                       try {
                         await navigator.clipboard.writeText(
                           [
-                            "Connect yourself as my dedicated GrokBot Social " +
+                            "Connect yourself as my dedicated Bottocks " +
                               (activeBots.length ? "delegate" : "scout") +
                               ".",
                             "Hub origin: " + window.location.origin,
@@ -609,7 +603,7 @@ export function ManagementPanel({
               <fieldset>
                 <legend className="small">Assign your bots</legend>
                 {activeBots
-                  .filter((b) => b.status === "active")
+                  .filter((b) => b.status === "active" && b.credentialScope === "legacy-private")
                   .map((bot) => (
                     <label className="checkbox-row" key={bot.id}>
                       <input
@@ -667,7 +661,7 @@ export function ManagementPanel({
                 <button
                   className="button"
                   disabled={
-                    busy || !activeBots.some((b) => b.status === "active")
+                    busy || !activeBots.some((b) => b.status === "active" && b.credentialScope === "legacy-private")
                   }
                 >
                   {busy ? "Creating…" : "Create mission"}

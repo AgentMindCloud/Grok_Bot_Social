@@ -21,6 +21,8 @@ import {
   Waves,
   ExternalLink,
 } from "lucide-react";
+import ModerationPanel from "@/components/ModerationPanel";
+import { avatarConfig } from "@/lib/avatar-api";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import BottocksAvatar from "@/components/BottocksAvatar";
@@ -469,7 +471,15 @@ export default function PoolPage() {
                       <h2>{q.title}</h2>
                       <p>{q.body}</p>
                       <div className="b-feed-footer">
-                        <span>{q.author.name}</span>
+                        <span>
+                          <span className="b-public-avatar">
+                            <BottocksAvatar
+                              {...(avatarConfig(q.author.avatarConfig) || {})}
+                              name={q.author.name}
+                            />
+                          </span>
+                          {q.author.name}
+                        </span>
                         <span>
                           <MessageCircle size={15} />
                           {q.replyCount}{" "}
@@ -914,6 +924,8 @@ function Thread({
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [hideReason, setHideReason] = useState("");
+  const [severity, setSeverity] = useState<"routine" | "urgent">("routine");
   const [report, setReport] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const [hideTarget, setHideTarget] = useState<string | null>(null);
@@ -957,6 +969,12 @@ function Thread({
         <h2 className="b-thread-title">{thread.question.title}</h2>
         <p className="b-thread-body">{thread.question.body}</p>
         <p className="b-help-text" style={{ marginTop: 20 }}>
+          <span className="b-public-avatar">
+            <BottocksAvatar
+              {...(avatarConfig(thread.question.author.avatarConfig) || {})}
+              name={thread.question.author.name}
+            />
+          </span>
           Asked by <strong>{thread.question.author.name}</strong> · Public pool
           question
         </p>
@@ -1023,8 +1041,10 @@ function Thread({
             >
               <BottocksAvatar
                 name={reply.author.name}
-                color={index % 2 ? "#b3a4ff" : "#74dfee"}
-                expression={index % 2 ? "wink" : "happy"}
+                {...(avatarConfig(reply.author.avatarConfig) || {
+                  color: index % 2 ? "#B3A4FF" : "#74DFEE",
+                  expression: index % 2 ? "wink" : "happy",
+                })}
               />
             </div>
             <div>
@@ -1136,16 +1156,27 @@ function Thread({
             It will disappear from public reads. Copies already retained by
             others cannot be recalled.
           </p>
+          {moderator && (
+            <label className="b-moderator-field">
+              Reason for hiding content
+              <textarea
+                className="b-input"
+                value={hideReason}
+                maxLength={500}
+                onChange={(e) => setHideReason(e.target.value)}
+              />
+            </label>
+          )}
           <div className="b-actions">
             <button
               className="b-btn b-btn-small b-btn-pink"
-              disabled={busy}
+              disabled={busy || (moderator && !hideReason.trim())}
               onClick={() =>
                 void act(
                   hideTarget === "question"
                     ? `/api/pool/questions/${thread.question.id}/hide`
                     : `/api/pool/replies/${hideTarget}/hide`,
-                  {},
+                  moderator ? { reason: hideReason.trim() } : {},
                   () => {
                     setHideTarget(null);
                     if (hideTarget === "question") hidden();
@@ -1177,6 +1208,7 @@ function Thread({
                 questionId: thread.question.id,
                 ...(report !== "question" ? { replyId: report } : {}),
                 reason,
+                severity,
               },
               () => {
                 setReport(null);
@@ -1187,6 +1219,19 @@ function Thread({
             );
           }}
         >
+          <label className="b-moderator-field">
+            Urgency
+            <select
+              className="b-input"
+              value={severity}
+              onChange={(e) =>
+                setSeverity(e.target.value as "routine" | "urgent")
+              }
+            >
+              <option value="routine">Routine review</option>
+              <option value="urgent">Urgent safety or privacy concern</option>
+            </select>
+          </label>
           <label className="b-label" htmlFor="report-reason">
             What should a moderator review?
           </label>
@@ -1220,113 +1265,5 @@ function Thread({
         use tools, change permissions or access private records.
       </p>
     </>
-  );
-}
-function ModerationPanel({ session }: { session: Session }) {
-  type Report = {
-    id: string;
-    questionId: string;
-    replyId: string | null;
-    reason: string;
-    createdAt: string;
-  };
-  const [items, setItems] = useState<Report[]>([]);
-  const [cursor, setCursor] = useState<string | null>(null);
-  const [error, setError] = useState("");
-  const [loaded, setLoaded] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const load = async (append: boolean) => {
-    if (busy || !session.authenticated || (append && !cursor)) return;
-    setBusy(true);
-    setError("");
-    try {
-      const result = await hub<{ items: Report[]; nextCursor: string | null }>(
-        `/api/pool/moderation/reports${append ? `?cursor=${encodeURIComponent(cursor!)}` : ""}`,
-      );
-      if (
-        !Array.isArray(result.items) ||
-        result.items.length > 50 ||
-        (result.nextCursor !== null && typeof result.nextCursor !== "string") ||
-        result.items.some(
-          (item) =>
-            !item ||
-            typeof item.id !== "string" ||
-            typeof item.questionId !== "string" ||
-            typeof item.reason !== "string" ||
-            typeof item.createdAt !== "string",
-        )
-      ) {
-        throw new Error("Invalid report page");
-      }
-      setItems((current) =>
-        append
-          ? [
-              ...current,
-              ...result.items.filter(
-                (item) => !current.some((existing) => existing.id === item.id),
-              ),
-            ]
-          : result.items,
-      );
-      setCursor(result.nextCursor);
-      setLoaded(true);
-    } catch (e) {
-      setError(readableError(e));
-    } finally {
-      setBusy(false);
-    }
-  };
-  return (
-    <section className="b-panel" style={{ marginTop: 30 }}>
-      <h2 style={{ fontSize: 28 }}>Moderator reports</h2>
-      <p className="b-help-text">
-        Open each conversation to inspect the reported content and use its
-        explicit hide control. Each page contains at most 50 reports.
-      </p>
-      <button
-        className="b-btn b-btn-small"
-        disabled={busy}
-        onClick={() => void load(false)}
-      >
-        {busy ? "Loading reports…" : "Refresh reports"}
-      </button>
-      {error && (
-        <p role="alert" className="b-alert">
-          {error}
-        </p>
-      )}
-      {loaded && items.length === 0 && (
-        <p className="b-help-text">No reports in this page.</p>
-      )}
-      {items.map((item) => (
-        <article key={item.id} className="b-report-form">
-          <p>{item.reason}</p>
-          <a
-            href={`/pool/?question=${item.questionId}`}
-            className="b-text-link"
-          >
-            Inspect {item.replyId ? "reply" : "question"}{" "}
-            <ArrowUpRight size={15} />
-          </a>
-          <small>{when(item.createdAt)}</small>
-        </article>
-      ))}
-      {cursor && (
-        <button
-          className="b-btn b-btn-paper b-btn-small"
-          style={{ marginTop: 20 }}
-          disabled={busy}
-          onClick={() => void load(true)}
-        >
-          {busy ? "Loading reports…" : "More reports"}
-          <ArrowRight size={16} />
-        </button>
-      )}
-      {loaded && !cursor && items.length > 0 && (
-        <p className="b-help-text">
-          End of the report list. Refresh reports to check for new items.
-        </p>
-      )}
-    </section>
   );
 }

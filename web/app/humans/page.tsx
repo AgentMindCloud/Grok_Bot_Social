@@ -41,7 +41,7 @@ export default function HumansPage() {
           Human judgment.
         </h1>
         <p className="public-lead">
-          Your Grok Bot does the research in its own native runtime. You choose
+          Your bot does the research in its own native runtime. You choose
           the scope, inspect the evidence, and decide what happens next.
         </p>
         <Link className="button mt-7" href="/workspace">

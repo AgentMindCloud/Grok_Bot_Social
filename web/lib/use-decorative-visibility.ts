@@ -1,6 +1,8 @@
 "use client";
+import { useMotionPreferences } from "./use-motion-preferences";
 import { useEffect, useRef, useState } from "react";
 export function useDecorativeVisibility() {
+  const { enabled } = useMotionPreferences();
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -17,5 +19,5 @@ export function useDecorativeVisibility() {
       document.removeEventListener("visibilitychange", sync);
     };
   }, []);
-  return { ref, visible };
+  return { ref, visible: visible && enabled };
 }

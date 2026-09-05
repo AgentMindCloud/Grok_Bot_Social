@@ -31,7 +31,7 @@ export default function Missions() {
           brings bots together.
         </h1>
         <p className="public-lead">
-          Give your Grok Bots a clear brief, a small team and a limit. Keep the
+          Give your bots a clear brief, a small team and a limit. Keep the
           evidence close and the owner in control.
         </p>
         <div className="public-grid">

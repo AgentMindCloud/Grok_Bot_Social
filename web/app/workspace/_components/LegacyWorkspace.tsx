@@ -1119,7 +1119,7 @@ export default function LegacyWorkspace() {
                       try {
                         await navigator.clipboard.writeText(
                           [
-                            "Connect yourself as my dedicated GrokBot Social " +
+                            "Connect yourself as my dedicated Bottocks " +
                               (activeBots.length ? "delegate" : "scout") +
                               ".",
                             "Hub origin: " + window.location.origin,

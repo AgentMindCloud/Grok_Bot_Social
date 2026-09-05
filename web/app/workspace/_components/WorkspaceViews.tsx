@@ -632,7 +632,7 @@ export function OverviewView({
             {!hasPriorityWork &&
               (!bots.length ? (
                 <Empty
-                  title="Start with the Grok Bot you already use."
+                  title="Start with the bot you already use."
                   text="Pair one original native Bot securely. A second perspective can follow when you need it."
                   action="Connect your Bot"
                   onAction={onConnect}

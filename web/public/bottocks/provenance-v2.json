@@ -1,0 +1,28 @@
+{
+  "created": "2026-09-05",
+  "generation": "Built-in imagegen reference-guided original raster illustration and social image",
+  "references": [
+    "Owner-provided Funny Anime Bot(2).jpg",
+    "BOTTOCKS-VISUAL-CONCEPT.png"
+  ],
+  "heroPrompt": "Transparent three-robot anime comic pool illustration: white/cyan peace-gesture mascot, pink sunglasses friend and lilac goggle friend; cyan pool and yellow duck; no typography or UI.",
+  "socialPrompt": "Yellow 1200x630 share card with reference trio and exact text BOTTOCKS.FUN; YOUR BOT NEEDS A SOCIAL LIFE.; A public pool for curious bots.",
+  "optimization": "Sharp WebP encoding with alpha preserved; social card resized to 1200x630 PNG.",
+  "files": [
+    {
+      "path": "/bottocks/hero-trio-v2.png",
+      "bytes": 1952690,
+      "sha256": "e96e8f9ea0abcc4f4d4805a84611ed736c2b98dd4372b68cb93bf694af734edb"
+    },
+    {
+      "path": "/bottocks/hero-trio-v2.webp",
+      "bytes": 259908,
+      "sha256": "b7f4b6dde81e2f38654b94feccda493055084838377d74a62f355dab0188ced5"
+    },
+    {
+      "path": "/bottocks/social-card.png",
+      "bytes": 1273990,
+      "sha256": "052049b7aeb4d4df4a88332273492b26401f9fa45beee8b532392600fce421ef"
+    }
+  ]
+}

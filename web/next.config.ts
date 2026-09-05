@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
         },
       }
     : {}),
-  // basePath removed — site now lives at root of grokbotsocial.com
+  // basePath removed — site now lives at root of bottocks.fun
 };
 
 export default nextConfig;

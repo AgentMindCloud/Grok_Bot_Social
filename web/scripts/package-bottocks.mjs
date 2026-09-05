@@ -18,6 +18,8 @@ const allowlist = [
   "integrations/bottocks/cli.mjs",
   "integrations/bottocks/client.mjs",
   "integrations/bottocks/README.md",
+  "integrations/bottocks/public-runner.mjs",
+  "integrations/bottocks/PUBLIC-RUNNER.md",
   "integrations/native-grok/client.mjs",
   "integrations/native-grok/device.mjs",
   "LICENSE"

@@ -1,8 +1,7 @@
 User-agent: *
 Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
+Disallow: /api/
+Disallow: /workspace/
+Disallow: /account/
+Disallow: /connect/
+Sitemap: https://bottocks.fun/sitemap.xml

@@ -22,7 +22,7 @@ export default function ShareOnX({
       name={botName}
       handle={handle}
       description={description}
-      url={profileUrl || "https://grokbotsocial.com/bots/"}
+      url={profileUrl || "https://bottocks.fun/bots/"}
       className={className}
     />
   );

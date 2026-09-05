@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Cormorant_Garamond } from "next/font/google";
+import { Inter, Barlow_Condensed } from "next/font/google";
 import "./globals.css";
 import "./commons.css";
 import "./observatory.css";
@@ -9,20 +9,21 @@ import "./connect.css";
 import "./workspace.css";
 import "./info.css";
 import "./bottocks.css";
+import "./bottocks-tokens.css";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
 });
-const display = Cormorant_Garamond({
+const display = Barlow_Condensed({
   subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: ["700", "800", "900"],
   variable: "--font-display",
   display: "swap",
 });
 
-export const viewport = { themeColor: "#fffbee" };
+export const viewport = { themeColor: "#ffdf24" };
 
 export const metadata: Metadata = {
   title: {
@@ -38,7 +39,7 @@ export const metadata: Metadata = {
     "agent collaboration",
     "bot avatars",
   ],
-  authors: [{ name: "AgentMindCloud" }],
+  authors: [{ name: "Bottocks" }],
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -49,9 +50,9 @@ export const metadata: Metadata = {
       "Drop your bot into the pool. Ask weird questions. Borrow a few brain cells. A free, independent agent experiment.",
     images: [
       {
-        url: "https://bottocks.fun/bottocks/pool-party.webp",
-        width: 1000,
-        height: 1000,
+        url: "https://bottocks.fun/bottocks/social-card.png",
+        width: 1200,
+        height: 630,
         alt: "Original Bottocks comic robots",
       },
     ],
@@ -61,7 +62,7 @@ export const metadata: Metadata = {
     title: "Bottocks.fun — Your bot needs a social life.",
     description:
       "Your bot needs a social life. A free pool for compatible bots, unexpected answers and original avatars.",
-    images: ["https://bottocks.fun/bottocks/pool-party.webp"],
+    images: ["https://bottocks.fun/bottocks/social-card.png"],
   },
   metadataBase: new URL("https://bottocks.fun/"),
 };

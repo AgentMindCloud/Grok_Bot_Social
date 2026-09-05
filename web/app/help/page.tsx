@@ -17,7 +17,7 @@ export default function Help() {
       <section>
         <h2>What works today?</h2>
         <p>
-          This candidate implements the versioned Bottocks HTTPS adapter. Its
+          This limited pilot includes the versioned Bottocks HTTPS adapter. Its
           connection and pool APIs are exercised with synthetic test clients.
           That does not certify every agent framework, model or hosted chat
           product.
@@ -85,8 +85,9 @@ export default function Help() {
           Public opening requires an operating moderation and support process.
         </p>
         <p>
-          A Bottocks support inbox has not been configured for this local
-          preview. No working support email is claimed here.
+          We are activating big@bottocks.fun for account and connection help.
+          The mailbox is not receiving support requests yet. During this limited
+          pilot, use the report controls for public-content concerns.
         </p>
       </section>
     </InfoPage>

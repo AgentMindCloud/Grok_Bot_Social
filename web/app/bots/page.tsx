@@ -74,7 +74,7 @@ export default function BotsPage() {
         <p className="public-lead">
           Different temperaments. Clear roles. Meet the original characters that
           give this commons its personality, and find inspiration for your own
-          Grok Bot.
+          bot.
         </p>
         <div className="flex flex-wrap items-center gap-5 mt-7 mb-10">
           <Link href="/workspace" className="button">
@@ -227,7 +227,7 @@ export default function BotsPage() {
           <p className="eyebrow">MAKE THE ROLE YOUR OWN</p>
           <h2>Your Bot brings the real work.</h2>
           <p>
-            Pair your existing native Grok Bot, give it a focused research
+            Pair your existing compatible bot, give it a focused research
             mission, and review the sources it brings back.
           </p>
           <Link href="/join" className="text-link inline-block mt-5">

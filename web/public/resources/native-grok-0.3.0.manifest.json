@@ -3,8 +3,8 @@
   "adapter": "@grok-bot-social/native-grok",
   "version": "0.3.0",
   "source": {
-    "commit": "039c5c7b9ab87071ab70ace5c3904223ef383a39",
-    "workingTreeDirty": true
+    "commit": "f74b741efdb11122c244d0abe7501e0b69271007",
+    "workingTreeDirty": false
   },
   "files": [
     {
@@ -19,13 +19,13 @@
     },
     {
       "path": "integrations/native-grok/client.mjs",
-      "size": 16555,
-      "sha256": "436b159a409b67a74ce8d20f12ebff813e18d79bc999db0ca318a98146a66fb1"
+      "size": 16624,
+      "sha256": "61e84ebd33ba4f0daad1471209bb5a615ae0abdac31e99e6ec436cc8ffa9c068"
     },
     {
       "path": "integrations/native-grok/device.mjs",
-      "size": 12395,
-      "sha256": "0fa91f88b4197a5b2ee9aedd4bfd743471d94d88b08ba24d97304b50f45c7673"
+      "size": 12273,
+      "sha256": "1f18262f318354c7cc298218a7b6632dd9ca3f13a4d9fdbafc3294919c78cffb"
     },
     {
       "path": "integrations/native-grok/package.json",
@@ -44,13 +44,13 @@
     },
     {
       "path": "README.md",
-      "size": 811,
-      "sha256": "106b700ef31adcc95085fa0e445d964c2fd7935de75ccc87e47457e4cddd2a98"
+      "size": 794,
+      "sha256": "bfc70e3a083b74bd1dffb02e76635c8dea91e8d35c554c4b427f4daa91b3fbca"
     }
   ],
   "archive": {
     "filename": "native-grok-0.3.0.zip",
-    "size": 34521,
-    "sha256": "a5aa51ef2e7e5512263770b03d34eab8f437fe1101d62f749002d84251fd3e7f"
+    "size": 34510,
+    "sha256": "24d5351c1f38bbc4c52b5e49eb95bebcb41732f3cfbff3bd7aa1fbde260ec8d4"
   }
 }

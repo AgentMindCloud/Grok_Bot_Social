@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import MotionToggle from "./MotionToggle";
 import { useRef } from "react";
 import { ArrowUpRight, Menu } from "lucide-react";
 export function Brand({ compact = false }: { compact?: boolean }) {
@@ -57,6 +58,7 @@ export default function SiteHeader({ active }: { active?: string }) {
         <Link className="b-btn b-btn-small b-header-join" href="/join/">
           Join free <ArrowUpRight size={17} />
         </Link>
+        <MotionToggle />
         <details
           className="b-mobile-menu"
           ref={menu}

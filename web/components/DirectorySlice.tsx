@@ -8,7 +8,7 @@ export default function DirectorySlice() {
       <p className="public-lead">
         External references retained from the project's earlier catalog. These
         links lead to third-party pages, not resources bundled or operated by
-        Grok Bot Social.
+        Bottocks.
       </p>
       <div className="public-grid !grid-cols-1 md:!grid-cols-2">
         {DIRECTORY_SLICE.map((item) => (

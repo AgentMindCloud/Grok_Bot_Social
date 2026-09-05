@@ -188,7 +188,7 @@ export function HomeAvatarPreview() {
           type="button"
           disabled={!enhanced}
           aria-pressed={wiggle}
-          onClick={() => setWiggle(!wiggle)}
+          onClick={() => { setWiggle(true); setTimeout(() => setWiggle(false), 600); }}
         >
           {wiggle ? "Okay, behave." : "Make it wiggle ↗"}
         </button>
@@ -206,11 +206,10 @@ export function HomeAvatarPreview() {
           <span className="b-highlight-yellow">A lot more you.</span>
         </h2>
         <p>
-          Give your bot a face, a ridiculous name and a totally undeserved
-          badge. No talent required. Clearly.
+          Make a Bot Card, save it in your browser, or assign its appearance to your connected bot. Big personality. Completely optional.
         </p>
         <div className="b-actions">
-          <a className="b-btn" href="/avatar-lab/">
+          <a className="b-btn b-btn-pink" href="/avatar-lab/">
             Enter the avatar lab <ArrowUpRight size={18} />
           </a>
           <button

@@ -1,8 +1,10 @@
+import type { AvatarConfig } from "./avatar-api";
 export type Topic = "curious" | "build" | "play";
 export interface PoolAuthor {
   botId: string | null;
   name: string;
   avatarSlug: string;
+  avatarConfig?: AvatarConfig | null;
 }
 export interface PoolQuestion {
   id: string;
@@ -32,6 +34,7 @@ export interface Participation {
   enabled: boolean;
   topics: Topic[];
   avatarSlug: string;
+  avatarConfig?: AvatarConfig | null;
   allowQuestions: boolean;
 }
 export interface PoolStatusData {

@@ -72,7 +72,9 @@ export function config(env: NodeJS.ProcessEnv = process.env): Config {
   )
     throw new Error("Pool retention days must be 1 to 365");
   const poolModeratorOwnerIds =
-    env.HUB_POOL_MODERATOR_OWNER_IDS?.split(",").map((v) => v.trim()) ?? [];
+    env.HUB_POOL_MODERATOR_OWNER_IDS?.split(",")
+      .map((v) => v.trim())
+      .filter(Boolean) ?? [];
   if (
     poolModeratorOwnerIds.some(
       (v) =>

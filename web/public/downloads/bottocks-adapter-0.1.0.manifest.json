@@ -3,39 +3,49 @@
   "adapter": "@bottocks/adapter",
   "version": "0.1.0",
   "source": {
-    "commit": "039c5c7b9ab87071ab70ace5c3904223ef383a39",
-    "workingTreeDirty": true
+    "commit": "f74b741efdb11122c244d0abe7501e0b69271007",
+    "workingTreeDirty": false
   },
   "files": [
     {
       "path": "integrations/bottocks/cli.mjs",
-      "size": 6744,
-      "sha256": "07a534c5807e6221c80bff74b937760416274e0435f4d0c051395020082520e4"
+      "size": 6845,
+      "sha256": "c278cb2023a88f5db9de7e02ec7421fb603df1c87b087a996221e64c4a46961b"
     },
     {
       "path": "integrations/bottocks/client.mjs",
-      "size": 6786,
-      "sha256": "d03a196a48478e2030115477e32f06ca535f5460000ca92db012a62de517723d"
+      "size": 7327,
+      "sha256": "db04ad95c277b0aa9eb4f3e977f721d591df958a3b6c4d2e041a52789c8e8676"
     },
     {
       "path": "integrations/bottocks/package.json",
-      "size": 239,
-      "sha256": "5d06ade8aadddd2161eeb8f9b7d56a5aad4117e8fd3aec02d1668c359eaed404"
+      "size": 289,
+      "sha256": "d03511cbdc3e7547e4fff87d6e215916cc2eda0e6867113eb83dc9b89cb71ad4"
+    },
+    {
+      "path": "integrations/bottocks/PUBLIC-RUNNER.md",
+      "size": 4275,
+      "sha256": "26152f3c8f73428f05facc44b5dac2f71618c01ccf8ac0ceb1630669248344eb"
+    },
+    {
+      "path": "integrations/bottocks/public-runner.mjs",
+      "size": 10670,
+      "sha256": "81bd1ce09f6a559b1bc25fff0ab6fa9bf2ee5897986a88831a201d9598237d75"
     },
     {
       "path": "integrations/bottocks/README.md",
-      "size": 4433,
-      "sha256": "ec0e68c73fdc74a82e8d50da0f6b00b4b885fa7f694a297fae9d67423ab427ea"
+      "size": 5685,
+      "sha256": "065b92f2c716ce32415c7398b5a296346e479a3ca476c493c5844a43c3d1348b"
     },
     {
       "path": "integrations/native-grok/client.mjs",
-      "size": 16555,
-      "sha256": "436b159a409b67a74ce8d20f12ebff813e18d79bc999db0ca318a98146a66fb1"
+      "size": 16624,
+      "sha256": "61e84ebd33ba4f0daad1471209bb5a615ae0abdac31e99e6ec436cc8ffa9c068"
     },
     {
       "path": "integrations/native-grok/device.mjs",
-      "size": 12395,
-      "sha256": "0fa91f88b4197a5b2ee9aedd4bfd743471d94d88b08ba24d97304b50f45c7673"
+      "size": 12273,
+      "sha256": "1f18262f318354c7cc298218a7b6632dd9ca3f13a4d9fdbafc3294919c78cffb"
     },
     {
       "path": "LICENSE",
@@ -44,13 +54,13 @@
     },
     {
       "path": "README.md",
-      "size": 4433,
-      "sha256": "ec0e68c73fdc74a82e8d50da0f6b00b4b885fa7f694a297fae9d67423ab427ea"
+      "size": 5685,
+      "sha256": "065b92f2c716ce32415c7398b5a296346e479a3ca476c493c5844a43c3d1348b"
     }
   ],
   "archive": {
     "filename": "bottocks-adapter-0.1.0.zip",
-    "size": 20562,
-    "sha256": "25369a779600c136c43040dbba3d177c02934fa831b6f5382586dd5aab267026"
+    "size": 27782,
+    "sha256": "a4ffb9c1844db7478a31fa0e221159e40af016f74566b4a4f1b8b1d3502c7089"
   }
 }

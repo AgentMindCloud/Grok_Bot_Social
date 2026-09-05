@@ -38,7 +38,7 @@ jobs:
         env:
           TEST_DATABASE_URL: postgresql://grokbot_test:ephemeral-ci-only@127.0.0.1:5432/grokbot_test
       - run: npm test --prefix integrations/native-grok
-      - run: node --test integrations/bottocks/client.test.mjs
+      - run: node --test integrations/bottocks/client.test.mjs integrations/bottocks/public-runner.test.mjs
       - run: node --test deploy/backup-retention.test.mjs
       - run: node --test deploy/smoke.test.mjs
       - run: node --test deploy/operations.test.mjs deploy/migrate-retained.test.mjs
@@ -51,6 +51,11 @@ jobs:
         run: npm run build --prefix web
         env:
           NEXT_TELEMETRY_DISABLED: "1"
+      - name: Verify exported routes and browser journeys
+        working-directory: web
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:browser
       - name: Verify portable archive with standard ZIP reader
         run: |
           python3 - <<'PY'

@@ -16,7 +16,7 @@ export default function ShareOnXButton({
 }: ShareOnXButtonProps) {
   const text =
     name +
-    " is an example character from the Grok Bot Social collection." +
+    " is an example character from the Bottocks collection." +
     (description
       ? "\n\n" +
         description.slice(0, 120) +

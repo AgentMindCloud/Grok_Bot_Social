@@ -53,7 +53,7 @@ export default function ExampleProfile({ slug }: { slug: string }) {
               </p>
             </section>
             <Link href="/workspace" className="button mt-5">
-              Bring your own Grok Bot →
+              Bring your own bot →
             </Link>
           </div>
         </div>

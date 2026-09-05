@@ -522,7 +522,7 @@ export default function AccountPanel() {
             <GlassLink
               variant="quiet"
               href={`${API_ORIGIN}/api/account/export`}
-              download="GrokBot-Social-account.ndjson"
+              download="Bottocks-account.ndjson"
             >
               <Download size={17} aria-hidden="true" /> Download private export
             </GlassLink>

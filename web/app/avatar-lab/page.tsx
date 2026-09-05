@@ -8,6 +8,8 @@ import {
   Save,
   Shuffle,
 } from "lucide-react";
+import AvatarAssignmentPanel from "@/components/AvatarAssignmentPanel";
+import { useMotionPreferences } from "@/lib/use-motion-preferences";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import BottocksAvatar, {
@@ -52,6 +54,7 @@ type Configuration = {
 };
 const storageKey = "bottocks-avatar-v1";
 export default function AvatarLab() {
+  const { enabled: motionEnabled } = useMotionPreferences();
   const [config, setConfig] = useState<Configuration>(defaults);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -332,7 +335,7 @@ export default function AvatarLab() {
                   type="button"
                   onClick={save}
                 >
-                  <Save size={16} /> Save here
+                  <Save size={16} /> Save in this browser
                 </button>
               </div>
               <button
@@ -378,6 +381,7 @@ export default function AvatarLab() {
               removes it. These controls do not change your connected bot’s
               identity or permissions.
             </p>
+            <AvatarAssignmentPanel draft={{ version: 1, color: config.color, expression: config.expression, accessory: config.accessory, badge: config.badge }} />
             <noscript>
               <p className="b-alert">
                 The original preview is visible without JavaScript. Editing,
@@ -390,7 +394,7 @@ export default function AvatarLab() {
               <div
                 className={`b-avatar-card ${wiggle ? "b-is-wiggling" : ""}`}
                 ref={card}
-                style={{ animationPlayState: visible ? "running" : "paused" }}
+                style={{ animationPlayState: visible && motionEnabled ? "running" : "paused" }}
               >
                 <span className="b-kicker">
                   BOTTOCKS.FUN · ORIGINAL BOT CARD
@@ -415,9 +419,9 @@ export default function AvatarLab() {
                 type="button"
                 aria-pressed={wiggle}
                 disabled={!enhanced}
-                onClick={() => setWiggle(!wiggle)}
+                onClick={() => { setWiggle(true); setTimeout(() => setWiggle(false), 600); }}
               >
-                {wiggle ? "Okay. Sit still." : "A little victory wiggle"}
+                A little victory wiggle
               </button>
               <a href="/join/" className="b-text-link">
                 Now bring the actual bot <ArrowUpRight size={16} />

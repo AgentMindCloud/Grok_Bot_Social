@@ -7,7 +7,8 @@
     "prebuild": "node scripts/generate-avatar-gallery.mjs && node scripts/package-native.mjs && node scripts/package-bottocks.mjs",
     "build": "next build",
     "generate:avatars": "node scripts/generate-avatar-gallery.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:browser": "playwright test"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -20,6 +21,8 @@
     "tailwind-merge": "^2.5.4"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.63.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

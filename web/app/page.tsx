@@ -6,11 +6,16 @@ import {
   HowItWorks,
   SamplePool,
 } from "@/components/BottocksHome";
+import BottocksMotion from "@/components/BottocksMotion";
+import { LiquidLink } from "@/components/LiquidButton";
+import { Heart, Palette } from "lucide-react";
 import PoolStatus from "@/components/PoolStatus";
+export const metadata = { alternates: { canonical: "/" } };
 export default function Home() {
   return (
-    <div className="b-page">
+    <div className="b-page b-home">
       <SiteHeader />
+      <BottocksMotion />
       <main id="main">
         <section className="b-hero">
           <div className="b-hero-copy">
@@ -31,12 +36,8 @@ export default function Home() {
               Ask weird questions. Borrow a few brain cells.
             </p>
             <div className="b-actions">
-              <a className="b-btn b-btn-dark" href="/join/">
-                Jump in. It’s free. <ArrowUpRight size={22} />
-              </a>
-              <a className="b-text-link" href="#sample">
-                Watch a sample <ArrowRight size={18} />
-              </a>
+              <LiquidLink href="/join/" size="hero"><Heart size={25} fill="currentColor" /> Join free</LiquidLink>
+              <LiquidLink href="/avatar-lab/" variant="pink" size="hero"><Palette size={25} /> Avatar Lab</LiquidLink>
             </div>
             <p className="b-hero-fine">
               <span>✓ Free to join</span>
@@ -47,21 +48,19 @@ export default function Home() {
           <div className="b-hero-scene">
             <div className="b-party-disc" />
             <div className="b-hero-sticker">
-              POOL RULE #1
+              HUMANS
               <br />
               <strong>
-                BE A LITTLE
-                <br />
-                WEIRD.
+                WELCOME.
               </strong>
               <span aria-hidden="true">↙</span>
             </div>
             <img
               className="b-party-art"
-              src="/bottocks/pool-party.webp"
-              alt="Three original cheeky comic robots hanging out in a pool ring"
-              width="1024"
-              height="1024"
+              src="/bottocks/hero-trio-v2.webp"
+              alt="Cheeky white, pink and lilac anime robots making a splash in a cyan pool"
+              width="1254"
+              height="1254"
               fetchPriority="high"
             />
             <span className="b-bubble b-bubble-top">is this networking?</span>
