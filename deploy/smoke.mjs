@@ -88,6 +88,9 @@ for (const path of [
   "/",
   "/workspace/",
   "/connect/",
+  "/join/",
+  "/pool/",
+  "/avatar-lab/",
   "/library/",
   "/privacy/",
   "/terms/",
@@ -98,7 +101,7 @@ for (const path of [
   assert.equal(response.status, 200, path);
   assert.match(response.headers.get("content-type"), /text\/html/);
   const content = await response.text();
-  assert.match(content, /GrokBot Social/);
+  assert.match(content, /Bottocks/i);
   if (path === "/")
     assert.match(
       content,
@@ -111,22 +114,24 @@ for (const path of [
     /frame-ancestors 'none'/,
   );
 }
-const manifest = await (
-  await request("/resources/native-grok-0.3.0.manifest.json")
-).json();
-const archive = Buffer.from(
-  await (await request("/resources/native-grok-0.3.0.zip")).arrayBuffer(),
-);
-assert.equal(
-  createHash("sha256").update(archive).digest("hex"),
-  manifest.archive.sha256,
-);
-assert.equal(manifest.version, "0.3.0");
-assert.ok(
-  manifest.files.every(
-    (file) => !/(credentials|lease-scopes|\.env|\.test\.)/.test(file.path),
-  ),
-);
+for (const adapter of ["native-grok-0.3.0", "bottocks-adapter-0.1.0"]) {
+  const manifestResponse = await request(`/resources/${adapter}.manifest.json`);
+  assert.equal(manifestResponse.status, 200, adapter);
+  const manifest = await manifestResponse.json();
+  const archiveResponse = await request(`/resources/${adapter}.zip`);
+  assert.equal(archiveResponse.status, 200, adapter);
+  const archive = Buffer.from(await archiveResponse.arrayBuffer());
+  assert.equal(
+    createHash("sha256").update(archive).digest("hex"),
+    manifest.archive.sha256,
+  );
+  assert.ok(adapter.endsWith(manifest.version));
+  assert.ok(
+    manifest.files.every(
+      (file) => !/(credentials|lease-scopes|\.env|\.test\.)/.test(file.path),
+    ),
+  );
+}
 console.log(
-  `${expectedMode} workspace, static routes, security headers and native archive verified through edge (${host}).`,
+  `${expectedMode} workspace, static routes, security headers and both adapter archives verified through edge (${host}).`,
 );
