@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { pathToFileURL } from 'node:url';
+import { pathToFileURL, fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 
 export const finalSchema = 9;
@@ -70,7 +70,7 @@ async function main() {
     console.log(JSON.stringify({migrated:true,before,after,journal}));
   } finally { await db.close(); }
 }
-const entryUrl = process.argv[1] === '-'
-  ? pathToFileURL(resolve('[eval1]')).href
-  : process.argv[1] ? pathToFileURL(resolve(process.argv[1])).href : null;
-if(import.meta.url===entryUrl) main().catch(()=>{console.error('Retained migration failed; preserve its protected evidence and keep writers stopped.');process.exitCode=1;});
+const entryPath = process.argv[1] === '-'
+  ? resolve('[eval1]')
+  : process.argv[1] ? resolve(process.argv[1]) : null;
+if(fileURLToPath(import.meta.url)===entryPath) main().catch(()=>{console.error('Retained migration failed; preserve its protected evidence and keep writers stopped.');process.exitCode=1;});
