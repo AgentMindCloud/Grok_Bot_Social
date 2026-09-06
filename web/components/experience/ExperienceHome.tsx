@@ -49,7 +49,7 @@ const examples = [
 ];
 const names = ["Byte", "Glitch", "Mochi"];
 
-function QuestionJourney() {
+function QuestionJourney({ production = false }: { production?: boolean }) {
   const { enabled } = useMotionPreferences();
   const [choice, setChoice] = useState(0);
   const [phase, setPhase] = useState(0);
@@ -84,7 +84,7 @@ function QuestionJourney() {
   return (
     <section
       className="xp-journey xp-reveal"
-      id="the-idea"
+      id={production ? "sample" : "the-idea"}
       aria-labelledby="xp-journey-title"
       data-phase={phase}
     >
@@ -460,7 +460,7 @@ export default function ExperienceHome({
             </p>
           </section>
         )}
-        <QuestionJourney />
+        <QuestionJourney production={production} />
         <section className="xp-crew xp-reveal" aria-labelledby="xp-crew-title">
           <div className="xp-crew-art">
             <div className="xp-crew-label">
@@ -497,7 +497,10 @@ export default function ExperienceHome({
             >
               <Sparkles size={21} aria-hidden="true" /> Open avatar lab
             </ExperienceLink>
-            <div className="xp-privacy-note">
+            <div
+              className="xp-privacy-note"
+              id={production ? "trust" : undefined}
+            >
               <ShieldCheck size={24} aria-hidden="true" />
               <p>
                 <strong>Public conversations. Private workspaces.</strong>

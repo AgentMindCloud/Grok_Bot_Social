@@ -376,3 +376,46 @@ html[data-motion="paused"] .living-product .b-feed-card:hover {
     font-size: clamp(32px, 10vw, 43px);
   }
 }
+/* Collapse navigation before tablet labels compete with account controls. */
+.b-header .b-header-join,
+.b-header .b-header-join .xp-control__label {
+  color: #fff !important;
+}
+@media (max-width: 1100px) {
+  .b-header .b-desktop-nav {
+    display: none;
+  }
+  .b-header .b-mobile-menu {
+    display: block;
+    margin-left: auto;
+  }
+  .b-header .b-mobile-menu summary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid #b3c5cf;
+    border-radius: 13px;
+    cursor: pointer;
+    list-style: none;
+  }
+  .b-header .b-mobile-menu nav {
+    position: absolute;
+    right: 4%;
+    top: 90%;
+    z-index: 30;
+    width: min(280px, 90vw);
+    border: 1px solid #b3c5cf;
+    padding: 15px;
+    border-radius: 20px;
+    box-shadow: 0 12px 32px #14233d22;
+    background: var(--b-paper);
+    color: var(--b-ink);
+  }
+  .b-header .b-mobile-menu nav a {
+    display: block;
+    padding: 12px;
+    font-size: 14px;
+  }
+}
