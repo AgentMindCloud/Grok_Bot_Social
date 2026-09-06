@@ -343,3 +343,36 @@ html[data-motion="paused"] .living-product .b-feed-card:hover {
     transform: none;
   }
 }
+/* Keep mobile headers and the inherited sign-in card within their container. */
+.workspace-entry .entry-card {
+  width: auto;
+}
+@media (max-width: 760px) {
+  .b-header .b-header-join {
+    display: none;
+  }
+}
+@media (max-width: 480px) {
+  .living-product .b-header-inner,
+  .workspace-entry .b-header-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 12px;
+    padding-block: 16px;
+  }
+  .living-product .b-header .b-mobile-menu,
+  .workspace-entry .b-header .b-mobile-menu {
+    grid-column: 2;
+    grid-row: 1;
+    margin: 0;
+  }
+  .living-product .b-header .b-motion-toggle,
+  .workspace-entry .b-header .b-motion-toggle {
+    grid-column: 1 / -1;
+    margin: 0;
+    min-height: 36px;
+  }
+  .living-product .connection-heading h1 {
+    font-size: clamp(32px, 10vw, 43px);
+  }
+}

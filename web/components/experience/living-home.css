@@ -297,3 +297,14 @@
     display: inline;
   }
 }
+/* Legacy brand and badges have explicit colors; resolve them for both worlds. */
+.xp-live-home .b-brand {
+  color: var(--xp-ink) !important;
+}
+.xp-live-home .b-footer nav a {
+  color: var(--xp-ink);
+}
+.xp-live-home .b-tag,
+.xp-live-home .b-footer-sticker {
+  color: #14233d;
+}
