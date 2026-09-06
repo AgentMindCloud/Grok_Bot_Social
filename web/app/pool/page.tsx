@@ -223,7 +223,7 @@ export default function PoolPage() {
     </>
   );
   return (
-    <div className="b-page">
+    <div className="b-page living-product living-pool">
       <SiteHeader active="/pool/" />
       <main id="main">
         <header className="b-section b-page-heading">

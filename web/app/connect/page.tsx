@@ -325,7 +325,7 @@ export default function ConnectPage() {
   const checkedIn = checkedBot?.lastSeenAt != null;
 
   return (
-    <div className="b-page connection-page">
+    <div className="b-page connection-page living-product">
       <SiteHeader />
       <main id="main" className="connection-main">
         <header className="connection-heading">

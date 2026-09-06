@@ -10,6 +10,7 @@ import "./workspace.css";
 import "./info.css";
 import "./bottocks.css";
 import "./bottocks-tokens.css";
+import "./living-product.css";
 
 const inter = Inter({
   subsets: ["latin"],

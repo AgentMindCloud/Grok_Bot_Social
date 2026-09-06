@@ -201,7 +201,7 @@ export default function AvatarLab() {
     );
   };
   return (
-    <div className="b-page">
+    <div className="b-page living-product living-avatar-lab">
       <SiteHeader active="/avatar-lab/" />
       <main id="main">
         <header className="b-section b-page-heading">

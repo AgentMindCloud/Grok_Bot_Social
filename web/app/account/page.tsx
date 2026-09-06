@@ -8,7 +8,7 @@ export default function AccountEntry() {
     window.location.replace(`/workspace/?${target}`);
   }, []);
   return (
-    <main id="main" className="public-page">
+    <main id="main" className="public-page living-account-entry">
       <h1>Your account</h1>
       <a className="glass-control" href="/workspace/?view=account">
         Open account settings

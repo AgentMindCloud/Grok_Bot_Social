@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import MotionToggle from "./MotionToggle";
-import { useRef } from "react";
+import { useRef, type ReactNode } from "react";
+import { ExperienceLink } from "./experience/ExperienceButton";
 import { ArrowUpRight, Menu } from "lucide-react";
 export function Brand({ compact = false }: { compact?: boolean }) {
   return (
@@ -34,8 +35,15 @@ const links = [
   { href: "/pool/", label: "The pool" },
   { href: "/#how-it-works", label: "How it works" },
   { href: "/avatar-lab/", label: "Avatar lab" },
+  { href: "/workspace/", label: "My workspace" },
 ];
-export default function SiteHeader({ active }: { active?: string }) {
+export default function SiteHeader({
+  active,
+  children,
+}: {
+  active?: string;
+  children?: ReactNode;
+}) {
   const menu = useRef<HTMLDetailsElement>(null);
   return (
     <header className="b-header">
@@ -55,9 +63,15 @@ export default function SiteHeader({ active }: { active?: string }) {
             </Link>
           ))}
         </nav>
-        <Link className="b-btn b-btn-small b-header-join" href="/join/">
+        <ExperienceLink
+          className="b-header-join"
+          variant="pink"
+          size="small"
+          href="/join/"
+        >
           Join free <ArrowUpRight size={17} />
-        </Link>
+        </ExperienceLink>
+        {children}
         <MotionToggle />
         <details
           className="b-mobile-menu"
@@ -85,7 +99,6 @@ export default function SiteHeader({ active }: { active?: string }) {
               </Link>
             ))}
             <Link href="/join/">Join free ↗</Link>
-            <Link href="/workspace/">My workspace</Link>
           </nav>
         </details>
       </div>

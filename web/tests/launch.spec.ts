@@ -117,16 +117,17 @@ for (const width of [320, 390, 768, 1440])
     await page.setViewportSize({ width, height: 900 });
     await publicApi(page);
     await page.goto("/");
+    await page.locator(".xp-crew-art img").scrollIntoViewIfNeeded();
     await page
-      .locator(".b-party-art")
+      .locator(".xp-crew-art img")
       .evaluate((img: HTMLImageElement) => img.decode());
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth + 1,
       ),
     ).toBe(true);
-    await expect(page.locator(".b-hero .liquid-cyan")).toBeVisible();
-    await expect(page.locator(".b-hero .liquid-pink")).toBeVisible();
+    await expect(page.locator(".xp-hero .xp-control--cyan")).toBeVisible();
+    await expect(page.locator(".xp-hero .xp-control--pink")).toBeVisible();
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
       .analyze();
@@ -145,9 +146,10 @@ test("sample changes only on explicit input, and shared pause persists after nav
 }) => {
   await publicApi(page);
   await page.goto("/");
-  await page.getByRole("button", { name: /How do I stop my agent/ }).click();
-  await expect(page.locator(".b-conversation")).toContainText(
-    "Treat retrieved text as data",
+  await page.getByRole("button", { name: "A useful second opinion" }).click();
+  await page.getByRole("button", { name: "Send the sample question" }).click();
+  await expect(page.locator(".xp-example-replies")).toContainText(
+    "Write down how to run it and how to recover it.",
   );
   await page.getByRole("button", { name: "Pause motion", exact: true }).click();
   await expect(page.locator("html")).toHaveAttribute("data-motion", "paused");
@@ -475,4 +477,71 @@ test("mobile navigation works with keyboard and Escape restores summary focus", 
   await page.keyboard.press("Escape");
   await expect(summary).toBeFocused();
   await expect(page.locator(".b-mobile-menu")).not.toHaveAttribute("open", "");
+});
+
+test("home uses real counts, public question links and recoverable feed failure without mutations", async ({
+  page,
+}) => {
+  await publicApi(page);
+  let writes = 0;
+  page.on("request", (request) => {
+    if (request.method() !== "GET") writes++;
+  });
+  await page.route("**/api/pool/status", (r) =>
+    answer(r, {
+      ...poolStatus,
+      participatingBots: 7,
+      openQuestions: 2,
+      replies: 1,
+    }),
+  );
+  let unavailable = true;
+  await page.route("**/api/pool/questions?*", (r) =>
+    unavailable
+      ? answer(r, { message: "Unavailable" }, 503)
+      : answer(r, {
+          items: [
+            {
+              id: "question-one",
+              title: "<img src=x onerror=alert(1)> A real question",
+              body: "public text",
+              topic: "build",
+              status: "waiting",
+              replyCount: 1,
+              author: {
+                name: "Actual public bot",
+                botId: "bot-one",
+                avatarSlug: "byte",
+              },
+              createdAt: "2026-09-06T00:00:00Z",
+              expiresAt: "2026-09-07T00:00:00Z",
+            },
+          ],
+          nextCursor: null,
+        }),
+  );
+  await page.goto("/");
+  await expect(page.locator(".b-status-numbers strong")).toHaveText([
+    "7",
+    "2",
+    "1",
+  ]);
+  await expect(page.locator(".b-pool-status")).toContainText(
+    "Opted in doesn’t mean online",
+  );
+  await expect(
+    page.getByRole("heading", { name: "The feed couldn’t load." }),
+  ).toBeVisible();
+  unavailable = false;
+  await page.getByRole("button", { name: "Try feed again" }).click();
+  const questionLink = page.locator(".xp-feed-preview li a");
+  await expect(questionLink).toHaveAttribute(
+    "href",
+    "/pool/?question=question-one",
+  );
+  await expect(questionLink).toContainText("<img src=x onerror=alert(1)>");
+  await expect(questionLink.locator("img")).toHaveCount(0);
+  await page.getByRole("button", { name: "Send the sample question" }).click();
+  await expect(page.locator(".xp-example-replies")).toBeVisible();
+  expect(writes).toBe(0);
 });

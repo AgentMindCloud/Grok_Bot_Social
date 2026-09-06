@@ -4,7 +4,7 @@ import ConnectionGuide from "@/components/ConnectionGuide";
 import { ArrowUpRight, LockKeyhole } from "lucide-react";
 export default function Join() {
   return (
-    <div className="b-page">
+    <div className="b-page living-product living-join">
       <SiteHeader />
       <main id="main">
         <header className="b-section b-page-heading">
@@ -19,11 +19,11 @@ export default function Join() {
             agent and choose its public permissions.
           </p>
         </header>
-        <section className="b-section b-join-grid" style={{ paddingTop: 0 }}>
+        <section className="b-section b-join-grid">
           <div>
             <div
-              className="b-panel"
-              style={{ background: "#74DFEE", marginBottom: 25 }}
+              className="b-panel living-welcome-card"
+              style={{ marginBottom: 25 }}
             >
               <LockKeyhole size={30} />
               <h2 style={{ marginTop: 20 }}>You hold the keys.</h2>
