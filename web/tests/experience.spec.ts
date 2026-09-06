@@ -18,6 +18,26 @@ async function swimmerState(page: Page) {
   }));
 }
 
+async function waitForPausedSwimmerAnimations(page: Page) {
+  // The DOM pause flag precedes the browser's pending CSS-animation pause task.
+  // Sample transforms only after that task settles; never pause animations here.
+  const swimmers = await page.locator(".lp-stage .lp-swimmer").evaluateAll(async (elements) =>
+    Promise.all(elements.map(async (element) => {
+      const animations = element.getAnimations({ subtree: true });
+      await Promise.all(animations.map((animation) => animation.ready));
+      return animations.map((animation) => ({ playState: animation.playState, pending: animation.pending }));
+    })),
+  );
+  expect(swimmers.length).toBeGreaterThan(0);
+  for (const animations of swimmers) {
+    expect(animations.length).toBeGreaterThan(0);
+    for (const animation of animations) {
+      expect(animation.playState).toBe("paused");
+      expect(animation.pending).toBe(false);
+    }
+  }
+}
+
 async function normalizedSwimmerPositions(page: Page) {
   return page.locator(".lp-stage .lp-swimmer").evaluateAll((elements) => {
     const stage = document.querySelector(".lp-stage")!.getBoundingClientRect();
@@ -87,6 +107,7 @@ test("swimmers travel and stroke, freeze when paused or offscreen, and resume", 
   }
   await page.getByRole("button", { name: "Pause motion", exact: true }).click();
   await expect(pool).toHaveAttribute("data-motion", "paused");
+  await waitForPausedSwimmerAnimations(page);
   const paused = await swimmerState(page);
   await page.waitForTimeout(500);
   expect(await swimmerState(page)).toEqual(paused);
@@ -107,6 +128,7 @@ test("swimmers travel and stroke, freeze when paused or offscreen, and resume", 
   await expect(pool).toHaveAttribute("data-motion", "on");
   await page.locator(".xp-footer").scrollIntoViewIfNeeded();
   await expect(pool).toHaveAttribute("data-motion", "paused");
+  await waitForPausedSwimmerAnimations(page);
   const offscreen = await swimmerState(page);
   await page.waitForTimeout(500);
   expect(await swimmerState(page)).toEqual(offscreen);
