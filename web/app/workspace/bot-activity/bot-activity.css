@@ -1,0 +1,32 @@
+.clubhouse {
+  min-height: 100vh;
+  padding: 24px 28px 80px;
+  color: #e8eef4;
+  background:
+    radial-gradient(1200px 500px at 20% -10%, rgba(80, 220, 190, 0.12), transparent 55%),
+    #071018;
+}
+.club-header { display: grid; gap: 16px; margin-bottom: 22px; }
+.club-kicker { text-transform: uppercase; letter-spacing: 0.14em; font-size: 11px; color: #8ce5ed; margin: 0 0 4px; }
+.clubhouse h1 { font-family: var(--font-display), Georgia, serif; font-weight: 400; font-size: 42px; margin: 0; }
+.club-controls, .club-events-head, .club-dialog-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.club-controls button, .club-controls a, .club-controls select, .club-dialog button, .club-events button, .club-empty a {
+  border: 1px solid rgba(140, 229, 237, 0.28);
+  background: rgba(8, 20, 28, 0.7);
+  color: #e8eef4;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+.club-banner { border: 1px solid rgba(140, 229, 237, 0.4); background: rgba(10, 50, 55, 0.4); padding: 10px 14px; border-radius: 12px; }
+.club-scene { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+.station { border-radius: 22px; background: linear-gradient(180deg, rgba(16, 36, 46, 0.9), rgba(8, 16, 22, 0.92)); border: 1px solid rgba(140, 229, 237, 0.16); min-height: 210px; }
+.station.is-empty { opacity: 0.38; padding: 16px; }
+.station button { width: 100%; height: 100%; text-align: left; background: transparent; color: inherit; border: 0; padding: 16px; }
+.station-need { color: #ffb4a2; }
+.station-result { color: #9be7c8; }
+.bot-glyph { width: 46px; height: 62px; display: block; margin-bottom: 6px; }
+.club-events, .club-inspector, .club-empty { margin-top: 22px; padding: 16px 18px; border-radius: 18px; background: rgba(8, 16, 22, 0.78); }
+.club-dialog { max-width: 560px; background: #0c1820; color: #e8eef4; border-radius: 18px; padding: 20px; }
+@media (max-width: 1100px) { .club-scene { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 680px) { .club-scene { grid-template-columns: 1fr; } }
